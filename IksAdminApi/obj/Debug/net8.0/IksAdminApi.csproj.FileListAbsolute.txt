@@ -12,3 +12,4 @@ E:\__iksAdmin\Iks_Admin_2.2\IksAdminApi\obj\Debug\net8.0\IksAdminApi.dll
 E:\__iksAdmin\Iks_Admin_2.2\IksAdminApi\obj\Debug\net8.0\refint\IksAdminApi.dll
 E:\__iksAdmin\Iks_Admin_2.2\IksAdminApi\obj\Debug\net8.0\IksAdminApi.pdb
 E:\__iksAdmin\Iks_Admin_2.2\IksAdminApi\obj\Debug\net8.0\ref\IksAdminApi.dll
+E:\__iksAdmin\Iks_Admin_2.2\IksAdminApi\obj\Debug\net8.0\IksAdminApi.sourcelink.json

@@ -9,13 +9,15 @@ using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
 using Microsoft.Extensions.Logging;
 using CounterStrikeSharp.API;
+using System.Text.Json;
+using CounterStrikeSharp.API.Modules.Config;
 
 namespace IksAdmin;
 
 public class Main : BasePlugin, IPluginConfig<PluginConfig>
 {
     public override string ModuleName => "IksAdmin";
-    public override string ModuleVersion => "2.1.1";
+    public override string ModuleVersion => "2.2";
     public override string ModuleAuthor => "iks [Discord: iks__]";
 
     public PluginConfig Config { get; set; } = null!;
@@ -23,25 +25,77 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
     private static readonly PluginCapability<IMenuApi?> MenuCapability = new("menu:nfcore");   
     public static AdminApi AdminApi = null!;
     private readonly PluginCapability<IIksAdminApi> _pluginCapability  = new("iksadmin:core");
+    
+
+    public static string GenerateMenuId(string id)
+    {
+        return $"iksadmin:menu:{id}";
+    }
+    public static string GenerateOptionId(string id)
+    {
+        return $"iksadmin:option:{id}";
+    }
     public void OnConfigParsed(PluginConfig config)
     {
         Config = config;
     }
     public override void Load(bool hotReload)
     {
-        AdminApi = new AdminApi(this, Config, Localizer);
+        AdminApi = new AdminApi(this, Config, Localizer, ModuleDirectory);
+        AdminUtils.FindAdminMethod = FindAdminMethod;
+        SetSortMenus();
     }
+
+    private Admin? FindAdminMethod(CCSPlayerController player)
+    {
+        return AdminApi.ServerAdmins.FirstOrDefault(x => x.SteamId == player.AuthorizedSteamID!.SteamId64.ToString());
+    }
+
     public override void OnAllPluginsLoaded(bool hotReload)
     {
         MenuApi = MenuCapability.Get()!;
     }
 
-    [ConsoleCommand("css_menu")]
-    public void OnMenuCmd(CCSPlayerController controller, CommandInfo info)
+    [ConsoleCommand("css_admin_reload_cfg")]
+    public void OnReloadCfg(CCSPlayerController caller, CommandInfo info)
     {
-        var menu = AdminApi.CreateMenu("Test menu", (MenuType)Config.MenuType);
+        OnConfigParsed(Config);
+        SetSortMenus();
+    }
 
-        menu.Open(controller);
+    [ConsoleCommand("css_menu")]
+    public void OnMenuCmd(CCSPlayerController caller, CommandInfo info)
+    {
+        var menu = AdminApi.CreateMenu(GenerateMenuId("testmenu"), "Test menu", (MenuType)Config.MenuType);
+        if (caller.Admin == null) return;
+        menu.AddMenuOption(GenerateOptionId("1"), "Option 1", (_, _) => { 
+            caller.PrintToChat("Option 1 executed");
+        });
+        menu.AddMenuOption(GenerateOptionId("2"), "Option 2", (_, _) => { 
+            caller.PrintToChat("Option 2 executed");
+        });
+        menu.AddMenuOption(GenerateOptionId("3"), "Option 3", (_, _) => { 
+            caller.PrintToChat("Option 3 executed");
+        });
+        menu.Open(caller);
+    }
+    public static void SetSortMenus()
+    {
+        using var streamReader = new StreamReader($"{AdminApi.ModuleDirectory}/sortmenus.json");
+        string json = streamReader.ReadToEnd();
+        var sortMenus = JsonSerializer.Deserialize<Dictionary<string, SortMenu[]>>(json, new JsonSerializerOptions() { ReadCommentHandling = JsonCommentHandling.Skip })!;
+        AdminApi.SortMenus = sortMenus;
+        AdminApi.Debug("Sort Menus setted!");
+        foreach (var item in AdminApi.SortMenus)
+        {
+            AdminApi.Debug($@"Menu key: {item.Key}");
+            AdminApi.Debug($@"Menu options: ");
+            AdminApi.Debug($@"ID | ViewFlags | View");
+            foreach (var option in item.Value)
+            {
+                AdminApi.Debug($@"{option.Id} | {option.ViewFlags} | {option.View}");
+            }
+        }
     }
 }
 
@@ -49,27 +103,44 @@ public class AdminApi : IIksAdminApi
 {
     public IAdminConfig Config { get; set; } 
     public BasePlugin Plugin { get; set; } 
-    public IStringLocalizer Localizer { get; set; } 
-    public AdminApi(BasePlugin plugin, IAdminConfig config, IStringLocalizer localizer)
+    public IStringLocalizer Localizer { get; set; }
+    public Dictionary<string, SortMenu[]> SortMenus { get; set; }
+    public string ModuleDirectory { get; set; }
+    public List<Admin> ServerAdmins { get; set; } = new();
+    public List<Admin> AllAdmins { get; set; } = new();
+
+    public AdminApi(BasePlugin plugin, IAdminConfig config, IStringLocalizer localizer, string moduleDirectory)
     {
         Plugin = plugin;
         Config = config;
         Localizer = localizer;
+        ModuleDirectory = moduleDirectory;
     }
     public void CloseMenu(CCSPlayerController player)
     {
         throw new NotImplementedException();
     }
-    public IDynamicMenu CreateMenu(string title, MenuType type = MenuType.ButtonMenu, PostSelectAction postSelectAction = PostSelectAction.Nothing, Action<CCSPlayerController>? backAction = null)
+    public IDynamicMenu CreateMenu(string id, string title, MenuType type = MenuType.ButtonMenu, PostSelectAction postSelectAction = PostSelectAction.Nothing, Action<CCSPlayerController>? backAction = null, IMenu? backMenu = null)
     {
-        return new DynamicMenu(title, type, postSelectAction, backAction);
+        return new DynamicMenu(id, title, type, postSelectAction, backAction, backMenu);
     }
 
     public void Debug(string message)
     {
         if (!Config.DebugMode) return;
         Server.NextFrame(() => {
-            Plugin.Logger.LogDebug(message);
+            Plugin.Logger.LogInformation("[Admin Debug]: " +message);
         });
     }
+
+    public void EDynamicMenuOpen(CCSPlayerController player, IDynamicMenu menu)
+    {
+        throw new NotImplementedException();
+    }
+    public event Action<CCSPlayerController, IDynamicMenu>? DynamicMenuOpen;
+    public void EDynamicOptionRendered(CCSPlayerController player, IDynamicMenu menu, IDynamicMenuOption option)
+    {
+        throw new NotImplementedException();
+    }
+    public event Action<CCSPlayerController, IDynamicMenu, IDynamicMenuOption>? DynamicOptionRendered;
 }
