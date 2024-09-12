@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using CounterStrikeSharp.API;
 using System.Text.Json;
 using CounterStrikeSharp.API.Modules.Config;
+using IksAdmin.Functions;
 
 namespace IksAdmin;
 
@@ -42,14 +43,16 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
     public override void Load(bool hotReload)
     {
         AdminApi = new AdminApi(this, Config, Localizer, ModuleDirectory);
-        AdminUtils.FindAdminMethod = FindAdminMethod;
+        AdminUtils.FindAdminMethod = UtilsFunctions.FindAdminMethod;
+        AdminUtils.GetPremissions = UtilsFunctions.GetPermissions;
+        AdminUtils.GetConfigMethod = UtilsFunctions.GetConfigMethod;
+        AdminUtils.Debug = UtilsFunctions.SetDebugMethod;
         SetSortMenus();
     }
 
-    private Admin? FindAdminMethod(CCSPlayerController player)
-    {
-        return AdminApi.ServerAdmins.FirstOrDefault(x => x.SteamId == player.AuthorizedSteamID!.SteamId64.ToString());
-    }
+
+
+
 
     public override void OnAllPluginsLoaded(bool hotReload)
     {
@@ -108,6 +111,7 @@ public class AdminApi : IIksAdminApi
     public string ModuleDirectory { get; set; }
     public List<Admin> ServerAdmins { get; set; } = new();
     public List<Admin> AllAdmins { get; set; } = new();
+    public Dictionary<string, string> RegistredPermissions {get; set;} = new();
 
     public AdminApi(BasePlugin plugin, IAdminConfig config, IStringLocalizer localizer, string moduleDirectory)
     {
@@ -142,5 +146,15 @@ public class AdminApi : IIksAdminApi
     {
         throw new NotImplementedException();
     }
+
+    public void RegisterPermission(string key, string defaultFlags)
+    {
+        RegistredPermissions.Add(key, defaultFlags);
+    }
+    public string GetCurrentPermissionFlags(string key)
+    {
+        return "";
+    }
+
     public event Action<CCSPlayerController, IDynamicMenu, IDynamicMenuOption>? DynamicOptionRendered;
 }

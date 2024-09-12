@@ -7,6 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="dapper" Version="2.1.35" />
+    <PackageReference Include="mysqlconnector" Version="2.3.7" />
     <ProjectReference Include="..\IksAdminApi\IksAdminApi.csproj" />
     <PackageReference Include="CounterStrikeSharp.Api" Version="1.0.264" />
     <Reference Include="../RequirmentsApi/MenuManagerApi.dll" />

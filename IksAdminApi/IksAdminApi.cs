@@ -17,11 +17,13 @@ public interface IIksAdminApi
     public Dictionary<string, SortMenu[]> SortMenus { get; set; }
     public List<Admin> ServerAdmins { get; set; }
     public List<Admin> AllAdmins { get; set; }
+    public Dictionary<string, string> RegistredPermissions { get; set; }
     // MENU ===
     public IDynamicMenu CreateMenu(string id, string title, MenuType type = (MenuType)3, PostSelectAction postSelectAction = PostSelectAction.Nothing, Action<CCSPlayerController>? backAction = null, IMenu? backMenu = null);
     public void CloseMenu(CCSPlayerController player);
     // FUNC ===
     public void Debug(string message);
+    public void RegisterPermission(string key, string defaultFlags);
     // EVENTS ===
     public void EDynamicMenuOpen(CCSPlayerController player, IDynamicMenu menu);
     public event Action<CCSPlayerController, IDynamicMenu>? DynamicMenuOpen;
@@ -44,8 +46,9 @@ public class SortMenu
 
 public interface IAdminConfig 
 {
-    public bool DebugMode { get; set; }
     public int MenuType { get; set; }
+    public Dictionary<string, string> PermissionReplacement {get; set;}
+    public bool DebugMode { get; set; }
 }
 public interface IDynamicMenu
 {
@@ -80,6 +83,13 @@ public static class AdminUtils
 {
     public delegate Admin? AdminFinder(CCSPlayerController player);
     public static AdminFinder FindAdminMethod = null!;
+    public delegate Dictionary<string, string> RightsGetter();
+    public static RightsGetter GetPremissions = null!;
+    public delegate IAdminConfig ConfigGetter();
+    public static ConfigGetter GetConfigMethod = null!;
+    public delegate void DebugFunc(string message);
+    public static DebugFunc Debug = null!;
+
     public static CCSPlayerController? GetControllerBySteamId(string steamId)
     {
         return Utilities.GetPlayers().FirstOrDefault(x => x != null && x.IsValid && x.AuthorizedSteamID != null && x.AuthorizedSteamID.SteamId64.ToString() == steamId);
@@ -87,6 +97,45 @@ public static class AdminUtils
     public static Admin? Admin(this CCSPlayerController player)
     {
         return FindAdminMethod(player);
+    }
+    public static IAdminConfig Config()
+    {
+        return GetConfigMethod();
+    }
+    public static bool HasPermissions(this CCSPlayerController player, string key)
+    {
+        Debug($"Checking permission: {player.PlayerName} | {key}" );
+        var permissions = GetPremissions();
+        if (!permissions.TryGetValue(key, out var flags))
+        {
+            throw new Exception("Trying to check permissions that doesn't registred (HasPermissions method)");
+        }
+        Debug($"Permission registred ✔ | flags: {flags}");
+        if (Config().PermissionReplacement.ContainsKey(key))
+        {
+            Debug($"Replace permission flags from config...");
+            flags = Config().PermissionReplacement[key];
+            Debug($"Permission flags replacement ✔ | flags: {flags}");
+        }
+        if (flags == "*")
+        {
+            Debug($"Has Access ✔");
+            return true;
+        }
+        Debug($"Getting admin...");
+        var admin = player.Admin();
+        if (admin == null) {
+            Debug($"Admin is null | No Access ✖");
+            return false;
+        }
+        if (admin.Flags.Contains(flags))
+        {
+            Debug($"Admin has access ✔");
+            return true;
+        } else {
+            Debug($"Admin hasn't access ✖");
+            return false;
+        }
     }
 }
 
