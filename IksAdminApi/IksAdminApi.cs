@@ -15,20 +15,28 @@ public interface IIksAdminApi
     public BasePlugin Plugin { get; set; } 
     public string ModuleDirectory { get; set; }
     public Dictionary<string, SortMenu[]> SortMenus { get; set; }
+    public Admin ConsoleAdmin {get; set;}
     public List<Admin> ServerAdmins { get; set; }
     public List<Admin> AllAdmins { get; set; }
+    public List<Group> Groups {get; set;}
     public Dictionary<string, string> RegistredPermissions { get; set; }
+    public string DbConnectionString {get; set;}
     // MENU ===
-    public IDynamicMenu CreateMenu(string id, string title, MenuType type = (MenuType)3, PostSelectAction postSelectAction = PostSelectAction.Nothing, Action<CCSPlayerController>? backAction = null, IMenu? backMenu = null);
+    public IDynamicMenu CreateMenu(string id, string title, MenuType? type = null, MenuColors titleColor = MenuColors.Default, PostSelectAction postSelectAction = PostSelectAction.Nothing, Action<CCSPlayerController>? backAction = null, IDynamicMenu? backMenu = null);
     public void CloseMenu(CCSPlayerController player);
     // FUNC ===
     public void Debug(string message);
+    public void LogError(string message);
     public void RegisterPermission(string key, string defaultFlags);
+    public string GetCurrentPermissionFlags(string key);
+    public Task RefreshAdmins();
     // EVENTS ===
-    public void EDynamicMenuOpen(CCSPlayerController player, IDynamicMenu menu);
-    public event Action<CCSPlayerController, IDynamicMenu>? DynamicMenuOpen;
-    public void EDynamicOptionRendered(CCSPlayerController player, IDynamicMenu menu, IDynamicMenuOption option);
-    public event Action<CCSPlayerController, IDynamicMenu, IDynamicMenuOption>? DynamicOptionRendered;
+    public delegate HookResult MenuOpenHandler(CCSPlayerController player, IDynamicMenu menu, IMenu gameMenu);
+    public event MenuOpenHandler MenuOpenPre;
+    public event MenuOpenHandler MenuOpenPost;
+    public delegate HookResult OptionRenderHandler(CCSPlayerController player, IDynamicMenu menu, IMenu gameMenu, IDynamicMenuOption option);
+    public event OptionRenderHandler OptionRenderPre;
+    public event OptionRenderHandler OptionRenderPost;
 }
 
 public class SortMenu
@@ -46,6 +54,14 @@ public class SortMenu
 
 public interface IAdminConfig 
 {
+    public string ServerKey { get; set; } 
+    // DATABASE ===
+    public string Host { get; set; } 
+    public string Database { get; set; } 
+    public string User { get; set; } 
+    public string Password { get; set; }
+    public string Port { get; set; }
+    // ===
     public int MenuType { get; set; }
     public Dictionary<string, string> PermissionReplacement {get; set;}
     public bool DebugMode { get; set; }
@@ -54,29 +70,118 @@ public interface IDynamicMenu
 {
     public string Id {get; set;}
     public string Title {get; set;}
+    public MenuColors TitleColor {get; set;}
     public MenuType Type {get; set;}
     public Action<CCSPlayerController>? BackAction {get; set;}
     public PostSelectAction PostSelectAction {get; set;}
     public void Open(CCSPlayerController player, bool useSortMenu = true);
-    public void AddMenuOption(string id, string title, Action<CCSPlayerController, IDynamicMenuOption> onExecute, OptionColors? color = null, bool disabled = false);
+    public void AddMenuOption(string id, string title, Action<CCSPlayerController, IDynamicMenuOption> onExecute, MenuColors? color = null, bool disabled = false, string viewFlags = "*");
 }
 public interface IDynamicMenuOption
 {
     public string Id {get; set;}
     public string Title {get; set;}
-    public OptionColors Color {get; set;}
+    public MenuColors Color {get; set;}
+    public string ViewFlags {get; set;}
     public Action<CCSPlayerController, IDynamicMenuOption> OnExecute {get; set;}
 }
 
 public class Admin 
 {
     public int Id {get; set;}
-    public string Name {get; set;}
     public string SteamId {get; set;} = "";
-    public string Flags {get; set;}
-    public string ServerId {get; set;}
-    public bool Online {get; set;} = false;
+    public string Name {get; set;}
+    public string? Flags {get; set;}
+    public int? Immunity {get; set;}
+    public int? GroupId {get; set;} = null;
+    public string? ServerKey {get; set;}
+    public int CreatedAt {get; set;}
+    public int UpdatedAt {get; set;}
+    public int? DeletedAt {get; set;} = null;
+    public bool Online {get {
+        return AdminUtils.GetControllerBySteamId(SteamId) != null;
+    }}
+    public string CurrentFlags { get {
+        return Flags ?? "";
+    }}
+    public List<string> ServerKeys { get  {
+        var keys = new List<string>();
+        if (ServerKey != null && ServerKey.Length > 0)
+        {
+            foreach (var key in ServerKey.Split(";"))
+            {
+                keys.Add(key);
+            }
+        }
+        return keys;
+    } }
     public CCSPlayerController? Controller { get => AdminUtils.GetControllerBySteamId(SteamId); } 
+
+    /// <summary>
+    /// For getting from db
+    /// </summary>
+    public Admin(int id, string steamId, string name, string? flags, int? immunity, int? groupId, string serverKey, int createdAt, int updatedAt, int? deletedAt)
+    {
+        Id = id;
+        SteamId = steamId;
+        Name = name;
+        Flags = flags;
+        Immunity = immunity;
+        GroupId = groupId;
+        ServerKey = serverKey;  
+        CreatedAt = createdAt;
+        UpdatedAt = updatedAt;
+        DeletedAt = deletedAt;
+    }
+    /// <summary>
+    /// For creating new admin
+    /// </summary>
+    public Admin(string steamId, string name, string? flags, int? immunity, int? groupId, string serverKey)
+    {
+        SteamId = steamId;
+        Name = name;
+        Flags = flags;
+        Immunity = immunity;
+        GroupId = groupId;
+        ServerKey = serverKey;
+        CreatedAt = AdminUtils.CurrentTimestamp();
+        UpdatedAt = AdminUtils.CurrentTimestamp();
+    }
+}
+
+public class Group {
+    public int Id {get; set;}
+    public string Name {get; set;}
+    public string Flags {get; set;}
+    public int Immuinity {get; set;}
+    public int CreatedAt {get; set;}
+    public int UpdatedAt {get; set;}
+    public int? DeletedAt {get; set;} = null;
+
+    /// <summary>
+    /// For getting from db
+    /// </summary>
+    public Group(int id, string name, string flags, int immuinity, int createdAt, int updatedAt, int? deletedAt)
+    {
+        Id = id;
+        Name = name;
+        Flags = flags;
+        Immuinity = immuinity;
+        CreatedAt = createdAt;
+        UpdatedAt = updatedAt;
+        DeletedAt = deletedAt;
+    }
+    /// <summary>
+    /// For creating new group
+    /// </summary>
+    public Group(string name, string flags, int immuinity)
+    {
+        Name = name;
+        Flags = flags;
+        Immuinity = immuinity;
+        CreatedAt = AdminUtils.CurrentTimestamp();
+        UpdatedAt = AdminUtils.CurrentTimestamp();
+    }
 }
 
 public static class AdminUtils 
@@ -89,10 +194,18 @@ public static class AdminUtils
     public static ConfigGetter GetConfigMethod = null!;
     public delegate void DebugFunc(string message);
     public static DebugFunc Debug = null!;
+    public static int CurrentTimestamp()
+    {
+        return (int)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+    }
 
     public static CCSPlayerController? GetControllerBySteamId(string steamId)
     {
-        return Utilities.GetPlayers().FirstOrDefault(x => x != null && x.IsValid && x.AuthorizedSteamID != null && x.AuthorizedSteamID.SteamId64.ToString() == steamId);
+        return Utilities.GetPlayers().FirstOrDefault(x => x != null && x.IsValid && x.AuthorizedSteamID != null && x.Connected == PlayerConnectedState.PlayerConnected && x.AuthorizedSteamID.SteamId64.ToString() == steamId);
+    }
+    public static List<CCSPlayerController> GetOnlinePlayers()
+    {
+        return Utilities.GetPlayers().Where(x => x != null && x.IsValid && x.AuthorizedSteamID != null && x.Connected == PlayerConnectedState.PlayerConnected).ToList();
     }
     public static Admin? Admin(this CCSPlayerController player)
     {
@@ -128,7 +241,7 @@ public static class AdminUtils
             Debug($"Admin is null | No Access ✖");
             return false;
         }
-        if (admin.Flags.Contains(flags))
+        if (admin.Flags.Contains(flags) || admin.Flags.Contains("z"))
         {
             Debug($"Admin has access ✔");
             return true;
@@ -139,7 +252,7 @@ public static class AdminUtils
     }
 }
 
-public enum OptionColors
+public enum MenuColors
 {
     Default,
     White,
@@ -163,4 +276,42 @@ public enum OptionColors
     LightRed,
     Orange,
     Darkred
+}
+
+public class PlayerInfo
+{
+    public int UserId {get; set;}
+    public int Slot {get; set;}
+    public string Ip {get; set;}
+    public string SteamId {get; set;}
+    public string PlayerName {get; set;}
+    public CCSPlayerController? Controller {get {
+        return AdminUtils.GetControllerBySteamId(SteamId);
+    }}
+    public bool IsOnline {get {
+        return AdminUtils.GetControllerBySteamId(SteamId) != null;
+    }}
+
+    public PlayerInfo(CCSPlayerController player)
+    {
+        UserId = (int)player.UserId!;
+        Slot = player.Slot;
+        Ip = player.IpAddress!;
+        if (player.AuthorizedSteamID == null)
+        {
+            SteamId = "NOTAUTH";
+        } else {
+            SteamId = player.AuthorizedSteamID!.SteamId64.ToString();
+        }
+        PlayerName = player.PlayerName;
+    }
+    public PlayerInfo()
+    {
+        UserId = 0;
+        Slot = 0;
+        Ip = "";
+        SteamId = "";
+        PlayerName = "";
+    }
+
 }

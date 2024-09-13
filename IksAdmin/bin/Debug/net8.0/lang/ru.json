@@ -1,0 +1,8 @@
+{
+    "MenuTitle.AdminManage" : "Управление админами",
+
+    "MenuOption.AdminAdd" : "Добавить админа",
+    "MenuOption.AdminDelete" : "Удалить админа",
+    "MenuOption.AdminEdit" : "Редактировать админа",
+    "MenuOption.AdminRefresh" : "Обновить админов"
+}

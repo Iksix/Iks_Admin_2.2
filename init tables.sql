@@ -24,7 +24,7 @@ create table if not exists iks_admins(
     flags varchar(32),
     immunity int,
     group_id int,
-    server_keys varchar(255),
+    server_key varchar(255),
     created_at int not null,
     updated_at int not null,
     deleted_at int default null,

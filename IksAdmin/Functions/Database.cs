@@ -16,7 +16,6 @@ public static class Database
     {
         try
         {
-            // drop table iks_groups
             using var conn = new MySqlConnection(ConnectionString);
             await conn.OpenAsync();
             await conn.QueryAsync(@"
@@ -46,7 +45,7 @@ public static class Database
                 flags varchar(32),
                 immunity int,
                 group_id int,
-                server_keys varchar(255),
+                server_key varchar(255),
                 created_at int not null,
                 updated_at int not null,
                 deleted_at int default null,
@@ -112,7 +111,7 @@ public static class Database
         }
         catch (MySqlException e)
         {
-            Main.AdminApi.Plugin.Logger.LogError(e.ToString());
+            Main.AdminApi.LogError(e.ToString());
             throw;
         }
     }
