@@ -87,6 +87,7 @@ public static class AdminsControllFunctions
                 immunity as immunity,
                 group_id as groupId,
                 server_key as serverKey,
+                is_disabled as isDisabled,
                 created_at as createdAt,
                 updated_at as updatedAt,
                 deleted_at as deletedAt
@@ -124,6 +125,7 @@ public static class AdminsControllFunctions
                 immunity as immunity,
                 group_id as groupId,
                 server_key as serverKey,
+                is_disabled as isDisabled,
                 created_at as createdAt,
                 updated_at as updatedAt,
                 deleted_at as deletedAt
@@ -182,6 +184,7 @@ public static class AdminsControllFunctions
                 immunity = @immunity,
                 group_id = @groupId,
                 server_key = @serverKey,
+                is_disabled = @disabled,
                 updated_at = unix_timestamp(),
                 deleted_at = null
                 where id = @id 
@@ -192,7 +195,8 @@ public static class AdminsControllFunctions
                 flags = admin.Flags,
                 immunity = admin.Immunity,
                 groupId = admin.GroupId,
-                serverKey = admin.ServerKey
+                serverKey = admin.ServerKey,
+                disabled = admin.Disabled
             });
             Main.AdminApi.Debug($"Admin updated in base ✔");
             return updatedAdmin;

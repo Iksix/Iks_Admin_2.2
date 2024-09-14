@@ -95,6 +95,7 @@ public class Admin
     public int? Immunity {get; set;}
     public int? GroupId {get; set;} = null;
     public string? ServerKey {get; set;}
+    public int Disabled {get; set;}
     public int CreatedAt {get; set;}
     public int UpdatedAt {get; set;}
     public int? DeletedAt {get; set;} = null;
@@ -103,6 +104,9 @@ public class Admin
     }}
     public string CurrentFlags { get {
         return Flags ?? "";
+    }}
+    public bool IsDisabled {get {
+        return Disabled == 1;
     }}
     public List<string> ServerKeys { get  {
         var keys = new List<string>();
@@ -120,7 +124,7 @@ public class Admin
     /// <summary>
     /// For getting from db
     /// </summary>
-    public Admin(int id, string steamId, string name, string? flags, int? immunity, int? groupId, string serverKey, int createdAt, int updatedAt, int? deletedAt)
+    public Admin(int id, string steamId, string name, string? flags, int? immunity, int? groupId, string serverKey, int isDisabled, int createdAt, int updatedAt, int? deletedAt)
     {
         Id = id;
         SteamId = steamId;
@@ -128,6 +132,7 @@ public class Admin
         Flags = flags;
         Immunity = immunity;
         GroupId = groupId;
+        Disabled = isDisabled;
         ServerKey = serverKey;  
         CreatedAt = createdAt;
         UpdatedAt = updatedAt;
