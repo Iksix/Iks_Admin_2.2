@@ -89,7 +89,8 @@ public class DynamicMenu : IDynamicMenu
                 Main.AdminApi.Debug("With sort menu");
                 foreach (var sort in sortMenu)
                 {
-                    var option = options.First(x => x.Id == sort.Id);
+                    var option = options.FirstOrDefault(x => x.Id == sort.Id);
+                    if (option == null) continue;
                     if (!sort.View)
                     {
                         options.Remove(option);

@@ -94,9 +94,9 @@ public static class AdminsControllFunctions
                 from iks_admins
                 where steam_id = @steamId
                 {ignoreDeletedString}
-            ")).ToList();
+            ", new { steamId })).ToList();
 
-            return admins.FirstOrDefault(x => x.ServerKey.Trim() == "" && x.ServerKeys.Contains(serverKey));
+            return admins.FirstOrDefault(x => x.ServerKey == null || x.ServerKeys.Contains(serverKey));
         }
         catch (MySqlException e)
         {
@@ -212,6 +212,7 @@ public static class AdminsControllFunctions
     {
         try
         {
+            await GroupsControllFunctions.RefreshGroups();
             Main.AdminApi.Debug("Refresing admins...");
             var admins = await GetAllAdmins();
             Main.AdminApi.Debug("1/4 Admins getted ✔");
@@ -226,9 +227,10 @@ public static class AdminsControllFunctions
             Main.AdminApi.Debug("Admins refreshed ✔");
             Main.AdminApi.Debug("---------------");
             Main.AdminApi.Debug("Server admins:");
+            Main.AdminApi.Debug($"id | name | steamId | flags | immunity | groupId | serverKey | isDisabled");
             foreach (var admin in serverAdmins)
             {
-                Main.AdminApi.Debug($"{admin.SteamId} | {admin.Name}");
+                Main.AdminApi.Debug($"{admin.Id} | {admin.Name} | {admin.SteamId} | {admin.Flags} | {admin.Immunity} | {admin.GroupId} | {admin.ServerKey} | {admin.IsDisabled}");
             }
         }
         catch (Exception e)

@@ -21,6 +21,7 @@ public interface IIksAdminApi
     public List<Group> Groups {get; set;}
     public Dictionary<string, string> RegistredPermissions { get; set; }
     public string DbConnectionString {get; set;}
+    public Dictionary<CCSPlayerController, Action<string>> NextPlayerMessage {get;}
     // MENU ===
     public IDynamicMenu CreateMenu(string id, string title, MenuType? type = null, MenuColors titleColor = MenuColors.Default, PostSelectAction postSelectAction = PostSelectAction.Nothing, Action<CCSPlayerController>? backAction = null, IDynamicMenu? backMenu = null);
     public void CloseMenu(CCSPlayerController player);
@@ -29,7 +30,10 @@ public interface IIksAdminApi
     public void LogError(string message);
     public void RegisterPermission(string key, string defaultFlags);
     public string GetCurrentPermissionFlags(string key);
+    public string GetMultipleCurrnetPermissionFlags(string[] keys);
     public Task RefreshAdmins();
+    public void HookNextPlayerMessage(CCSPlayerController player, Action<string> action);
+    public void RemoveNextPlayerMessageHook(CCSPlayerController player);
     // EVENTS ===
     public delegate HookResult MenuOpenHandler(CCSPlayerController player, IDynamicMenu menu, IMenu gameMenu);
     public event MenuOpenHandler MenuOpenPre;
@@ -141,7 +145,7 @@ public class Admin
     /// <summary>
     /// For creating new admin
     /// </summary>
-    public Admin(string steamId, string name, string? flags, int? immunity, int? groupId, string serverKey)
+    public Admin(string steamId, string name, string? flags = null, int? immunity = null, int? groupId = null, string? serverKey = null)
     {
         SteamId = steamId;
         Name = name;
@@ -158,7 +162,7 @@ public class Group {
     public int Id {get; set;}
     public string Name {get; set;}
     public string Flags {get; set;}
-    public int Immuinity {get; set;}
+    public int Immunity {get; set;}
     public int CreatedAt {get; set;}
     public int UpdatedAt {get; set;}
     public int? DeletedAt {get; set;} = null;
@@ -166,12 +170,12 @@ public class Group {
     /// <summary>
     /// For getting from db
     /// </summary>
-    public Group(int id, string name, string flags, int immuinity, int createdAt, int updatedAt, int? deletedAt)
+    public Group(int id, string name, string flags, int immunity, int createdAt, int updatedAt, int? deletedAt)
     {
         Id = id;
         Name = name;
         Flags = flags;
-        Immuinity = immuinity;
+        Immunity = immunity;
         CreatedAt = createdAt;
         UpdatedAt = updatedAt;
         DeletedAt = deletedAt;
@@ -179,11 +183,11 @@ public class Group {
     /// <summary>
     /// For creating new group
     /// </summary>
-    public Group(string name, string flags, int immuinity)
+    public Group(string name, string flags, int immunity)
     {
         Name = name;
         Flags = flags;
-        Immuinity = immuinity;
+        Immunity = immunity;
         CreatedAt = AdminUtils.CurrentTimestamp();
         UpdatedAt = AdminUtils.CurrentTimestamp();
     }

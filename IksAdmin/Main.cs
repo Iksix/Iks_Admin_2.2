@@ -10,6 +10,8 @@ using CounterStrikeSharp.API.Modules.Commands;
 using IksAdmin.Functions;
 using MySqlConnector;
 using SharpMenu = CounterStrikeSharp.API.Modules.Menu;
+using IksAdmin.Menus;
+using System.Diagnostics;
 namespace IksAdmin;
 
 public class Main : BasePlugin, IPluginConfig<PluginConfig>
@@ -52,17 +54,50 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
         AdminUtils.GetConfigMethod = UtilsFunctions.GetConfigMethod;
         AdminUtils.Debug = UtilsFunctions.SetDebugMethod;
         Helper.SetSortMenus();
+        AddCommandListener("say", OnSay);
         InitializePermissions();
+    }
+
+    private HookResult OnSay(CCSPlayerController? player, CommandInfo commandInfo)
+    {
+        if (player == null) return HookResult.Continue;
+        bool toTeam = commandInfo.GetArg(0) == "say_team";
+        var msg = commandInfo.GetCommandString;
+        if (toTeam)
+        {
+            msg = msg.Remove(0, 9);
+        } else {
+            msg = msg.Remove(0, 4);
+        }
+        if (msg.StartsWith("\""))
+        {
+            msg = msg.Remove(0, 1);
+            msg = msg.Remove(msg.Length - 1, 1);
+        }
+        AdminApi.Debug($"{player.PlayerName} message: {msg}");
+        if (AdminApi.NextPlayerMessage.ContainsKey(player) && msg.StartsWith("!"))
+        {
+            AdminApi.Debug("Next player message: " + msg);
+            AdminApi.NextPlayerMessage[player].Invoke(msg.Remove(0, 1));
+            AdminApi.RemoveNextPlayerMessageHook(player);
+            return HookResult.Handled;
+        }
+
+        return HookResult.Continue;
     }
 
     private void InitializePermissions()
     {
         // Admin manage ===
-        AdminApi.RegisterPermission("admin_manage_add", "z");
-        AdminApi.RegisterPermission("admin_manage_delete", "z");
-        AdminApi.RegisterPermission("admin_manage_edit", "z");
-        AdminApi.RegisterPermission("admin_manage_refresh", "z");
-        // ===
+        AdminApi.RegisterPermission("admins_manage_add", "z");
+        AdminApi.RegisterPermission("admins_manage_delete", "z");
+        AdminApi.RegisterPermission("admins_manage_edit", "z");
+        AdminApi.RegisterPermission("admins_manage_refresh", "z");
+        // Groups manage ===
+        AdminApi.RegisterPermission("groups_manage_add", "z");
+        AdminApi.RegisterPermission("groups_manage_delete", "z");
+        AdminApi.RegisterPermission("groups_manage_edit", "z");
+        AdminApi.RegisterPermission("groups_manage_refresh", "z");
     }
 
     public override void OnAllPluginsLoaded(bool hotReload)
@@ -103,15 +138,13 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             info.ReplyToCommand("ты не админ");
             return;
         }
-        menu.AddMenuOption(GenerateOptionId("1"), "Option 1 a", (_, _) => { 
-            caller.PrintToChat("Option 1 executed");
-        }, viewFlags: "a");
-        menu.AddMenuOption(GenerateOptionId("2"), "Option 2 b", (_, _) => { 
-            caller.PrintToChat("Option 2 executed");
-        }, viewFlags: "b");
-        menu.AddMenuOption(GenerateOptionId("3"), "Option 3 c", (_, _) => { 
-            caller.PrintToChat("Option 3 executed");
-        }, viewFlags: "c");
+        menu.AddMenuOption(GenerateOptionId("admins_manage"), "Admin manage", (_, _) => { 
+            AdminManageMenus.OpenAdminManageMenu(caller);
+        }, viewFlags: AdminApi.GetMultipleCurrnetPermissionFlags([
+            "admins_manage_add", "admins_manage_delete", "admins_manage_edit", "admins_manage_refresh",
+            "groups_manage_add", "groups_manage_delete", "groups_manage_edit", "groups_manage_refresh"
+            ]));
+
         menu.Open(caller);
 
     }
@@ -130,6 +163,7 @@ public class AdminApi : IIksAdminApi
     public List<Group> Groups { get; set; } = new();
     public Admin ConsoleAdmin { get; set; } = null!;
     public string DbConnectionString {get; set;}
+    public Dictionary<CCSPlayerController, Action<string>> NextPlayerMessage {get; set;} = new();
 
     public AdminApi(BasePlugin plugin, IAdminConfig config, IStringLocalizer localizer, string moduleDirectory, string dbConnectionString)
     {
@@ -193,6 +227,15 @@ public class AdminApi : IIksAdminApi
         if (RegistredPermissions.ContainsKey(key)) return RegistredPermissions[key];
         Debug("Permission key not found in registred and replacement ✖ | returning empty string");
         return "";
+    }
+    public string GetMultipleCurrnetPermissionFlags(string[] keys)
+    {
+        string result = "";
+        foreach(string key in keys)
+        {
+            result += GetCurrentPermissionFlags(key);
+        }
+        return result;
     }
 
     // EVENTS ===
@@ -263,5 +306,20 @@ public class AdminApi : IIksAdminApi
     public async Task RefreshAdmins()
     {
         await AdminsControllFunctions.RefreshAdmins();
+    }
+
+    public void HookNextPlayerMessage(CCSPlayerController player, Action<string> action)
+    {
+        Debug("Log next player message: " + player.PlayerName);
+        if (NextPlayerMessage.ContainsKey(player))
+        {
+            NextPlayerMessage[player] = action;
+        } else NextPlayerMessage.Add(player, action);
+    }
+
+    public void RemoveNextPlayerMessageHook(CCSPlayerController player)
+    {
+        Debug("Remove next player message hook: " + player.PlayerName);
+        NextPlayerMessage.Remove(player);
     }
 }

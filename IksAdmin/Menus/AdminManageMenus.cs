@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Menu;
+using IksAdmin.Functions;
 using IksAdminApi;
 using Microsoft.Extensions.Localization;
 
@@ -13,70 +16,33 @@ public static class AdminManageMenus
 {
     static IIksAdminApi AdminApi = Main.AdminApi;
     static IStringLocalizer Localizer = AdminApi.Localizer;
+    public static Dictionary<Admin, Admin> AddAdminBuffer = new();
+    public static Dictionary<Admin, Admin> EditAdminBuffer = new();
 
-    public static void OpenAdminManageMenu(CCSPlayerController caller)
+    public static void OpenAdminManageMenu(CCSPlayerController caller, IDynamicMenu? backMenu = null)
     {
         var menu = AdminApi.CreateMenu(
-            Main.GenerateMenuId("admin_manage"),
-            Localizer["MenuTitle.AdminManage"],
+            Main.GenerateMenuId("am"),
+            Localizer["MenuTitle.AdminsManage"],
             titleColor: MenuColors.Gold
         );
+        menu.BackAction = (p) => {
+            OpenAdminManageMenu(caller);
+        };
 
-        menu.AddMenuOption(Main.GenerateOptionId("am_add"), Localizer["MenuOption.AdminAdd"], (_, _) => {
-            OpenAdminAddMenu(caller, menu);
-        }, viewFlags: AdminApi.GetCurrentPermissionFlags("admin_manage_add"), color: MenuColors.Lime);
-        menu.AddMenuOption(Main.GenerateOptionId("am_delete"), Localizer["MenuOption.AdminDelete"], (_, _) => {
-            OpenAdminAddMenu(caller, menu);
-        }, viewFlags: AdminApi.GetCurrentPermissionFlags("admin_manage_delete"), color: MenuColors.Red);
-        menu.AddMenuOption(Main.GenerateOptionId("am_edit"), Localizer["MenuOption.AdminEdit"], (_, _) => {
-            OpenAdminAddMenu(caller, menu);
-        }, viewFlags: AdminApi.GetCurrentPermissionFlags("admin_manage_edit"), color: MenuColors.Gold);
-        menu.AddMenuOption(Main.GenerateOptionId("am_refresh"), Localizer["MenuOption.AdminRefresh"], (_, _) => {
-            OpenAdminAddMenu(caller, menu);
-        }, viewFlags: AdminApi.GetCurrentPermissionFlags("admin_manage_refresh"), color: MenuColors.Gold);
+        menu.AddMenuOption(Main.GenerateOptionId("gm"), Localizer["MenuOption.GroupsManage"], (_, _) => {
+            if (GroupsManageMenus.AddGroupBuffer.ContainsKey(caller.Admin()!))
+            {
+                GroupsManageMenus.AddGroupBuffer[caller.Admin()!] = new Group("ExampleGroup", "abc", 0);
+            } else {
+                GroupsManageMenus.AddGroupBuffer.Add(caller.Admin()!, new Group("ExampleGroup", "abc", 0));
+            }
+            GroupsManageMenus.OpenGroupsManageMenu(caller);
+        }, viewFlags: 
+        AdminApi.GetMultipleCurrnetPermissionFlags(["groups_manage_add", "groups_manage_delete", "groups_manage_refresh", "groups_manage_edit"])
+        , color: MenuColors.White);
         
         menu.Open(caller);
     }
 
-    private static void OpenAdminAddMenu(CCSPlayerController caller, IDynamicMenu backMenu)
-    {
-        var menu = AdminApi.CreateMenu(
-            Main.GenerateMenuId("admin_manage"),
-            Localizer["MenuTitle.AdminAdd"],
-            titleColor: MenuColors.Lime,
-            backMenu: backMenu
-        );
-
-        var players = AdminUtils.GetOnlinePlayers();
-        foreach(var player in players)
-        {
-            var info = new PlayerInfo(player);
-            menu.AddMenuOption(Main.GenerateOptionId(info.SteamId), info.PlayerName, (_, _) => {
-                OpenAdminAddPlayerMenu(caller, info, menu);
-            });
-        }
-
-        menu.Open(caller);
-    }
-
-    private static void OpenAdminAddPlayerMenu(CCSPlayerController caller, PlayerInfo target, IDynamicMenu backMenu)
-    {
-        var menu = AdminApi.CreateMenu(
-            Main.GenerateMenuId("admin_manage"),
-            Localizer["MenuTitle.Ad"],
-            titleColor: MenuColors.Gold,
-            backMenu: backMenu
-        );
-
-        var players = AdminUtils.GetOnlinePlayers();
-        foreach(var player in players)
-        {
-            var info = new PlayerInfo(player);
-            menu.AddMenuOption(Main.GenerateOptionId(info.SteamId), info.PlayerName, (_, _) => {
-                OpenAdminAddPlayerMenu(caller, info, menu);
-            });
-        }
-
-        menu.Open(caller);
-    }
 }
