@@ -24,11 +24,11 @@ public static class Database
                 server_key varchar(32) not null,
                 ip varchar(32) not null,
                 name varchar(64) not null,
-                rcon varchar(128),
+                rcon varchar(128) default null,
                 created_at int not null,
                 updated_at int not null,
                 deleted_at int default null
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
             create table if not exists iks_groups(
                 id int not null auto_increment primary key,
                 name varchar(64) not null,
@@ -46,6 +46,7 @@ public static class Database
                 immunity int,
                 group_id int,
                 server_key varchar(255),
+                is_disabled int(1) not null default 0,
                 created_at int not null,
                 updated_at int not null,
                 deleted_at int default null,
@@ -61,9 +62,10 @@ public static class Database
                 ip varchar(32),
                 name varchar(64) not null,
                 duration int not null,
-                server_id int,
+                reason varchar(128) not null,
+                server_id int default null,
                 admin_id int not null,
-                ubanned_by int,
+                ubanned_by int default null,
                 created_at int not null,
                 end_at int not null,
                 updated_at int not null,
@@ -78,9 +80,10 @@ public static class Database
                 ip varchar(32),
                 name varchar(64) not null,
                 duration int not null,
-                server_id int,
+                reason varchar(128) not null,
+                server_id int default null,
                 admin_id int not null,
-                ubanned_by int,
+                ubanned_by int default null,
                 created_at int not null,
                 end_at int not null,
                 updated_at int not null,
@@ -95,10 +98,11 @@ public static class Database
                 ip varchar(32),
                 name varchar(64) not null,
                 duration int not null,
+                reason varchar(128) not null,
                 ban_ip tinyint not null default 0,
-                server_id int,
+                server_id int default null,
                 admin_id int not null,
-                ubanned_by int,
+                ubanned_by int default null,
                 created_at int not null,
                 end_at int not null,
                 updated_at int not null,
@@ -106,6 +110,21 @@ public static class Database
                 foreign key (admin_id) references iks_admins(id),
                 foreign key (ubanned_by) references iks_admins(id),
                 foreign key (server_id) references iks_servers(id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+            create table if not exists iks_admin_warns(
+                id int not null auto_increment primary key,
+                admin_id int not null,
+                target_id int not null,
+                duration int not null,
+                reason varchar(128) not null,
+                created_at int not null,
+                end_at int not null,
+                updated_at int not null,
+                deleted_at int default null,
+                removed_by int default null,
+                foreign key (admin_id) references iks_admins(id),
+                foreign key (target_id) references iks_servers(id),
+                foreign key (removed_by) references iks_admins(id)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
             ");
         }
