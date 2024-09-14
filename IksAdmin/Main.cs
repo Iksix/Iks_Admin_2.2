@@ -7,14 +7,9 @@ using IksAdmin.Menu;
 using Microsoft.Extensions.Localization;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
-using Microsoft.Extensions.Logging;
-using CounterStrikeSharp.API;
-using System.Text.Json;
-using CounterStrikeSharp.API.Modules.Config;
 using IksAdmin.Functions;
-using System.Data.Common;
 using MySqlConnector;
-
+using SharpMenu = CounterStrikeSharp.API.Modules.Menu;
 namespace IksAdmin;
 
 public class Main : BasePlugin, IPluginConfig<PluginConfig>
@@ -24,7 +19,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
     public override string ModuleAuthor => "iks [Discord: iks__]";
 
     public PluginConfig Config { get; set; } = null!;
-    public static IMenuApi MenuApi = null!;
+    public static IMenuApi? MenuApi = null;
     private static readonly PluginCapability<IMenuApi?> MenuCapability = new("menu:nfcore");   
     public static AdminApi AdminApi = null!;
     private readonly PluginCapability<IIksAdminApi> _pluginCapability  = new("iksadmin:core");
@@ -72,7 +67,19 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
 
     public override void OnAllPluginsLoaded(bool hotReload)
     {
-        MenuApi = MenuCapability.Get()!;
+        try
+        {
+            MenuApi = MenuCapability.Get()!;
+            if (MenuApi == null)
+            {
+                AdminApi.Debug("Start without Menu Manager");
+            }
+        }
+        catch (System.Exception)
+        {
+            AdminApi.Debug("Start without Menu Manager");
+        }
+        
     }
 
     [ConsoleCommand("css_admin_reload_cfg")]
@@ -106,6 +113,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             caller.PrintToChat("Option 3 executed");
         }, viewFlags: "c");
         menu.Open(caller);
+
     }
 }
 
@@ -148,7 +156,11 @@ public class AdminApi : IIksAdminApi
     }
     public void CloseMenu(CCSPlayerController player)
     {
-        throw new NotImplementedException();
+        if (Main.MenuApi != null)
+        {
+            Main.MenuApi.CloseMenu(player);
+        }
+        SharpMenu.MenuManager.CloseActiveMenu(player);
     }
     public IDynamicMenu CreateMenu(string id, string title, MenuType? type = null, MenuColors titleColor = MenuColors.Default, PostSelectAction postSelectAction = PostSelectAction.Nothing, Action<CCSPlayerController>? backAction = null, IDynamicMenu? backMenu = null)
     {

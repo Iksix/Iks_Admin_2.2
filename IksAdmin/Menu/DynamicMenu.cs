@@ -52,11 +52,29 @@ public class DynamicMenu : IDynamicMenu
             Type: {Type}
             useSortMenu: {useSortMenu}
         ");
-        var menu = Main.MenuApi.NewMenu(MenuTitle(player), BackAction!);
-        if (Type != MenuType.Default)
+        IMenu menu;
+        switch ((int)Type)
         {
-            menu = Main.MenuApi.NewMenuForcetype(MenuTitle(player), Type, BackAction!);
+            case -1: // [MM]
+                menu = Main.MenuApi!.NewMenu(MenuTitle(player), BackAction!);
+                break;
+            case 0:
+                menu = new ChatMenu(MenuTitle(player));
+                break;
+            case 1:
+                menu = new ConsoleMenu(MenuTitle(player));
+                break;
+            case 2:
+                menu = new CenterHtmlMenu(MenuTitle(player), Main.AdminApi.Plugin);
+                break;
+            case 3: // [MM]
+                menu = Main.MenuApi!.NewMenuForcetype(MenuTitle(player), Type, BackAction!);
+                break;
+            default:
+                menu = new CenterHtmlMenu(MenuTitle(player), Main.AdminApi.Plugin);
+                break;
         }
+        
         menu.PostSelectAction = PostSelectAction;
         var onMenuOpenPreResult = Main.AdminApi.OnMenuOpenPre(player, this, menu);
         if (!onMenuOpenPreResult)
