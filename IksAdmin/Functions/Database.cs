@@ -58,7 +58,7 @@ public static class Database
 
             create table if not exists iks_gags(
                 id int not null auto_increment primary key,
-                steam_id varchar(17) not null,
+                steam_id varchar(17),
                 ip varchar(32),
                 name varchar(64) not null,
                 duration int not null,
@@ -76,7 +76,7 @@ public static class Database
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
             create table if not exists iks_mutes(
                 id int not null auto_increment primary key,
-                steam_id varchar(17) not null,
+                steam_id varchar(17),
                 ip varchar(32),
                 name varchar(64) not null,
                 duration int not null,
@@ -94,7 +94,7 @@ public static class Database
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
             create table if not exists iks_bans(
                 id int not null auto_increment primary key,
-                steam_id varchar(17) not null,
+                steam_id varchar(17),
                 ip varchar(32),
                 name varchar(64) not null,
                 duration int not null,

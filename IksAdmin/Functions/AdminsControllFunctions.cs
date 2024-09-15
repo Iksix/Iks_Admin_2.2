@@ -213,7 +213,7 @@ public static class AdminsControllFunctions
         try
         {
             await GroupsControllFunctions.RefreshGroups();
-            Main.AdminApi.Debug("Refresing admins...");
+            Main.AdminApi.Debug("Refreshing admins...");
             var admins = await GetAllAdmins();
             Main.AdminApi.Debug("1/4 Admins getted ✔");
             Main.AdminApi.ConsoleAdmin = admins.First(x => x.SteamId.ToLower() == "console");

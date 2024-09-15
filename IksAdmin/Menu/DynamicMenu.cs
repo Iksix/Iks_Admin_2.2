@@ -111,24 +111,16 @@ public class DynamicMenu : IDynamicMenu
                             continue;
                         }
                     }
-                    var onOptionRenderPreResult = Main.AdminApi.OnOptionRenderPre(player, this, menu, option);
-                    if (!onMenuOpenPreResult)
-                    {
-                        continue;
-                    }
+                    if (!Main.AdminApi.OnOptionRenderPre(player, this, menu, option)) continue;
                     menu.AddMenuOption(OptionTitle(player, option), (_, _) => {
                         option.OnExecute(player, option);
                     });
-                    Main.AdminApi.OnOptionRenderPost(player, this, menu, option);
                     options.Remove(option);
+                    if (!Main.AdminApi.OnOptionRenderPost(player, this, menu, option)) continue;
                 }
                 foreach (var option in options)
                 {
-                    var onOptionRenderPreResult = Main.AdminApi.OnOptionRenderPre(player, this, menu, option);
-                    if (!onMenuOpenPreResult)
-                    {
-                        continue;
-                    }
+                    if (!Main.AdminApi.OnOptionRenderPre(player, this, menu, option)) continue;
                     menu.AddMenuOption(OptionTitle(player, option), (_, _) => {
                         option.OnExecute(player, option);
                     });
@@ -143,11 +135,7 @@ public class DynamicMenu : IDynamicMenu
             Main.AdminApi.Debug("Without sort menu");
             foreach (var option in Options)
             {
-                var onOptionRenderPreResult = Main.AdminApi.OnOptionRenderPre(player, this, menu, option);
-                if (!onMenuOpenPreResult)
-                {
-                    continue;
-                }
+                if (!Main.AdminApi.OnOptionRenderPre(player, this, menu, option)) continue;
                 menu.AddMenuOption(OptionTitle(player, option), (_, _) => {
                     option.OnExecute(player, option);
                 });

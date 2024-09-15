@@ -49,6 +49,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
     public override void Load(bool hotReload)
     {
         AdminApi = new AdminApi(this, Config, Localizer, ModuleDirectory, Database.ConnectionString);
+        Capabilities.RegisterPluginCapability(_pluginCapability, () => AdminApi);
         AdminUtils.FindAdminMethod = UtilsFunctions.FindAdminMethod;
         AdminUtils.GetPremissions = UtilsFunctions.GetPermissions;
         AdminUtils.GetConfigMethod = UtilsFunctions.GetConfigMethod;
@@ -243,62 +244,38 @@ public class AdminApi : IIksAdminApi
     public event IIksAdminApi.MenuOpenHandler? MenuOpenPre;
     public bool OnMenuOpenPre(CCSPlayerController player, IDynamicMenu menu, IMenu gameMenu)
     {
-        if (MenuOpenPre != null)
-        {
-            foreach(IIksAdminApi.MenuOpenHandler handler in MenuOpenPre.GetInvocationList())
-            {
-                var result = handler(player, menu, gameMenu);
-                if (result is HookResult.Stop || result is HookResult.Handled) {
-                    Debug("Some event handler stopped menu opening");
-                    return false;
-                }
-            }
+        var result = MenuOpenPre?.Invoke(player, menu, gameMenu) ?? HookResult.Continue;
+        if (result is HookResult.Stop or HookResult.Handled) {
+            Debug("Some event handler stopped menu opening | Id: " + menu.Id);
+            return false;
         }
         return true;
     }
     public event IIksAdminApi.MenuOpenHandler? MenuOpenPost;
     public bool OnMenuOpenPost(CCSPlayerController player, IDynamicMenu menu, IMenu gameMenu)
     {
-        if (MenuOpenPost != null)
-        {
-            foreach(IIksAdminApi.MenuOpenHandler handler in MenuOpenPost.GetInvocationList())
-            {
-                var result = handler(player, menu, gameMenu);
-                if (result is HookResult.Stop || result is HookResult.Handled) {
-                    return false;
-                }
-            }
+        var result = MenuOpenPost?.Invoke(player, menu, gameMenu) ?? HookResult.Continue;
+        if (result is HookResult.Stop or HookResult.Handled) {
+            return false;
         }
         return true;
     }
     public event IIksAdminApi.OptionRenderHandler? OptionRenderPre;
     public bool OnOptionRenderPre(CCSPlayerController player, IDynamicMenu menu, IMenu gameMenu, IDynamicMenuOption option)
     {
-        if (OptionRenderPre != null)
-        {
-            foreach(IIksAdminApi.OptionRenderHandler handler in OptionRenderPre.GetInvocationList())
-            {
-                var result = handler(player, menu, gameMenu, option);
-                if (result is HookResult.Stop || result is HookResult.Handled) {
-                    Debug("Some event handler skipped option render");
-                    return false;
-                }
-            }
+        var result = OptionRenderPre?.Invoke(player, menu, gameMenu, option) ?? HookResult.Continue;
+        if (result is HookResult.Stop or HookResult.Handled) {
+            Debug("Some event handler skipped option render | Id: " + option.Id);
+            return false;
         }
         return true;
     }
     public event IIksAdminApi.OptionRenderHandler? OptionRenderPost;
     public bool OnOptionRenderPost(CCSPlayerController player, IDynamicMenu menu, IMenu gameMenu, IDynamicMenuOption option)
     {
-        if (OptionRenderPost != null)
-        {
-            foreach(IIksAdminApi.OptionRenderHandler handler in OptionRenderPost.GetInvocationList())
-            {
-                var result = handler(player, menu, gameMenu, option);
-                if (result is HookResult.Stop || result is HookResult.Handled) {
-                    return false;
-                }
-            }
+        var result = OptionRenderPost?.Invoke(player, menu, gameMenu, option) ?? HookResult.Continue;
+        if (result is HookResult.Stop or HookResult.Handled) {
+            return false;
         }
         return true;
     }
