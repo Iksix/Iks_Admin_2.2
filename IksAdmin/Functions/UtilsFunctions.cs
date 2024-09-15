@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CounterStrikeSharp.API.Core;
 using IksAdminApi;
+using IksAdminApi.DataTypes;
 
 namespace IksAdmin.Functions;
 
@@ -27,5 +28,10 @@ public static class UtilsFunctions
     public static void SetDebugMethod(string message)
     {
         Main.AdminApi.Debug(message);
+    }
+
+    public static string GetCurrentFlagsMethod(Admin admin)
+    {
+        throw new NotImplementedException();
     }
 }

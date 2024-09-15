@@ -1,3 +1,19 @@
+using Dapper;
+using MySqlConnector;
+
+namespace IksAdmin.Functions;
+
+public static class Database
+{
+    public static string ConnectionString { get; set; } = string.Empty;
+
+    public static async Task Init()
+    {
+        try
+        {
+            using var conn = new MySqlConnection(ConnectionString);
+            await conn.OpenAsync();
+            await conn.QueryAsync(@"
 create table if not exists iks_servers(
     id int not null auto_increment primary key,
     server_key varchar(32) not null,
@@ -108,3 +124,12 @@ create table if not exists iks_admin_warns(
     foreign key (target_id) references iks_servers(id),
     foreign key (removed_by) references iks_admins(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+            ");
+        }
+        catch (MySqlException e)
+        {
+            Main.AdminApi.LogError(e.ToString());
+            throw;
+        }
+    }
+}

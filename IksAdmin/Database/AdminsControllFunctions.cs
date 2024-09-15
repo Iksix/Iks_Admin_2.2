@@ -1,16 +1,28 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using CounterStrikeSharp.API.Core;
 using Dapper;
-using IksAdminApi;
+using IksAdminApi.DataTypes;
 using MySqlConnector;
 
 namespace IksAdmin.Functions;
 
 public static class AdminsControllFunctions
 {
+    private static readonly string AdminSelect = @"
+        select
+        id as id,
+        steam_id as steamId,
+        name as name,
+        flags as flags,
+        immunity as immunity,
+        group_id as groupId,
+        server_key as serverKey,
+        discord as discord,
+        vk as vk,
+        is_disabled as isDisabled,
+        created_at as createdAt,
+        updated_at as updatedAt,
+        deleted_at as deletedAt
+        from iks_admins
+    ";
     public static async Task<Admin> AddAdmin(Admin admin)
     {
         try
@@ -79,19 +91,7 @@ public static class AdminsControllFunctions
             await conn.OpenAsync();
             var ignoreDeletedString = ignoreDeleted ? "and deleted_at is null" : "";
             var admins = (await conn.QueryAsync<Admin>($@"
-                select
-                id as id,
-                steam_id as steamId,
-                name as name,
-                flags as flags,
-                immunity as immunity,
-                group_id as groupId,
-                server_key as serverKey,
-                is_disabled as isDisabled,
-                created_at as createdAt,
-                updated_at as updatedAt,
-                deleted_at as deletedAt
-                from iks_admins
+                {AdminSelect}
                 where steam_id = @steamId
                 {ignoreDeletedString}
             ", new { steamId })).ToList();
@@ -117,18 +117,7 @@ public static class AdminsControllFunctions
             await conn.OpenAsync();
             var ignoreDeletedString = ignoreDeleted ? "where deleted_at is null" : "";
             var admins = (await conn.QueryAsync<Admin>($@"
-                select
-                id as id,
-                steam_id as steamId,
-                name as name,
-                flags as flags,
-                immunity as immunity,
-                group_id as groupId,
-                server_key as serverKey,
-                is_disabled as isDisabled,
-                created_at as createdAt,
-                updated_at as updatedAt,
-                deleted_at as deletedAt
+                {AdminSelect}
                 from iks_admins
                 {ignoreDeletedString}
             ")).ToList();
@@ -150,16 +139,18 @@ public static class AdminsControllFunctions
             await conn.OpenAsync();
             var newAdmin = await conn.QuerySingleAsync<Admin>(@"
                 insert into iks_admins
-                (steam_id, name, flags, immunity, group_id, server_key, created_at, updated_at)
+                (steam_id, name, flags, immunity, group_id, server_key, discord, vk, created_at, updated_at)
                 values
-                (@steamId, @name, @flags, @immunity, @groupId, @serverKey, unix_timestamp(), unix_timestamp())
+                (@steamId, @name, @flags, @immunity, @groupId, @serverKey, @discord, @vk, unix_timestamp(), unix_timestamp())
             ", new {
                 steamId = admin.SteamId,
                 name = admin.Name,
                 flags = admin.Flags,
                 immunity = admin.Immunity,
                 groupId = admin.GroupId,
-                serverKey = admin.ServerKey
+                serverKey = admin.ServerKey,
+                discord = admin.Discord,
+                vk = admin.Vk
             });
             Main.AdminApi.Debug($"Admin added to base ✔");
             return newAdmin;
@@ -184,6 +175,8 @@ public static class AdminsControllFunctions
                 immunity = @immunity,
                 group_id = @groupId,
                 server_key = @serverKey,
+                discord = @discord,
+                vk = @vk,
                 is_disabled = @disabled,
                 updated_at = unix_timestamp(),
                 deleted_at = null
@@ -196,10 +189,34 @@ public static class AdminsControllFunctions
                 immunity = admin.Immunity,
                 groupId = admin.GroupId,
                 serverKey = admin.ServerKey,
-                disabled = admin.Disabled
+                disabled = admin.Disabled,
+                discord = admin.Discord,
+                vk = admin.Vk
             });
             Main.AdminApi.Debug($"Admin updated in base ✔");
             return updatedAdmin;
+        }
+        catch (MySqlException e)
+        {
+            Main.AdminApi.LogError(e.ToString());
+            throw;
+        }
+    }
+
+    public static async Task DeleteAdmin(int id)
+    {
+        try
+        {
+            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await conn.OpenAsync();
+            await conn.QueryAsync(@"
+                update iks_admins set 
+                deleted_at = current_timestamp()
+                where id = @id
+            ", new {
+                id
+            });
+            Main.AdminApi.Debug($"Group deleted ✔");
         }
         catch (MySqlException e)
         {
@@ -227,10 +244,10 @@ public static class AdminsControllFunctions
             Main.AdminApi.Debug("Admins refreshed ✔");
             Main.AdminApi.Debug("---------------");
             Main.AdminApi.Debug("Server admins:");
-            Main.AdminApi.Debug($"id | name | steamId | flags | immunity | groupId | serverKey | isDisabled");
+            Main.AdminApi.Debug($"id | name | steamId | flags | immunity | groupId | serverKey | discord | vk | isDisabled");
             foreach (var admin in serverAdmins)
             {
-                Main.AdminApi.Debug($"{admin.Id} | {admin.Name} | {admin.SteamId} | {admin.Flags} | {admin.Immunity} | {admin.GroupId} | {admin.ServerKey} | {admin.IsDisabled}");
+                Main.AdminApi.Debug($"{admin.Id} | {admin.Name} | {admin.SteamId} | {admin.Flags} | {admin.Immunity} | {admin.GroupId} | {admin.ServerKey} | {admin.Discord} | {admin.Vk} | {admin.IsDisabled}");
             }
         }
         catch (Exception e)

@@ -11,7 +11,8 @@ using IksAdmin.Functions;
 using MySqlConnector;
 using SharpMenu = CounterStrikeSharp.API.Modules.Menu;
 using IksAdmin.Menus;
-using System.Diagnostics;
+using IksAdminApi.DataTypes;
+using MenuType = IksAdminApi.DataTypes.MenuType;
 namespace IksAdmin;
 
 public class Main : BasePlugin, IPluginConfig<PluginConfig>
@@ -50,6 +51,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
     {
         AdminApi = new AdminApi(this, Config, Localizer, ModuleDirectory, Database.ConnectionString);
         Capabilities.RegisterPluginCapability(_pluginCapability, () => AdminApi);
+        Admin.GetCurrentFlagsFunc = UtilsFunctions.GetCurrentFlagsMethod;
         AdminUtils.FindAdminMethod = UtilsFunctions.FindAdminMethod;
         AdminUtils.GetPremissions = UtilsFunctions.GetPermissions;
         AdminUtils.GetConfigMethod = UtilsFunctions.GetConfigMethod;

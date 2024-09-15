@@ -1,16 +1,23 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using CounterStrikeSharp.API.Core;
 using Dapper;
-using IksAdminApi;
+using IksAdminApi.DataTypes;
 using MySqlConnector;
 
 namespace IksAdmin.Functions;
 
 public static class GroupsControllFunctions
 {
+    private static string GroupSelect = @"
+        select
+        id as id,
+        name as name,
+        flags as flags,
+        immunity as immunity,
+        comment as comment,
+        created_at as createdAt,
+        updated_at as updatedAt,
+        deleted_at as deletedAt
+        from iks_groups
+    ";
     public static async Task<Group> AddGroup(Group group)
     {
         try
@@ -44,15 +51,7 @@ public static class GroupsControllFunctions
             await conn.OpenAsync();
             var ignoreDeletedString = ignoreDeleted ? "and deleted_at is null" : "";
             var group = await conn.QueryFirstOrDefaultAsync<Group>($@"
-                select
-                id as id,
-                name as name,
-                flags as flags,
-                immunity as immunity,
-                created_at as createdAt,
-                updated_at as updatedAt,
-                deleted_at as deletedAt
-                from iks_groups
+                {GroupSelect}
                 where name = @groupName
                 {ignoreDeletedString}
             ", new { groupName });
@@ -74,15 +73,7 @@ public static class GroupsControllFunctions
             await conn.OpenAsync();
             var ignoreDeletedString = ignoreDeleted ? "where deleted_at is null" : "";
             var groups = (await conn.QueryAsync<Group>($@"
-                select
-                id as id,
-                name as name,
-                flags as flags,
-                immunity as immunity,
-                created_at as createdAt,
-                updated_at as updatedAt,
-                deleted_at as deletedAt
-                from iks_groups
+                {GroupSelect}
                 {ignoreDeletedString}
             ")).ToList();
 
@@ -103,13 +94,14 @@ public static class GroupsControllFunctions
             await conn.OpenAsync();
             await conn.QueryAsync<Group>(@"
                 insert into iks_groups
-                ( name, flags, immunity, created_at, updated_at)
+                ( name, flags, immunity, comment, created_at, updated_at)
                 values
-                (@name, @flags, @immunity, unix_timestamp(), unix_timestamp())
+                (@name, @flags, @immunity, @comment, unix_timestamp(), unix_timestamp())
             ", new {
                 name = group.Name,
                 flags = group.Flags,
-                immunity = group.Immunity
+                immunity = group.Immunity,
+                comment = group.Comment
             });
             var newGroup = await GetGroup(group.Name);
             Main.AdminApi.Debug($"Group added to base ✔");
@@ -134,6 +126,7 @@ public static class GroupsControllFunctions
                 name = @name,
                 flags = @flags,
                 immunity = @immunity,
+                comment = @comment,
                 updated_at = unix_timestamp(),
                 deleted_at = null
                 where id = @id 
@@ -141,7 +134,8 @@ public static class GroupsControllFunctions
                 id = group.Id,
                 name = group.Name,
                 flags = group.Flags,
-                immunity = group.Immunity
+                immunity = group.Immunity,
+                comment = group.Comment
             });
             var pluginGroup = Main.AdminApi.Groups.FirstOrDefault(x => x.Id == group.Id);
             if (pluginGroup != null)

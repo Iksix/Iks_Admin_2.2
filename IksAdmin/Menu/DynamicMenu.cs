@@ -1,13 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Menu;
 using MenuManager;
 using IksAdminApi;
 using CounterStrikeSharp.API.Modules.Utils;
-using System.Reflection;
+using IksAdminApi.DataTypes;
+using MenuType = IksAdminApi.DataTypes.MenuType;
 
 namespace IksAdmin.Menu;
 
@@ -19,7 +16,6 @@ public class DynamicMenu : IDynamicMenu
     public MenuType Type {get; set;} = MenuType.Default;
     public Action<CCSPlayerController>? BackAction {get; set;} = null;
     public PostSelectAction PostSelectAction {get; set;} = PostSelectAction.Nothing;
-    public event Action<CCSPlayerController, IMenu>? OnOpen;
     public List<IDynamicMenuOption> Options {get; set;} = new();
     public DynamicMenu(string id, string title, MenuType type = (MenuType)3, MenuColors titleColor = MenuColors.Default, PostSelectAction postSelectAction = PostSelectAction.Nothing, Action<CCSPlayerController>? backAction = null, IDynamicMenu? backMenu = null)
     {
@@ -68,7 +64,7 @@ public class DynamicMenu : IDynamicMenu
                 menu = new CenterHtmlMenu(MenuTitle(player), Main.AdminApi.Plugin);
                 break;
             case 3: // [MM]
-                menu = Main.MenuApi!.NewMenuForcetype(MenuTitle(player), Type, BackAction!);
+                menu = Main.MenuApi!.NewMenuForcetype(MenuTitle(player), (MenuManager.MenuType)Type, BackAction!);
                 break;
             default:
                 menu = new CenterHtmlMenu(MenuTitle(player), Main.AdminApi.Plugin);
@@ -175,7 +171,7 @@ public class DynamicMenu : IDynamicMenu
     }
     public MenuType GetThisMenuType(CCSPlayerController player)
     {
-        var menuType = Type != MenuType.Default ? Type : Main.MenuApi.GetMenuType(player);
+        var menuType = Type != MenuType.Default ? Type : (MenuType)Main.MenuApi!.GetMenuType(player);
         return menuType;
     }
 
@@ -184,7 +180,7 @@ public class DynamicMenu : IDynamicMenu
         char[] chatColors = new char[] {
             ChatColors.Default, ChatColors.White, ChatColors.DarkRed, ChatColors.Green, ChatColors.LightYellow, ChatColors.LightBlue, ChatColors.Olive, ChatColors.Lime, ChatColors.Red, ChatColors.LightPurple, ChatColors.Purple, ChatColors.Grey, ChatColors.Yellow, ChatColors.Gold, ChatColors.Silver, ChatColors.Blue, ChatColors.DarkBlue, ChatColors.BlueGrey, ChatColors.Magenta, ChatColors.LightRed, ChatColors.Orange, ChatColors.DarkRed
         };
-        var menuType = Type != MenuType.Default ? Type : Main.MenuApi.GetMenuType(player);
+        var menuType = GetThisMenuType(player);
         if (menuType == MenuType.ChatMenu)
         {
             return $"{chatColors[(int)color]}" + "{value}";
