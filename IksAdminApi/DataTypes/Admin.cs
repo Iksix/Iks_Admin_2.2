@@ -6,6 +6,10 @@ public class Admin
 {
     public delegate string GetCurrentFlagsMethod(Admin admin);
     public static GetCurrentFlagsMethod GetCurrentFlagsFunc = null!;
+    public delegate int GetCurrentImmunityMethod(Admin admin);
+    public static GetCurrentImmunityMethod GetCurrentImmunityFunc = null!;
+    public delegate Group? GetGroupMethod(Admin admin);
+    public static GetGroupMethod GetGroupFunc = null!;
     public int Id {get; set;}
     public string SteamId {get; set;} = "";
     public string Name {get; set;}
@@ -24,6 +28,12 @@ public class Admin
     }}
     public string CurrentFlags { get {
         return GetCurrentFlagsFunc(this);
+    }}
+    public int CurrentImmunity { get {
+        return GetCurrentImmunityFunc(this);
+    }}
+    public Group? Group { get {
+        return GetGroupFunc(this);
     }}
     public bool IsDisabled {get {
         return Disabled == 1;

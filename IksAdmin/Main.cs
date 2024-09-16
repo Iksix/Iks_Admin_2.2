@@ -51,7 +51,9 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
     {
         AdminApi = new AdminApi(this, Config, Localizer, ModuleDirectory, Database.ConnectionString);
         Capabilities.RegisterPluginCapability(_pluginCapability, () => AdminApi);
-        Admin.GetCurrentFlagsFunc = UtilsFunctions.GetCurrentFlagsMethod;
+        Admin.GetCurrentFlagsFunc = UtilsFunctions.GetCurrentFlagsFunc;
+        Admin.GetCurrentImmunityFunc = UtilsFunctions.GetCurrentImmunityFunc;
+        Admin.GetGroupFunc = UtilsFunctions.GetGroupFunc;
         AdminUtils.FindAdminMethod = UtilsFunctions.FindAdminMethod;
         AdminUtils.GetPremissions = UtilsFunctions.GetPermissions;
         AdminUtils.GetConfigMethod = UtilsFunctions.GetConfigMethod;

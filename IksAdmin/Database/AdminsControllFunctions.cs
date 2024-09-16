@@ -6,7 +6,7 @@ namespace IksAdmin.Functions;
 
 public static class AdminsControllFunctions
 {
-    private static readonly string AdminSelect = @"
+    private static string AdminSelect = @"
         select
         id as id,
         steam_id as steamId,
@@ -118,7 +118,6 @@ public static class AdminsControllFunctions
             var ignoreDeletedString = ignoreDeleted ? "where deleted_at is null" : "";
             var admins = (await conn.QueryAsync<Admin>($@"
                 {AdminSelect}
-                from iks_admins
                 {ignoreDeletedString}
             ")).ToList();
 

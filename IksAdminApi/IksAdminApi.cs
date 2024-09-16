@@ -39,4 +39,7 @@ public interface IIksAdminApi
     public delegate HookResult OptionRenderHandler(CCSPlayerController player, IDynamicMenu menu, IMenu gameMenu, IDynamicMenuOption option);
     public event OptionRenderHandler OptionRenderPre;
     public event OptionRenderHandler OptionRenderPost;
+    public delegate HookResult OptionExecuted(CCSPlayerController player, IDynamicMenu menu, IMenu gameMenu, IDynamicMenuOption option);
+    public event OptionExecuted OptionExecutedPre;
+    public event OptionExecuted OptionExecutedPost;
 }

@@ -30,8 +30,27 @@ public static class UtilsFunctions
         Main.AdminApi.Debug(message);
     }
 
-    public static string GetCurrentFlagsMethod(Admin admin)
+    public static string GetCurrentFlagsFunc(Admin admin)
     {
-        throw new NotImplementedException();
+        if (admin.GroupId == null)
+            return admin.Flags ?? "";
+        var group = Main.AdminApi.Groups.FirstOrDefault(x => x.Id == admin.GroupId);
+        if (group == null) {
+            return admin.Flags ?? "";
+        } else return group.Flags;
+    }
+    public static int GetCurrentImmunityFunc(Admin admin)
+    {
+        if (admin.GroupId == null)
+            return admin.Immunity ?? 0;
+        var group = Main.AdminApi.Groups.FirstOrDefault(x => x.Id == admin.GroupId);
+        if (group == null) {
+            return admin.Immunity ?? 0;
+        } else return group.Immunity;
+    }
+
+    public static Group? GetGroupFunc(Admin admin)
+    {
+        return Main.AdminApi.Groups.FirstOrDefault(x => x.Id == admin.GroupId);
     }
 }
