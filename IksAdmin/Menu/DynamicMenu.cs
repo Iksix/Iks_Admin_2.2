@@ -109,7 +109,9 @@ public class DynamicMenu : IDynamicMenu
                     }
                     if (!Main.AdminApi.OnOptionRenderPre(player, this, menu, option)) continue;
                     menu.AddMenuOption(OptionTitle(player, option), (_, _) => {
+                        if(Main.AdminApi.OnOptionExecutedPre(player, this, menu, option)) return; 
                         option.OnExecute(player, option);
+                        if(Main.AdminApi.OnOptionExecutedPost(player, this, menu, option)) return; 
                     });
                     options.Remove(option);
                     if (!Main.AdminApi.OnOptionRenderPost(player, this, menu, option)) continue;
@@ -118,7 +120,9 @@ public class DynamicMenu : IDynamicMenu
                 {
                     if (!Main.AdminApi.OnOptionRenderPre(player, this, menu, option)) continue;
                     menu.AddMenuOption(OptionTitle(player, option), (_, _) => {
+                        if(Main.AdminApi.OnOptionExecutedPre(player, this, menu, option)) return; 
                         option.OnExecute(player, option);
+                        if(Main.AdminApi.OnOptionExecutedPost(player, this, menu, option)) return; 
                     });
                     Main.AdminApi.OnOptionRenderPost(player, this, menu, option);
                 }
@@ -133,7 +137,9 @@ public class DynamicMenu : IDynamicMenu
             {
                 if (!Main.AdminApi.OnOptionRenderPre(player, this, menu, option)) continue;
                 menu.AddMenuOption(OptionTitle(player, option), (_, _) => {
+                    if(Main.AdminApi.OnOptionExecutedPre(player, this, menu, option)) return; 
                     option.OnExecute(player, option);
+                    if(Main.AdminApi.OnOptionExecutedPost(player, this, menu, option)) return; 
                 });
                 Main.AdminApi.OnOptionRenderPost(player, this, menu, option);
             }

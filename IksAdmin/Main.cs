@@ -283,6 +283,25 @@ public class AdminApi : IIksAdminApi
         }
         return true;
     }
+    public event IIksAdminApi.OptionExecuted? OptionExecutedPre;
+    public bool OnOptionExecutedPre(CCSPlayerController player, IDynamicMenu menu, IMenu gameMenu, IDynamicMenuOption option)
+    {
+        var result = OptionExecutedPre?.Invoke(player, menu, gameMenu, option) ?? HookResult.Continue;
+        if (result is HookResult.Stop or HookResult.Handled) {
+            Debug("Some event handler stopped option executed | Id: " + option.Id);
+            return false;
+        }
+        return true;
+    }
+    public event IIksAdminApi.OptionExecuted? OptionExecutedPost;
+    public bool OnOptionExecutedPost(CCSPlayerController player, IDynamicMenu menu, IMenu gameMenu, IDynamicMenuOption option)
+    {
+        var result = OptionExecutedPost?.Invoke(player, menu, gameMenu, option) ?? HookResult.Continue;
+        if (result is HookResult.Stop or HookResult.Handled) {
+            return false;
+        }
+        return true;
+    }
 
     public async Task RefreshAdmins()
     {
