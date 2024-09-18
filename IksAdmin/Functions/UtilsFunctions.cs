@@ -49,8 +49,8 @@ public static class UtilsFunctions
         } else return group.Immunity;
     }
 
-    public static Group? GetGroupFunc(Admin admin)
+    public static Group? GetGroupFromIdFunc(int id)
     {
-        return Main.AdminApi.Groups.FirstOrDefault(x => x.Id == admin.GroupId);
+        return Main.AdminApi.Groups.FirstOrDefault(x => x.Id == id);
     }
 }

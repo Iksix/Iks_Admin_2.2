@@ -8,8 +8,6 @@ public class Admin
     public static GetCurrentFlagsMethod GetCurrentFlagsFunc = null!;
     public delegate int GetCurrentImmunityMethod(Admin admin);
     public static GetCurrentImmunityMethod GetCurrentImmunityFunc = null!;
-    public delegate Group? GetGroupMethod(Admin admin);
-    public static GetGroupMethod GetGroupFunc = null!;
     public int Id {get; set;}
     public string SteamId {get; set;} = "";
     public string Name {get; set;}
@@ -33,7 +31,7 @@ public class Admin
         return GetCurrentImmunityFunc(this);
     }}
     public Group? Group { get {
-        return GetGroupFunc(this);
+        return AdminUtils.GetGroup(GroupId);
     }}
     public bool IsDisabled {get {
         return Disabled == 1;

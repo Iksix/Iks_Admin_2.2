@@ -17,6 +17,7 @@ public interface IIksAdminApi
     public List<Admin> ServerAdmins { get; set; }
     public List<Admin> AllAdmins { get; set; }
     public List<Group> Groups {get; set;}
+    public List<GroupLimitation> GroupLimitations {get; set;}
     public Dictionary<string, string> RegistredPermissions { get; set; }
     public string DbConnectionString {get; set;}
     public Dictionary<CCSPlayerController, Action<string>> NextPlayerMessage {get;}

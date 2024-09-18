@@ -17,8 +17,15 @@ public static class AdminUtils
     public static RightsGetter GetPremissions = null!;
     public delegate IAdminConfig ConfigGetter();
     public static ConfigGetter GetConfigMethod = null!;
+    public delegate Group? GetGroupFromIdMethod(int id);
+    public static GetGroupFromIdMethod GetGroupFromIdFunc = null!;
     public delegate void DebugFunc(string message);
     public static DebugFunc Debug = null!;
+    public static Group? GetGroup(int? id)
+    {
+        if (id == null) return null;
+        return GetGroupFromIdFunc((int)id);
+    }
     public static int CurrentTimestamp()
     {
         return (int)DateTimeOffset.UtcNow.ToUnixTimeSeconds();

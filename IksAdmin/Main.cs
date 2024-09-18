@@ -53,7 +53,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
         Capabilities.RegisterPluginCapability(_pluginCapability, () => AdminApi);
         Admin.GetCurrentFlagsFunc = UtilsFunctions.GetCurrentFlagsFunc;
         Admin.GetCurrentImmunityFunc = UtilsFunctions.GetCurrentImmunityFunc;
-        Admin.GetGroupFunc = UtilsFunctions.GetGroupFunc;
+        AdminUtils.GetGroupFromIdFunc = UtilsFunctions.GetGroupFromIdFunc;
         AdminUtils.FindAdminMethod = UtilsFunctions.FindAdminMethod;
         AdminUtils.GetPremissions = UtilsFunctions.GetPermissions;
         AdminUtils.GetConfigMethod = UtilsFunctions.GetConfigMethod;
@@ -166,6 +166,7 @@ public class AdminApi : IIksAdminApi
     public List<Admin> AllAdmins { get; set; } = new();
     public Dictionary<string, string> RegistredPermissions {get; set;} = new();
     public List<Group> Groups { get; set; } = new();
+    public List<GroupLimitation> GroupLimitations {get; set;} = new();
     public Admin ConsoleAdmin { get; set; } = null!;
     public string DbConnectionString {get; set;}
     public Dictionary<CCSPlayerController, Action<string>> NextPlayerMessage {get; set;} = new();
