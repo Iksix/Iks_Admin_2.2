@@ -188,8 +188,54 @@ public static class GroupsControllFunctions
             {
                 Main.AdminApi.Debug($"{group.Id} | {group.Name} | {group.Flags} | {group.Immunity}");
             }
+            await RefreshLimitations();
         }
         catch (Exception e)
+        {
+            Main.AdminApi.LogError(e.ToString());
+            throw;
+        }
+    }
+    public static async Task RefreshLimitations()
+    {
+        try
+        {
+            Main.AdminApi.Debug("Refresing limitations...");
+            var limitations = await GetAllLimitations();
+            Main.AdminApi.Debug("1/2 limitations getted ✔");
+            Main.AdminApi.GroupLimitations = limitations;
+            Main.AdminApi.Debug("2/2 limitations setted ✔");
+            Main.AdminApi.Debug("limitations refreshed ✔");
+            Main.AdminApi.Debug("---------------");
+        }
+        catch (Exception e)
+        {
+            Main.AdminApi.LogError(e.ToString());
+            throw;
+        }
+    }
+
+    private static async Task<List<GroupLimitation>> GetAllLimitations()
+    {
+        try
+        {
+            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await conn.OpenAsync();
+            var limitations = (await conn.QueryAsync<GroupLimitation>(@"
+                select
+                id as id,
+                group_id as group_id,
+                limitation_key as limitationKey,
+                limitation_value as limitationValue,
+                created_at as createdAt,
+                updated_at as updatedAt,
+                deleted_at as deletedAt
+                from iks_groups_limitations
+                where deleted_at is null
+            ")).ToList();
+            return limitations;
+        }
+        catch (MySqlException e)
         {
             Main.AdminApi.LogError(e.ToString());
             throw;
