@@ -11,8 +11,7 @@ using IksAdmin.Functions;
 using MySqlConnector;
 using SharpMenu = CounterStrikeSharp.API.Modules.Menu;
 using IksAdmin.Menus;
-using IksAdminApi.DataTypes;
-using MenuType = IksAdminApi.DataTypes.MenuType;
+using MenuType = IksAdminApi.MenuType;
 namespace IksAdmin;
 
 public class Main : BasePlugin, IPluginConfig<PluginConfig>

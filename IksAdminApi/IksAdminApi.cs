@@ -2,7 +2,6 @@
 
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Menu;
-using IksAdminApi.DataTypes;
 using Microsoft.Extensions.Localization;
 
 public interface IIksAdminApi

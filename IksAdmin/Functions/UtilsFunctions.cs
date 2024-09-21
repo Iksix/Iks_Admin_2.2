@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using CounterStrikeSharp.API.Core;
 using IksAdminApi;
-using IksAdminApi.DataTypes;
 
 namespace IksAdmin.Functions;
 

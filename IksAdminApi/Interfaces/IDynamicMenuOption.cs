@@ -1,5 +1,5 @@
 using CounterStrikeSharp.API.Core;
-namespace IksAdminApi.DataTypes;
+namespace IksAdminApi;
 
 public interface IDynamicMenuOption
 {

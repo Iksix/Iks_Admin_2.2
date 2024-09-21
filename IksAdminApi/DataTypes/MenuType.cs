@@ -1,4 +1,4 @@
-namespace IksAdminApi.DataTypes;
+namespace IksAdminApi;
 public enum MenuType
 {
     Default = -1,

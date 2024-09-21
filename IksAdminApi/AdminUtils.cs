@@ -1,10 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
-using IksAdminApi.DataTypes;
 
 namespace IksAdminApi;
 
@@ -44,6 +39,10 @@ public static class AdminUtils
     public static Admin? Admin(this CCSPlayerController player)
     {
         return FindAdminMethod(player);
+    }
+    public static bool IsAdmin(this CCSPlayerController player)
+    {
+        return FindAdminMethod(player) != null;
     }
     public static IAdminConfig Config()
     {

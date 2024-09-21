@@ -1,5 +1,5 @@
 using CounterStrikeSharp.API.Core;
-using IksAdminApi.DataTypes;
+using IksAdminApi;
 namespace IksAdmin;
 public class PluginConfig : BasePluginConfig, IAdminConfig
 {

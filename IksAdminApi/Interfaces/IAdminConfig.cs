@@ -1,4 +1,4 @@
-namespace IksAdminApi.DataTypes;
+namespace IksAdminApi;
 public interface IAdminConfig 
 {
     public string ServerKey { get; set; } 

@@ -1,6 +1,6 @@
 using CounterStrikeSharp.API.Core;
 
-namespace IksAdminApi.DataTypes;
+namespace IksAdminApi;
 
 public class PlayerInfo
 {

@@ -1,7 +1,7 @@
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Menu;
 
-namespace IksAdminApi.DataTypes;
+namespace IksAdminApi;
 
 public interface IDynamicMenu
 {

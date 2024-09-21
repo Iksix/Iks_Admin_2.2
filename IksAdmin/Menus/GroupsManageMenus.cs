@@ -2,7 +2,6 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using IksAdmin.Functions;
 using IksAdminApi;
-using IksAdminApi.DataTypes;
 using Microsoft.Extensions.Localization;
 
 namespace IksAdmin.Menus;

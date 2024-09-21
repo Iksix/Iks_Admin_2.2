@@ -1,5 +1,5 @@
 using Dapper;
-using IksAdminApi.DataTypes;
+using IksAdminApi;
 using MySqlConnector;
 
 namespace IksAdmin.Functions;

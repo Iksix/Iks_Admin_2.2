@@ -1,5 +1,5 @@
 using System.Text.Json;
-using IksAdminApi.DataTypes;
+using IksAdminApi;
 
 namespace IksAdmin.Functions;
 

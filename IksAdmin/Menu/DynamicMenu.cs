@@ -3,8 +3,7 @@ using CounterStrikeSharp.API.Modules.Menu;
 using MenuManager;
 using IksAdminApi;
 using CounterStrikeSharp.API.Modules.Utils;
-using IksAdminApi.DataTypes;
-using MenuType = IksAdminApi.DataTypes.MenuType;
+using MenuType = IksAdminApi.MenuType;
 
 namespace IksAdmin.Menu;
 
