@@ -1,7 +1,7 @@
 create table if not exists iks_servers(
     id int not null auto_increment primary key,
     server_key varchar(32) not null,
-    ip varchar(32) not null,
+    ip varchar(32) not null comment 'ip:port',
     name varchar(64) not null,
     rcon varchar(128) default null,
     created_at int not null,

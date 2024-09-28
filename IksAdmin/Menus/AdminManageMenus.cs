@@ -30,9 +30,8 @@ public static class AdminManageMenus
                 GroupsManageMenus.AddGroupBuffer.Add(caller.Admin()!, new Group("ExampleGroup", "abc", 0));
             }
             GroupsManageMenus.OpenGroupsManageMenu(caller);
-        }, viewFlags: 
-        AdminApi.GetMultipleCurrnetPermissionFlags(["groups_manage_add", "groups_manage_delete", "groups_manage_refresh", "groups_manage_edit"])
-        , color: MenuColors.White);
+        }, 
+        viewFlags: AdminUtils.GetAllPermissionGroupFlags("groups_manage"));
         
         menu.Open(caller);
     }

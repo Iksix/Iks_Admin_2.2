@@ -12,6 +12,9 @@ using MySqlConnector;
 using SharpMenu = CounterStrikeSharp.API.Modules.Menu;
 using IksAdmin.Menus;
 using MenuType = IksAdminApi.MenuType;
+using CounterStrikeSharp.API.Modules.Cvars;
+using CoreRCON;
+using System.Net;
 namespace IksAdmin;
 
 public class Main : BasePlugin, IPluginConfig<PluginConfig>
@@ -144,13 +147,9 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
         }
         menu.AddMenuOption(GenerateOptionId("admins_manage"), "Admin manage", (_, _) => { 
             AdminManageMenus.OpenAdminManageMenu(caller);
-        }, viewFlags: AdminApi.GetMultipleCurrnetPermissionFlags([
-            "admins_manage_add", "admins_manage_delete", "admins_manage_edit", "admins_manage_refresh",
-            "groups_manage_add", "groups_manage_delete", "groups_manage_edit", "groups_manage_refresh"
-            ]));
+        }, viewFlags: AdminUtils.GetAllPermissionGroupFlags("admins_manage") + AdminUtils.GetAllPermissionGroupFlags("groups_manage"));
 
         menu.Open(caller);
-
     }
 }
 
@@ -163,7 +162,9 @@ public class AdminApi : IIksAdminApi
     public string ModuleDirectory { get; set; }
     public List<Admin> ServerAdmins { get; set; } = new();
     public List<Admin> AllAdmins { get; set; } = new();
-    public Dictionary<string, string> RegistredPermissions {get; set;} = new();
+    public List<ServerModel> AllServers { get; set; } = new();
+    public ServerModel ThisServer { get; set; } = null!;
+    public Dictionary<string, Dictionary<string, string>> RegistredPermissions {get; set;} = new();
     public List<Group> Groups { get; set; } = new();
     public List<GroupLimitation> GroupLimitations {get; set;} = new();
     public Admin ConsoleAdmin { get; set; } = null!;
@@ -177,6 +178,12 @@ public class AdminApi : IIksAdminApi
         Localizer = localizer;
         ModuleDirectory = moduleDirectory;
         DbConnectionString = dbConnectionString;
+        var serverModel = new ServerModel(
+            Config.ServerKey,
+            Config.ServerIp,
+            Config.ServerName == "" ? ConVar.Find("hostname")!.StringValue : Config.ServerName,
+            Config.SetRcon ? ConVar.Find("rcon_password")!.StringValue : null
+        );
         Task.Run(async () => {
             try
             {
@@ -184,13 +191,17 @@ public class AdminApi : IIksAdminApi
                 await Database.Init();
                 Debug("Refresh Admins");
                 await RefreshAdmins();
+                await ServersControllFunctions.Add(serverModel);
+                AllServers = await ServersControllFunctions.GetAll();
+                ThisServer = AllServers.First(x => x.ServerKey == serverModel.ServerKey);
+                await SendRconToAllServers("css_am_reload_servers");
+                await SendRconToAllServers("css_am_reload_admins");
             }
             catch (System.Exception e)
             {
                 LogError(e.ToString());
                 throw;
             }
-            
         });
     }
     public void CloseMenu(CCSPlayerController player)
@@ -219,21 +230,30 @@ public class AdminApi : IIksAdminApi
     {
         Console.ForegroundColor = ConsoleColor.Red;
         Console.WriteLine("[Admin Error]: " + message);
-         Console.ResetColor();
+        Console.ResetColor();
     }
 
     public void RegisterPermission(string key, string defaultFlags)
     {
-        RegistredPermissions.Add(key, defaultFlags);
+        // example key = "admin_manage.add"
+        var firstKey = key.Split(".")[0]; // admin_manage
+        var lastKey = string.Join(".", key.Split(".").Skip(1)); // add
+        if (RegistredPermissions.ContainsKey(firstKey))
+        {
+            var perms = RegistredPermissions[firstKey];
+            if (!perms.ContainsKey(lastKey))
+            {
+                perms.Add(lastKey, defaultFlags);
+            }
+        } else {
+            RegistredPermissions.Add(firstKey, new Dictionary<string, string> { { lastKey, defaultFlags } });
+        }
     }
     public string GetCurrentPermissionFlags(string key)
     {
-        if (Config.PermissionReplacement.ContainsKey(key)) return Config.PermissionReplacement[key];
-        if (RegistredPermissions.ContainsKey(key)) return RegistredPermissions[key];
-        Debug("Permission key not found in registred and replacement ✖ | returning empty string");
-        return "";
+        return AdminUtils.GetCurrentPermissionFlags(key);
     }
-    public string GetMultipleCurrnetPermissionFlags(string[] keys)
+    public string GetCurrentPermissionFlags(string[] keys)
     {
         string result = "";
         foreach(string key in keys)
@@ -321,5 +341,35 @@ public class AdminApi : IIksAdminApi
     {
         Debug("Remove next player message hook: " + player.PlayerName);
         NextPlayerMessage.Remove(player);
+    }
+
+    public async Task SendRconToAllServers(string command, bool ignoreSelf = false)
+    {
+        foreach (var server in AllServers)
+        {
+            if (ignoreSelf && server.Ip == ThisServer.Ip) continue;
+            await SendRconToServer(server, command);
+        }
+    }
+
+    public async Task SendRconToServer(ServerModel server, string command)
+    {
+        var ip = server.Ip.Split(":")[0];
+        var port = server.Ip.Split(":")[1];
+        Debug($"Sending rcon command [{command}] to server ({server.Name})[{server.Ip}] ...");
+        using var rcon = new RCON(new IPEndPoint(IPAddress.Parse(ip), int.Parse(port)), server.Rcon ?? "", 200);
+        await rcon.ConnectAsync();
+        await rcon.SendCommandAsync(command);
+        Debug($"Success ✔");
+    }
+
+    public ServerModel? GetServerByKey(string serverKey)
+    {
+        return AllServers.FirstOrDefault(x => x.ServerKey == serverKey);
+    }
+
+    public ServerModel? GetServerByIp(string ip)
+    {
+        return AllServers.FirstOrDefault(x => x.Ip == ip);
     }
 }

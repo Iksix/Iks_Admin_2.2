@@ -14,7 +14,7 @@ public static class UtilsFunctions
         return Main.AdminApi.ServerAdmins.FirstOrDefault(x => x.SteamId == player.AuthorizedSteamID!.SteamId64.ToString());
     }
 
-    public static Dictionary<string, string> GetPermissions()
+    public static Dictionary<string, Dictionary<string, string>> GetPermissions()
     {
         return Main.AdminApi.RegistredPermissions;
     }

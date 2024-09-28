@@ -8,7 +8,7 @@ public static class AdminUtils
 {
     public delegate Admin? AdminFinder(CCSPlayerController player);
     public static AdminFinder FindAdminMethod = null!;
-    public delegate Dictionary<string, string> RightsGetter();
+    public delegate Dictionary<string, Dictionary<string, string>> RightsGetter();
     public static RightsGetter GetPremissions = null!;
     public delegate IAdminConfig ConfigGetter();
     public static ConfigGetter GetConfigMethod = null!;
@@ -48,62 +48,79 @@ public static class AdminUtils
     {
         return GetConfigMethod();
     }
-    public static bool HasPermissions(this CCSPlayerController player, string key)
+    /// <returns>Возвращает строку из текущих флагов по праву(ex: "admin_manage.add") (учитывая замену в кфг)</returns>
+    public static string GetCurrentPermissionFlags(string key)
     {
-        Debug($"Checking permission: {player.PlayerName} | {key}" );
         var permissions = GetPremissions();
-        if (!permissions.TryGetValue(key, out var flags))
+        var firstKey = key.Split(".")[0];
+        var lastKey = string.Join(".", key.Split(".").Skip(1));
+        if (!permissions.TryGetValue(firstKey, out var permission))
         {
-            throw new Exception("Trying to check permissions that doesn't registred (HasPermissions method)");
+            throw new Exception("Trying to get permissions group that doesn't registred (HasPermissions method)");
         }
-        Debug($"Permission registred ✔ | flags: {flags}");
+        if (!permission.TryGetValue(lastKey, out var flags))
+        {
+            throw new Exception("Trying to get permissions that doesn't registred (HasPermissions method)");
+        }
         if (Config().PermissionReplacement.ContainsKey(key))
         {
             Debug($"Replace permission flags from config...");
             flags = Config().PermissionReplacement[key];
             Debug($"Permission flags replacement ✔ | flags: {flags}");
         }
+        return flags;
+    }
+    /// <returns>Возвращает строку из всех флагов которые используются в группе прав (учитывая замену в кфг)</returns>
+    public static string GetAllPermissionGroupFlags(string key) // ex: admin_manage
+    {
+        var registredPermissions = GetPremissions();
+        if (!registredPermissions.TryGetValue(key, out var permissions))
+        {
+            throw new Exception("Trying to get permissions group that doesn't registred (HasPermissions method)");
+        }
+        var flags = "";
+        foreach (var permission in permissions)
+        {
+            flags += GetCurrentPermissionFlags($"{key}.{permission.Key}");
+        }
+        return flags;
+    }
+    /// <summary>
+    /// Проверяет есть ли у админа доступ к любому из прав группы(ex: "admin_manage")
+    /// </summary>
+    public static bool HasAnyGroupPermission(this CCSPlayerController player, string key)
+    {
+        return HasAnyGroupPermission(player.Admin(), key);
+    }
+    public static bool HasAnyGroupPermission(this Admin? admin, string key)
+    {
+        var allGroupFlags = GetAllPermissionGroupFlags(key);
+        if (allGroupFlags.Contains("*")) return true;
+        if (admin == null) return false;
+        if (admin.CurrentFlags.ToCharArray().Any(allGroupFlags.Contains)) return true;
+        return false;
+    }
+    public static bool HasPermissions(this CCSPlayerController player, string key)
+    {
+        Debug($"Checking permission: {player.PlayerName} | {key}" );
+        var admin = player.Admin();
+        return HasPermissions(admin, key);
+    }
+    public static bool HasPermissions(this Admin? admin, string key)
+    {
+        if (admin != null)
+            Debug($"Checking permission: {admin.Name} | {key}" );
+        else Debug($"Checking permission: {key}" );
+        var flags = GetCurrentPermissionFlags(key);
         if (flags == "*")
         {
             Debug($"Has Access ✔");
             return true;
         }
-        Debug($"Getting admin...");
-        var admin = player.Admin();
         if (admin == null) {
             Debug($"Admin is null | No Access ✖");
             return false;
         }
-        if (admin.CurrentFlags.Contains(flags) || admin.CurrentFlags.Contains("z"))
-        {
-            Debug($"Admin has access ✔");
-            return true;
-        } else {
-            Debug($"Admin hasn't access ✖");
-            return false;
-        }
-    }
-    public static bool HasPermissions(this Admin admin, string key)
-    {
-        Debug($"Checking permission: {admin.Name} | {key}" );
-        var permissions = GetPremissions();
-        if (!permissions.TryGetValue(key, out var flags))
-        {
-            throw new Exception("Trying to check permissions that doesn't registred (HasPermissions method)");
-        }
-        Debug($"Permission registred ✔ | flags: {flags}");
-        if (Config().PermissionReplacement.ContainsKey(key))
-        {
-            Debug($"Replace permission flags from config...");
-            flags = Config().PermissionReplacement[key];
-            Debug($"Permission flags replacement ✔ | flags: {flags}");
-        }
-        if (flags == "*")
-        {
-            Debug($"Has Access ✔");
-            return true;
-        }
-        Debug($"Getting admin...");
         if (admin.CurrentFlags.Contains(flags) || admin.CurrentFlags.Contains("z"))
         {
             Debug($"Admin has access ✔");

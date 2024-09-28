@@ -15,11 +15,17 @@ public interface IIksAdminApi
     public Admin ConsoleAdmin {get; set;}
     public List<Admin> ServerAdmins { get; set; }
     public List<Admin> AllAdmins { get; set; }
+    public List<ServerModel> AllServers { get; set; }
+    public ServerModel ThisServer { get; set; }
     public List<Group> Groups {get; set;}
     public List<GroupLimitation> GroupLimitations {get; set;}
-    public Dictionary<string, string> RegistredPermissions { get; set; }
+    public Dictionary<string, Dictionary<string, string>> RegistredPermissions { get; set; }
     public string DbConnectionString {get; set;}
     public Dictionary<CCSPlayerController, Action<string>> NextPlayerMessage {get;}
+    public Task SendRconToAllServers(string command, bool ignoreSelf = false);
+    public Task SendRconToServer(ServerModel server, string command);
+    public ServerModel? GetServerByKey(string serverKey);
+    public ServerModel? GetServerByIp(string ip);
     // MENU ===
     public IDynamicMenu CreateMenu(string id, string title, MenuType? type = null, MenuColors titleColor = MenuColors.Default, PostSelectAction postSelectAction = PostSelectAction.Nothing, Action<CCSPlayerController>? backAction = null, IDynamicMenu? backMenu = null);
     public void CloseMenu(CCSPlayerController player);
@@ -28,7 +34,7 @@ public interface IIksAdminApi
     public void LogError(string message);
     public void RegisterPermission(string key, string defaultFlags);
     public string GetCurrentPermissionFlags(string key);
-    public string GetMultipleCurrnetPermissionFlags(string[] keys);
+    public string GetCurrentPermissionFlags(string[] keys);
     public Task RefreshAdmins();
     public void HookNextPlayerMessage(CCSPlayerController player, Action<string> action);
     public void RemoveNextPlayerMessageHook(CCSPlayerController player);

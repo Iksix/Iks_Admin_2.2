@@ -91,8 +91,8 @@ public class DynamicMenu : IDynamicMenu
                         options.Remove(option);
                         continue;
                     }
-                    var viewFlags = sort.ViewFlags == "not override" ? option.ViewFlags : sort.ViewFlags;
-                    if (viewFlags != "*")
+                    var viewFlags = sort.ViewFlags.ToLower() == "not override" ? option.ViewFlags : sort.ViewFlags;
+                    if (!viewFlags.Contains("*"))
                     {
                         if (player.Admin() == null)
                         {
@@ -117,6 +117,20 @@ public class DynamicMenu : IDynamicMenu
                 }
                 foreach (var option in options)
                 {
+                    // Проверка на ViewFlags
+                    var viewFlags = option.ViewFlags; // Текущие ViewFlags опции
+                    if (!viewFlags.Contains("*")) // Если не содержит *, то проверяем на ViewFlags админа
+                    {
+                        if (player.Admin() == null)
+                        {
+                            continue;
+                        }
+                        var adminFlags = player.Admin()!.CurrentFlags.ToCharArray();
+                        if (!adminFlags.Any(viewFlags.Contains) && !adminFlags.Contains('z'))
+                        {
+                            continue;
+                        }
+                    }
                     if (!Main.AdminApi.OnOptionRenderPre(player, this, menu, option)) continue;
                     menu.AddMenuOption(OptionTitle(player, option), (_, _) => {
                         if(!Main.AdminApi.OnOptionExecutedPre(player, this, menu, option)) return; 
@@ -134,6 +148,19 @@ public class DynamicMenu : IDynamicMenu
             Main.AdminApi.Debug("Without sort menu");
             foreach (var option in Options)
             {
+                var viewFlags = option.ViewFlags; // Текущие ViewFlags опции
+                if (!viewFlags.Contains("*")) // Если не содержит *, то проверяем на ViewFlags админа
+                {
+                    if (player.Admin() == null)
+                    {
+                        continue;
+                    }
+                    var adminFlags = player.Admin()!.CurrentFlags.ToCharArray();
+                    if (!adminFlags.Any(viewFlags.Contains) && !adminFlags.Contains('z'))
+                    {
+                        continue;
+                    }
+                }
                 if (!Main.AdminApi.OnOptionRenderPre(player, this, menu, option)) continue;
                 menu.AddMenuOption(OptionTitle(player, option), (_, _) => {
                     if(!Main.AdminApi.OnOptionExecutedPre(player, this, menu, option)) return; 

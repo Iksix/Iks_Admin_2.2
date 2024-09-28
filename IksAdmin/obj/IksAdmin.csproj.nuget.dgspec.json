@@ -125,6 +125,10 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
+            "CoreRcon": {
+              "target": "Package",
+              "version": "[5.4.1, )"
+            },
             "CounterStrikeSharp.Api": {
               "target": "Package",
               "version": "[1.0.264, )"
