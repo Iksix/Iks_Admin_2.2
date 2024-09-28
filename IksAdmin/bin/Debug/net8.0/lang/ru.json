@@ -1,4 +1,5 @@
 {
+    "Tag" : "[{red}ADMIN{white}]",
     "MenuTitle.AdminsManage" : "Управление админами",
     "MenuTitle.GroupsManage" : "Управление группами",
     "MenuTitle.GroupAdding" : "Добавление группы",
@@ -13,5 +14,10 @@
     "MenuOption.GroupName" : "Название: {value}",
     "MenuOption.GroupFlags" : "Флаги: {value}",
     "MenuOption.GroupImmunity" : "Иммунитет: {value}",
-    "MenuOption.SaveGroup" : "Сохранить группу"
+    "MenuOption.SaveGroup" : "Сохранить группу",
+
+    "Error.OnlyServerCommand" : "{red}Команду может выполнить только сервер ✖",
+    "Error.NotEnoughPermissions" : "{red}Недостаточно прав для использования команды ✖",
+    "Error.DifferentNumberOfArgs" : "{red}Неправильное кол-во аргументов ✖\n{red}Использование: \n{usage}",
+    "Error.OtherCommandError" : "{red}При выполнении команды возникла ошибка ✖\n{red}Использование: \n{usage}"
 }

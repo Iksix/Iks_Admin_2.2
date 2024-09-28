@@ -1,5 +1,7 @@
+using System.Text.RegularExpressions;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Commands;
 
 namespace IksAdminApi;
 
@@ -47,6 +49,23 @@ public static class AdminUtils
     public static IAdminConfig Config()
     {
         return GetConfigMethod();
+    }
+    public static void Print(this CCSPlayerController? player, string message, string tag = "")
+    {
+        if (message.Trim() == "") return;
+        foreach (var str in message.Split("\n"))
+        {
+            if (player != null)
+                player.PrintToChat($" {tag} {str}");
+        }
+    }
+    public static void Reply(this CommandInfo info, string message, string tag = "")
+    {
+        if (message.Trim() == "") return;
+        foreach (var str in message.Split("\n"))
+        {
+            info.ReplyToCommand($" {tag} {str}");
+        }
     }
     /// <returns>Возвращает строку из текущих флагов по праву(ex: "admin_manage.add") (учитывая замену в кфг)</returns>
     public static string GetCurrentPermissionFlags(string key)
@@ -121,7 +140,7 @@ public static class AdminUtils
             Debug($"Admin is null | No Access ✖");
             return false;
         }
-        if (admin.CurrentFlags.Contains(flags) || admin.CurrentFlags.Contains("z"))
+        if (admin.CurrentFlags.Contains(flags) || admin.CurrentFlags.Contains("z") || admin.SteamId == "CONSOLE")
         {
             Debug($"Admin has access ✔");
             return true;
@@ -129,5 +148,23 @@ public static class AdminUtils
             Debug($"Admin hasn't access ✖");
             return false;
         }
+    }
+    public static List<string> GetArgsFromCommandLine(string commandLine)
+    {
+        List<string> args = new List<string>();
+        var regex = new Regex(@"(""((\\"")|([^""]))*"")|('((\\')|([^']))*')|(\S+)");
+        var matches = regex.Matches(commandLine);
+        foreach (Match match in matches)
+        {
+            var arg = match.Value;
+            if (arg.StartsWith('"'))
+            {
+                arg = arg.Remove(0, 1);
+                arg = arg.TrimEnd('"');
+            }
+            args.Add(arg);
+        }
+        args.RemoveAt(0);
+        return args;
     }
 }

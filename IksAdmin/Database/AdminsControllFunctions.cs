@@ -18,6 +18,7 @@ public static class AdminsControllFunctions
         discord as discord,
         vk as vk,
         is_disabled as isDisabled,
+        end_at as endAt,
         created_at as createdAt,
         updated_at as updatedAt,
         deleted_at as deletedAt
@@ -136,11 +137,11 @@ public static class AdminsControllFunctions
         {
             await using var conn = new MySqlConnection(Database.ConnectionString);
             await conn.OpenAsync();
-            var newAdmin = await conn.QuerySingleAsync<Admin>(@"
+            await conn.QueryAsync(@"
                 insert into iks_admins
-                (steam_id, name, flags, immunity, group_id, server_key, discord, vk, created_at, updated_at)
+                (steam_id, name, flags, immunity, group_id, server_key, discord, vk, end_at, created_at, updated_at)
                 values
-                (@steamId, @name, @flags, @immunity, @groupId, @serverKey, @discord, @vk, unix_timestamp(), unix_timestamp())
+                (@steamId, @name, @flags, @immunity, @groupId, @serverKey, @discord, @vk, @endAt, unix_timestamp(), unix_timestamp())
             ", new {
                 steamId = admin.SteamId,
                 name = admin.Name,
@@ -149,10 +150,12 @@ public static class AdminsControllFunctions
                 groupId = admin.GroupId,
                 serverKey = admin.ServerKey,
                 discord = admin.Discord,
-                vk = admin.Vk
+                vk = admin.Vk,
+                endAt = admin.EndAt
             });
             Main.AdminApi.Debug($"Admin added to base ✔");
-            return newAdmin;
+            var newAdmin = await GetAdmin(admin.SteamId);
+            return newAdmin!;
         }
         catch (MySqlException e)
         {
@@ -166,7 +169,7 @@ public static class AdminsControllFunctions
         {
             await using var conn = new MySqlConnection(Database.ConnectionString);
             await conn.OpenAsync();
-            var updatedAdmin = await conn.QuerySingleAsync<Admin>(@"
+            await conn.QueryAsync(@"
                 update iks_admins set 
                 steam_id = @steamId,
                 name = @name,
@@ -177,6 +180,7 @@ public static class AdminsControllFunctions
                 discord = @discord,
                 vk = @vk,
                 is_disabled = @disabled,
+                end_at = @endAt,
                 updated_at = unix_timestamp(),
                 deleted_at = null
                 where id = @id 
@@ -190,10 +194,12 @@ public static class AdminsControllFunctions
                 serverKey = admin.ServerKey,
                 disabled = admin.Disabled,
                 discord = admin.Discord,
-                vk = admin.Vk
+                vk = admin.Vk,
+                endAt = admin.EndAt
             });
             Main.AdminApi.Debug($"Admin updated in base ✔");
-            return updatedAdmin;
+            var updatedAdmin = await GetAdmin(admin.SteamId);
+            return updatedAdmin!;
         }
         catch (MySqlException e)
         {
@@ -248,6 +254,7 @@ public static class AdminsControllFunctions
             {
                 Main.AdminApi.Debug($"{admin.Id} | {admin.Name} | {admin.SteamId} | {admin.Flags} | {admin.Immunity} | {admin.GroupId} | {admin.ServerKey} | {admin.Discord} | {admin.Vk} | {admin.IsDisabled}");
             }
+            await Main.AdminApi.SendRconToAllServers("css_am_reload_admins", true);
         }
         catch (Exception e)
         {

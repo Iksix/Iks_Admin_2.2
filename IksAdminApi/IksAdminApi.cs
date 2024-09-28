@@ -1,6 +1,7 @@
 ﻿namespace IksAdminApi;
 
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Menu;
 using Microsoft.Extensions.Localization;
 
@@ -38,6 +39,17 @@ public interface IIksAdminApi
     public Task RefreshAdmins();
     public void HookNextPlayerMessage(CCSPlayerController player, Action<string> action);
     public void RemoveNextPlayerMessageHook(CCSPlayerController player);
+    public void AddNewCommand(
+        string command,
+        string description,
+        string permission,
+        string usage,
+        Action<CCSPlayerController, List<string>, CommandInfo> onExecute,
+        CommandUsage commandUsage = CommandUsage.CLIENT_AND_SERVER,
+        string? tag = null,
+        string? hasNotPermissionsMessage = null,
+        int minArgs = 0
+    );
     // EVENTS ===
     public delegate HookResult MenuOpenHandler(CCSPlayerController player, IDynamicMenu menu, IMenu gameMenu);
     public event MenuOpenHandler MenuOpenPre;
@@ -48,4 +60,5 @@ public interface IIksAdminApi
     public delegate HookResult OptionExecuted(CCSPlayerController player, IDynamicMenu menu, IMenu gameMenu, IDynamicMenuOption option);
     public event OptionExecuted OptionExecutedPre;
     public event OptionExecuted OptionExecutedPost;
+    public event Action OnReady;
 }

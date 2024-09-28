@@ -21,6 +21,7 @@ public class Admin
     public int CreatedAt {get; set;}
     public int UpdatedAt {get; set;}
     public int? DeletedAt {get; set;} = null;
+    public int? EndAt {get; set;}
     public bool Online {get {
         return AdminUtils.GetControllerBySteamId(SteamId) != null;
     }}
@@ -52,7 +53,7 @@ public class Admin
     /// <summary>
     /// For getting from db
     /// </summary>
-    public Admin(int id, string steamId, string name, string? flags, int? immunity, int? groupId, string? serverKey, string? discord, string? vk, int isDisabled, int createdAt, int updatedAt, int? deletedAt)
+    public Admin(int id, string steamId, string name, string? flags, int? immunity, int? groupId, string? serverKey, string? discord, string? vk, int isDisabled, int? endAt, int createdAt, int updatedAt, int? deletedAt)
     {
         Id = id;
         SteamId = steamId;
@@ -64,6 +65,7 @@ public class Admin
         ServerKey = serverKey;  
         Discord = discord;
         Vk = vk;
+        EndAt = endAt;
         CreatedAt = createdAt;
         UpdatedAt = updatedAt;
         DeletedAt = deletedAt;
@@ -71,7 +73,7 @@ public class Admin
     /// <summary>
     /// For creating new admin
     /// </summary>
-    public Admin(string steamId, string name, string? flags = null, int? immunity = null, int? groupId = null, string? serverKey = null, string? discord = null, string? vk = null)
+    public Admin(string steamId, string name, string? flags = null, int? immunity = null, int? groupId = null, string? serverKey = null, string? discord = null, string? vk = null, int? endAt = null)
     {
         SteamId = steamId;
         Name = name;
@@ -81,6 +83,7 @@ public class Admin
         ServerKey = serverKey;
         Discord = discord;
         Vk = vk;
+        EndAt = endAt;
         CreatedAt = AdminUtils.CurrentTimestamp();
         UpdatedAt = AdminUtils.CurrentTimestamp();
     }

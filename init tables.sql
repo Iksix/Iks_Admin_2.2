@@ -29,6 +29,7 @@ create table if not exists iks_admins(
     discord varchar(64) default null,
     vk varchar(64) default null,
     is_disabled int(1) not null default 0,
+    end_at int null,
     created_at int not null,
     updated_at int not null,
     deleted_at int default null,
@@ -93,7 +94,7 @@ create table if not exists iks_bans(
     foreign key (ubanned_by) references iks_admins(id),
     foreign key (server_id) references iks_servers(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
-create table if not exists iks_admin_warns(
+create table if not exists iks_admins_warns(
     id int not null auto_increment primary key,
     admin_id int not null,
     target_id int not null,

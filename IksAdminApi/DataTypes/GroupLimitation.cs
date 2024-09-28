@@ -26,7 +26,7 @@ public class GroupLimitation
     /// <summary>
     /// Getting from base
     /// </summary>
-    public GroupLimitation(int id, int groupId, string limitationKey, string limitationValue, int createdAt, int updatedAt, int? deletedAt)
+    public GroupLimitation(int id, int groupId, string limitationKey, string limitationValue, int createdAt, int updatedAt, int? deletedAt = null)
     {
         Id = id;
         GroupId = groupId;

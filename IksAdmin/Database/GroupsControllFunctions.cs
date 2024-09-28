@@ -224,7 +224,7 @@ public static class GroupsControllFunctions
             var limitations = (await conn.QueryAsync<GroupLimitation>(@"
                 select
                 id as id,
-                group_id as group_id,
+                group_id as groupId,
                 limitation_key as limitationKey,
                 limitation_value as limitationValue,
                 created_at as createdAt,

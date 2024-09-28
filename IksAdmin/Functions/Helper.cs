@@ -1,4 +1,7 @@
 using System.Text.Json;
+using CounterStrikeSharp.API;
+using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Commands;
 using IksAdminApi;
 
 namespace IksAdmin.Functions;
@@ -22,5 +25,22 @@ public static class Helper
                 Main.AdminApi.Debug($@"{option.Id} | {option.ViewFlags} | {option.View}");
             }
         }
+    }
+    public static void Print(CCSPlayerController? player, string message)
+    {
+        if (player == null)
+        {
+            Console.WriteLine(message);
+            return;
+        }
+        Server.NextFrame(() => {
+            player.Print(message, Main.AdminApi.Localizer["Tag"]);
+        });
+    }
+    public static void Reply(CommandInfo info, string message)
+    {
+        Server.NextFrame(() => {
+            info.Reply(message, Main.AdminApi.Localizer["Tag"]);
+        });
     }
 }

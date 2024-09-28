@@ -12,9 +12,12 @@ using MySqlConnector;
 using SharpMenu = CounterStrikeSharp.API.Modules.Menu;
 using IksAdmin.Menus;
 using MenuType = IksAdminApi.MenuType;
-using CounterStrikeSharp.API.Modules.Cvars;
 using CoreRCON;
 using System.Net;
+using CounterStrikeSharp.API;
+using static CounterStrikeSharp.API.Modules.Commands.CommandInfo;
+using Group = IksAdminApi.Group;
+using IksAdmin.Commands;
 namespace IksAdmin;
 
 public class Main : BasePlugin, IPluginConfig<PluginConfig>
@@ -63,8 +66,8 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
         Helper.SetSortMenus();
         AddCommandListener("say", OnSay);
         InitializePermissions();
+        InitializeCommands();
     }
-
     private HookResult OnSay(CCSPlayerController? player, CommandInfo commandInfo)
     {
         if (player == null) return HookResult.Continue;
@@ -96,17 +99,28 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
     private void InitializePermissions()
     {
         // Admin manage ===
-        AdminApi.RegisterPermission("admins_manage_add", "z");
-        AdminApi.RegisterPermission("admins_manage_delete", "z");
-        AdminApi.RegisterPermission("admins_manage_edit", "z");
-        AdminApi.RegisterPermission("admins_manage_refresh", "z");
+        AdminApi.RegisterPermission("admins_manage.add", "z");
+        AdminApi.RegisterPermission("admins_manage.delete", "z");
+        AdminApi.RegisterPermission("admins_manage.edit", "z");
+        AdminApi.RegisterPermission("admins_manage.refresh", "z");
         // Groups manage ===
-        AdminApi.RegisterPermission("groups_manage_add", "z");
-        AdminApi.RegisterPermission("groups_manage_delete", "z");
-        AdminApi.RegisterPermission("groups_manage_edit", "z");
-        AdminApi.RegisterPermission("groups_manage_refresh", "z");
+        AdminApi.RegisterPermission("groups_manage.add", "z");
+        AdminApi.RegisterPermission("groups_manage.delete", "z");
+        AdminApi.RegisterPermission("groups_manage.edit", "z");
+        AdminApi.RegisterPermission("groups_manage.refresh", "z");
     }
-
+    private void InitializeCommands()
+    {
+        AdminApi.AddNewCommand(
+            "am_add",
+            "Добавление админа",
+            "admins_manage.add",
+            "css_am_add <SteamID> <name> <time> <server key> <group name>\n" +
+            "css_am_add <SteamID> <name> <time> <server key> <flags> <immunity>",
+            AdminsManageCommands.Add,
+            minArgs: 5 
+        );
+    }
     public override void OnAllPluginsLoaded(bool hotReload)
     {
         try
@@ -123,33 +137,15 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
         }
         
     }
-
     [ConsoleCommand("css_admin_reload_cfg")]
     public void OnReloadCfg(CCSPlayerController caller, CommandInfo info)
     {
         OnConfigParsed(Config);
         Helper.SetSortMenus();
     }
-    [ConsoleCommand("css_reload_admins")]
-    public void OnReloadAdmins(CCSPlayerController caller, CommandInfo info)
+    public override void Unload(bool hotReload)
     {
-        Task.Run(async () => { await AdminApi.RefreshAdmins(); });
-    }
-
-    [ConsoleCommand("css_admin")]
-    public void OnMenuCmd(CCSPlayerController caller, CommandInfo info)
-    {
-        var menu = AdminApi.CreateMenu(GenerateMenuId("testmenu"), "Test menu", titleColor: MenuColors.Lime);
-        if (caller.Admin() == null)
-        {
-            info.ReplyToCommand("ты не админ");
-            return;
-        }
-        menu.AddMenuOption(GenerateOptionId("admins_manage"), "Admin manage", (_, _) => { 
-            AdminManageMenus.OpenAdminManageMenu(caller);
-        }, viewFlags: AdminUtils.GetAllPermissionGroupFlags("admins_manage") + AdminUtils.GetAllPermissionGroupFlags("groups_manage"));
-
-        menu.Open(caller);
+        //
     }
 }
 
@@ -179,11 +175,12 @@ public class AdminApi : IIksAdminApi
         ModuleDirectory = moduleDirectory;
         DbConnectionString = dbConnectionString;
         var serverModel = new ServerModel(
-            Config.ServerKey,
-            Config.ServerIp,
-            Config.ServerName == "" ? ConVar.Find("hostname")!.StringValue : Config.ServerName,
-            Config.SetRcon ? ConVar.Find("rcon_password")!.StringValue : null
-        );
+                Config.ServerKey,
+                Config.ServerIp,
+                Config.ServerName,
+                Config.RconPassword
+            );
+            
         Task.Run(async () => {
             try
             {
@@ -194,8 +191,11 @@ public class AdminApi : IIksAdminApi
                 await ServersControllFunctions.Add(serverModel);
                 AllServers = await ServersControllFunctions.GetAll();
                 ThisServer = AllServers.First(x => x.ServerKey == serverModel.ServerKey);
-                await SendRconToAllServers("css_am_reload_servers");
-                await SendRconToAllServers("css_am_reload_admins");
+                await SendRconToAllServers("css_am_reload_servers", true);
+                await SendRconToAllServers("css_am_reload_admins", true);
+                Server.NextFrame(() => {
+                    OnReady?.Invoke();
+                });
             }
             catch (System.Exception e)
             {
@@ -314,6 +314,8 @@ public class AdminApi : IIksAdminApi
         return true;
     }
     public event IIksAdminApi.OptionExecuted? OptionExecutedPost;
+    public event Action? OnReady;
+
     public bool OnOptionExecutedPost(CCSPlayerController player, IDynamicMenu menu, IMenu gameMenu, IDynamicMenuOption option)
     {
         var result = OptionExecutedPost?.Invoke(player, menu, gameMenu, option) ?? HookResult.Continue;
@@ -357,7 +359,7 @@ public class AdminApi : IIksAdminApi
         var ip = server.Ip.Split(":")[0];
         var port = server.Ip.Split(":")[1];
         Debug($"Sending rcon command [{command}] to server ({server.Name})[{server.Ip}] ...");
-        using var rcon = new RCON(new IPEndPoint(IPAddress.Parse(ip), int.Parse(port)), server.Rcon ?? "", 200);
+        using var rcon = new RCON(new IPEndPoint(IPAddress.Parse(ip), int.Parse(port)), server.Rcon ?? "", 10000);
         await rcon.ConnectAsync();
         await rcon.SendCommandAsync(command);
         Debug($"Success ✔");
@@ -372,4 +374,59 @@ public class AdminApi : IIksAdminApi
     {
         return AllServers.FirstOrDefault(x => x.Ip == ip);
     }
+    
+    public void AddNewCommand(
+        string command,
+        string description,
+        string permission,
+        string usage,
+        Action<CCSPlayerController?, List<string>, CommandInfo> onExecute,
+        CommandUsage commandUsage = CommandUsage.CLIENT_AND_SERVER,
+        string? tag = null,
+        string? notEnoughPermissionsMessage = null,
+        int minArgs = 0)
+    {
+        var tagString = tag == null ? Localizer["Tag"] : tag;
+        CommandCallback callback = (p, info) => {
+            if (commandUsage == CommandUsage.CLIENT_ONLY && p == null)
+            {
+                info.Reply("It's client only command ✖", tagString);
+                return;
+            }
+            if (commandUsage == CommandUsage.SERVER_ONLY && p != null)
+            {
+                info.Reply(Localizer["Error.OnlyServerCommand"], tagString);
+                return;
+            }
+            var admin = p == null ? ConsoleAdmin : p.Admin();
+            if (!admin.HasPermissions(permission))
+            {
+                info.Reply(notEnoughPermissionsMessage == null ?Localizer["Error.NotEnoughPermissions"] : notEnoughPermissionsMessage, tagString);
+                return;
+            }
+            var args = AdminUtils.GetArgsFromCommandLine(info.GetCommandString);
+            if (args.Count < minArgs)
+            {
+                info.Reply(Localizer["Error.DifferentNumberOfArgs"].Value.Replace("{usage}", usage), tagString);
+                return;
+            }
+            try
+            {
+                onExecute.Invoke(p, args, info);
+            }
+            catch (ArgumentException)
+            {
+                info.Reply(Localizer["Error.DifferentNumberOfArgs"].Value.Replace("{usage}", usage), tagString);
+                throw;
+            }
+            catch (Exception e)
+            {
+                info.Reply(Localizer["Error.OtherCommandError"].Value.Replace("{usage}", usage), tagString);
+                LogError(e.Message);
+            }
+            
+        };
+        Plugin.AddCommand("css_" + command, description, callback);
+    }
+
 }

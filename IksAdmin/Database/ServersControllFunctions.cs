@@ -88,11 +88,14 @@ public static class ServersControllFunctions
                 name as name,
                 created_at as createdAt,
                 updated_at as updatedAt,
-                deleted_at as deletedAt
+                deleted_at as deletedAt,
+                rcon as rcon
                 from iks_servers
                 where server_key = @serverKey
                 and deleted_at is null
-            ");
+            ", new {
+                serverKey
+            });
             return server;
         }
         catch (MySqlException e)
@@ -116,7 +119,8 @@ public static class ServersControllFunctions
                 name as name,
                 created_at as createdAt,
                 updated_at as updatedAt,
-                deleted_at as deletedAt
+                deleted_at as deletedAt,
+                rcon as rcon
                 from iks_servers
                 where deleted_at is null
             ")).ToList();

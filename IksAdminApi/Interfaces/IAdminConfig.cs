@@ -4,7 +4,7 @@ public interface IAdminConfig
     public string ServerKey { get; set; }
     public string ServerIp { get; set; }
     public string ServerName { get; set; }
-    public bool SetRcon {get; set;}
+    public string RconPassword {get; set;}
     // DATABASE ===
     public string Host { get; set; } 
     public string Database { get; set; } 
