@@ -361,8 +361,9 @@ public class AdminApi : IIksAdminApi
         Debug($"Sending rcon command [{command}] to server ({server.Name})[{server.Ip}] ...");
         using var rcon = new RCON(new IPEndPoint(IPAddress.Parse(ip), int.Parse(port)), server.Rcon ?? "", 10000);
         await rcon.ConnectAsync();
-        await rcon.SendCommandAsync(command);
+        var result = await rcon.SendCommandAsync(command);
         Debug($"Success ✔");
+        Debug($"Response from {server.Name} [{server.Ip}]: {result}");
     }
 
     public ServerModel? GetServerByKey(string serverKey)
