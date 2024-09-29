@@ -12,12 +12,26 @@ namespace IksAdminApi;
 public abstract class AdminModule : BasePlugin
 {
     public static IIksAdminApi AdminApi { get; set; } = null!;
-    public void Load(bool hotReload)
+
+    public override void OnAllPluginsLoaded(bool hotReload)
     {
-        AdminApi.EOnModuleLoad(this);
+        AdminApi.EOnModuleLoaded(this);
+        AdminApi.SetCommandInititalizer(ModuleName);
+        InitializeCommands();
+        AdminApi.ClearCommandInitializer();
+        AdminApi.OnReady += OnCoreReady;
     }
 
-    public void Unload(bool hotReload)
+    public virtual void OnCoreReady()
+    {
+    }
+
+    public virtual void InitializeCommands()
+    {
+        // use AdminApi.AddNewCommand(...) here
+    }
+
+    public override void Unload(bool hotReload)
     {
         AdminApi.EOnModuleUnload(this);
     }

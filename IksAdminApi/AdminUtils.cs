@@ -57,6 +57,7 @@ public static class AdminUtils
         {
             if (player != null)
                 player.PrintToChat($" {tag} {str}");
+            else Console.WriteLine($" {tag} {str}");
         }
     }
     public static void Reply(this CommandInfo info, string message, string tag = "")
@@ -119,9 +120,12 @@ public static class AdminUtils
         if (admin.CurrentFlags.ToCharArray().Any(allGroupFlags.Contains)) return true;
         return false;
     }
-    public static bool HasPermissions(this CCSPlayerController player, string key)
+    public static bool HasPermissions(this CCSPlayerController? player, string key)
     {
-        Debug($"Checking permission: {player.PlayerName} | {key}" );
+        if (player == null)
+        {
+            return true;
+        }
         var admin = player.Admin();
         return HasPermissions(admin, key);
     }

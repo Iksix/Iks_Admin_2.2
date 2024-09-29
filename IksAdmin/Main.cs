@@ -10,7 +10,6 @@ using CounterStrikeSharp.API.Modules.Commands;
 using IksAdmin.Functions;
 using MySqlConnector;
 using SharpMenu = CounterStrikeSharp.API.Modules.Menu;
-using IksAdmin.Menus;
 using MenuType = IksAdminApi.MenuType;
 using CoreRCON;
 using System.Net;
@@ -18,7 +17,7 @@ using CounterStrikeSharp.API;
 using static CounterStrikeSharp.API.Modules.Commands.CommandInfo;
 using Group = IksAdminApi.Group;
 using IksAdmin.Commands;
-using System.Diagnostics.CodeAnalysis;
+using CounterStrikeSharp.API.Core.Commands;
 namespace IksAdmin;
 
 public class Main : BasePlugin, IPluginConfig<PluginConfig>
@@ -56,6 +55,8 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
     public override void Load(bool hotReload)
     {
         AdminApi = new AdminApi(this, Config, Localizer, ModuleDirectory, Database.ConnectionString);
+        AdminModule.AdminApi = AdminApi;
+        AdminApi.OnModuleLoaded += OnModuleLoaded;
         AdminApi.OnModuleUnload += OnModuleUnload;
         Capabilities.RegisterPluginCapability(_pluginCapability, () => AdminApi);
         Admin.GetCurrentFlagsFunc = UtilsFunctions.GetCurrentFlagsFunc;
@@ -71,6 +72,11 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
         InitializeCommands();
     }
 
+    private void OnModuleLoaded(AdminModule module)
+    {
+        AdminApi.LoadedModules.Add(module);
+    }
+
     private void OnModuleUnload(AdminModule module)
     {
         foreach (var commands in AdminApi.RegistredCommands)
@@ -78,9 +84,11 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             if (commands.Key != module.ModuleName) continue;
             foreach (var command in commands.Value)
             {
-                RemoveCommand(command.command, command.callback);
+                Console.WriteLine($"Removing command from {module.ModuleName} [{command.Command}]");
+                CommandManager.RemoveCommand(command.Definition);
             }
         }
+        AdminApi.LoadedModules.Remove(module);
     }
 
     private HookResult OnSay(CCSPlayerController? player, CommandInfo commandInfo)
@@ -123,6 +131,15 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
         AdminApi.RegisterPermission("groups_manage.delete", "z");
         AdminApi.RegisterPermission("groups_manage.edit", "z");
         AdminApi.RegisterPermission("groups_manage.refresh", "z");
+        // Blocks manage ===
+        AdminApi.RegisterPermission("blocks_manage.ban", "b");
+        AdminApi.RegisterPermission("blocks_manage.mute", "m"); 
+        AdminApi.RegisterPermission("blocks_manage.gag", "g"); 
+        AdminApi.RegisterPermission("blocks_manage.remove_immunity", "i"); // Снять наказание выданное админом ниже по иммунитету
+        AdminApi.RegisterPermission("blocks_manage.remove_all", "u"); // Снять наказание выданное кем угодно (кроме консоли)
+        AdminApi.RegisterPermission("blocks_manage.remove_console", "c"); // Снять наказание выданное консолью
+        AdminApi.RegisterPermission("other.equals_immunity_action", "e"); // Разрешить взаймодействие с админами равными по иммунитету (Включая снятие наказаний если есть флаг blocks_manage.remove_immunity)
+        // Players manage ===
     }
     private void InitializeCommands()
     {
@@ -131,6 +148,15 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             "am_add",
             "Create admin",
             "admins_manage.add",
+            "css_am_add <steamId> <name> <time> <serverKey> <groupName>\n" +
+            "css_am_add <steamId> <name> <time> <server key> <flags> <immunity>",
+            AdminsManageCommands.Add,
+            minArgs: 5 
+        );
+        AdminApi.AddNewCommand(
+            "ban",
+            "Ban the player",
+            "blocks_manage.add",
             "css_am_add <steamId> <name> <time> <serverKey> <groupName>\n" +
             "css_am_add <steamId> <name> <time> <server key> <flags> <immunity>",
             AdminsManageCommands.Add,
@@ -167,7 +193,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             if (commands.Key != ModuleName) continue;
             foreach (var command in commands.Value)
             {
-                RemoveCommand(command.command, command.callback);
+                CommandManager.RemoveCommand(command.Definition);
             }
         }
     }
@@ -190,13 +216,11 @@ public class AdminApi : IIksAdminApi
     public Admin ConsoleAdmin { get; set; } = null!;
     public string DbConnectionString {get; set;}
     public Dictionary<CCSPlayerController, Action<string>> NextPlayerMessage {get; set;} = new();
+    public List<AdminModule> LoadedModules {get; set;} = new(); 
+
     private string CommandInitializer = "IksAdmin";
-    public struct CommandStruct
-    {
-        public string command;
-        public CommandCallback callback;
-    }
-    public Dictionary<string, List<CommandStruct>> RegistredCommands = new Dictionary<string, List<CommandStruct>>();
+
+    public Dictionary<string, List<CommandModel>> RegistredCommands {get; set;} = new Dictionary<string, List<CommandModel>>();
 
     public AdminApi(BasePlugin plugin, IAdminConfig config, IStringLocalizer localizer, string moduleDirectory, string dbConnectionString)
     {
@@ -347,7 +371,7 @@ public class AdminApi : IIksAdminApi
     public event IIksAdminApi.OptionExecuted? OptionExecutedPost;
     public event Action? OnReady;
     public event Action<AdminModule>? OnModuleUnload;
-    public event Action<AdminModule>? OnModuleLoad;
+    public event Action<AdminModule>? OnModuleLoaded;
 
     public bool OnOptionExecutedPost(CCSPlayerController player, IDynamicMenu menu, IMenu gameMenu, IDynamicMenuOption option)
     {
@@ -432,8 +456,7 @@ public class AdminApi : IIksAdminApi
                 info.Reply(Localizer["Error.OnlyServerCommand"], tagString);
                 return;
             }
-            var admin = p == null ? ConsoleAdmin : p.Admin();
-            if (!admin.HasPermissions(permission))
+            if (!p.HasPermissions(permission))
             {
                 info.Reply(notEnoughPermissionsMessage == null ?Localizer["Error.NotEnoughPermissions"] : notEnoughPermissionsMessage, tagString);
                 return;
@@ -460,23 +483,32 @@ public class AdminApi : IIksAdminApi
             }
             
         };
-        Plugin.AddCommand("css_" + command, description, callback);
-        RegistredCommands[CommandInitializer].Add(new CommandStruct { command = "css_" + command, callback = callback });
+        var definition = new CommandDefinition("css_" + command, description, callback);
+        Plugin.CommandManager.RegisterCommand(definition);
+        RegistredCommands[CommandInitializer].Add(new CommandModel { 
+            Command = "css_" + command, 
+            Definition = definition,
+            CommandUsage = commandUsage,
+            Description = description,
+            Pemission = permission,
+            Usage = usage,
+            Tag = tag
+            });
     }
 
     public void SetCommandInititalizer(string moduleName)
     {
         CommandInitializer = moduleName;
-        RegistredCommands.TryAdd(CommandInitializer, new List<CommandStruct>());
+        RegistredCommands.TryAdd(CommandInitializer, new List<CommandModel>());
     }
     public void ClearCommandInitializer()
     {
         CommandInitializer = "unsorted";
     }
 
-    public void EOnModuleLoad(AdminModule module)
+    public void EOnModuleLoaded(AdminModule module)
     {
-        OnModuleLoad?.Invoke(module);
+        OnModuleLoaded?.Invoke(module);
     }
 
     public void EOnModuleUnload(AdminModule module)

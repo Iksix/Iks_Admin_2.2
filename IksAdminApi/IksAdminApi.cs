@@ -27,6 +27,8 @@ public interface IIksAdminApi
     public Task SendRconToServer(ServerModel server, string command);
     public ServerModel? GetServerByKey(string serverKey);
     public ServerModel? GetServerByIp(string ip);
+    public Dictionary<string, List<CommandModel>> RegistredCommands {get; set;}
+    public List<AdminModule> LoadedModules {get; set;}
     // MENU ===
     public IDynamicMenu CreateMenu(string id, string title, MenuType? type = null, MenuColors titleColor = MenuColors.Default, PostSelectAction postSelectAction = PostSelectAction.Nothing, Action<CCSPlayerController>? backAction = null, IDynamicMenu? backMenu = null);
     public void CloseMenu(CCSPlayerController player);
@@ -63,8 +65,8 @@ public interface IIksAdminApi
     public event OptionExecuted OptionExecutedPre;
     public event OptionExecuted OptionExecutedPost;
     public event Action OnReady;
-    public void EOnModuleLoad(AdminModule module);
+    public void EOnModuleLoaded(AdminModule module);
     public void EOnModuleUnload(AdminModule module);
     public event Action<AdminModule> OnModuleUnload;
-    public event Action<AdminModule> OnModuleLoad;
+    public event Action<AdminModule> OnModuleLoaded;
 }
