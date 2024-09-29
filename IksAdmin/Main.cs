@@ -18,6 +18,7 @@ using CounterStrikeSharp.API;
 using static CounterStrikeSharp.API.Modules.Commands.CommandInfo;
 using Group = IksAdminApi.Group;
 using IksAdmin.Commands;
+using System.Diagnostics.CodeAnalysis;
 namespace IksAdmin;
 
 public class Main : BasePlugin, IPluginConfig<PluginConfig>
@@ -55,6 +56,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
     public override void Load(bool hotReload)
     {
         AdminApi = new AdminApi(this, Config, Localizer, ModuleDirectory, Database.ConnectionString);
+        AdminApi.OnModuleUnload += OnModuleUnload;
         Capabilities.RegisterPluginCapability(_pluginCapability, () => AdminApi);
         Admin.GetCurrentFlagsFunc = UtilsFunctions.GetCurrentFlagsFunc;
         Admin.GetCurrentImmunityFunc = UtilsFunctions.GetCurrentImmunityFunc;
@@ -68,6 +70,19 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
         InitializePermissions();
         InitializeCommands();
     }
+
+    private void OnModuleUnload(AdminModule module)
+    {
+        foreach (var commands in AdminApi.RegistredCommands)
+        {
+            if (commands.Key != module.ModuleName) continue;
+            foreach (var command in commands.Value)
+            {
+                RemoveCommand(command.command, command.callback);
+            }
+        }
+    }
+
     private HookResult OnSay(CCSPlayerController? player, CommandInfo commandInfo)
     {
         if (player == null) return HookResult.Continue;
@@ -111,15 +126,17 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
     }
     private void InitializeCommands()
     {
+        AdminApi.SetCommandInititalizer(ModuleName);
         AdminApi.AddNewCommand(
             "am_add",
-            "Добавление админа",
+            "Create admin",
             "admins_manage.add",
-            "css_am_add <SteamID> <name> <time> <server key> <group name>\n" +
-            "css_am_add <SteamID> <name> <time> <server key> <flags> <immunity>",
+            "css_am_add <steamId> <name> <time> <serverKey> <groupName>\n" +
+            "css_am_add <steamId> <name> <time> <server key> <flags> <immunity>",
             AdminsManageCommands.Add,
             minArgs: 5 
         );
+        AdminApi.ClearCommandInitializer();
     }
     public override void OnAllPluginsLoaded(bool hotReload)
     {
@@ -145,7 +162,14 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
     }
     public override void Unload(bool hotReload)
     {
-        //
+        foreach (var commands in AdminApi.RegistredCommands)
+        {
+            if (commands.Key != ModuleName) continue;
+            foreach (var command in commands.Value)
+            {
+                RemoveCommand(command.command, command.callback);
+            }
+        }
     }
 }
 
@@ -166,6 +190,13 @@ public class AdminApi : IIksAdminApi
     public Admin ConsoleAdmin { get; set; } = null!;
     public string DbConnectionString {get; set;}
     public Dictionary<CCSPlayerController, Action<string>> NextPlayerMessage {get; set;} = new();
+    private string CommandInitializer = "IksAdmin";
+    public struct CommandStruct
+    {
+        public string command;
+        public CommandCallback callback;
+    }
+    public Dictionary<string, List<CommandStruct>> RegistredCommands = new Dictionary<string, List<CommandStruct>>();
 
     public AdminApi(BasePlugin plugin, IAdminConfig config, IStringLocalizer localizer, string moduleDirectory, string dbConnectionString)
     {
@@ -315,6 +346,8 @@ public class AdminApi : IIksAdminApi
     }
     public event IIksAdminApi.OptionExecuted? OptionExecutedPost;
     public event Action? OnReady;
+    public event Action<AdminModule>? OnModuleUnload;
+    public event Action<AdminModule>? OnModuleLoad;
 
     public bool OnOptionExecutedPost(CCSPlayerController player, IDynamicMenu menu, IMenu gameMenu, IDynamicMenuOption option)
     {
@@ -428,6 +461,26 @@ public class AdminApi : IIksAdminApi
             
         };
         Plugin.AddCommand("css_" + command, description, callback);
+        RegistredCommands[CommandInitializer].Add(new CommandStruct { command = "css_" + command, callback = callback });
     }
 
+    public void SetCommandInititalizer(string moduleName)
+    {
+        CommandInitializer = moduleName;
+        RegistredCommands.TryAdd(CommandInitializer, new List<CommandStruct>());
+    }
+    public void ClearCommandInitializer()
+    {
+        CommandInitializer = "unsorted";
+    }
+
+    public void EOnModuleLoad(AdminModule module)
+    {
+        OnModuleLoad?.Invoke(module);
+    }
+
+    public void EOnModuleUnload(AdminModule module)
+    {
+        OnModuleUnload?.Invoke(module);
+    }
 }

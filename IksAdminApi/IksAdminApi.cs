@@ -31,6 +31,8 @@ public interface IIksAdminApi
     public IDynamicMenu CreateMenu(string id, string title, MenuType? type = null, MenuColors titleColor = MenuColors.Default, PostSelectAction postSelectAction = PostSelectAction.Nothing, Action<CCSPlayerController>? backAction = null, IDynamicMenu? backMenu = null);
     public void CloseMenu(CCSPlayerController player);
     // FUNC ===
+    public void SetCommandInititalizer(string moduleName);
+    public void ClearCommandInitializer();
     public void Debug(string message);
     public void LogError(string message);
     public void RegisterPermission(string key, string defaultFlags);
@@ -61,4 +63,8 @@ public interface IIksAdminApi
     public event OptionExecuted OptionExecutedPre;
     public event OptionExecuted OptionExecutedPost;
     public event Action OnReady;
+    public void EOnModuleLoad(AdminModule module);
+    public void EOnModuleUnload(AdminModule module);
+    public event Action<AdminModule> OnModuleUnload;
+    public event Action<AdminModule> OnModuleLoad;
 }
