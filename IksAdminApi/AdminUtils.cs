@@ -8,8 +8,11 @@ namespace IksAdminApi;
 
 public static class AdminUtils 
 {
-    public delegate Admin? AdminFinder(CCSPlayerController player);
-    public static AdminFinder FindAdminMethod = null!;
+    public delegate Admin? AdminFinderByController(CCSPlayerController player);
+    public static AdminFinderByController FindAdminByControllerMethod = null!;
+    public delegate Admin? AdminFinderById(int id);
+    public static AdminFinderById FindAdminByIdMethod = null!;
+    public static IIksAdminApi AdminApi = null!;
     public delegate Dictionary<string, Dictionary<string, string>> RightsGetter();
     public static RightsGetter GetPremissions = null!;
     public delegate IAdminConfig ConfigGetter();
@@ -40,11 +43,15 @@ public static class AdminUtils
     }
     public static Admin? Admin(this CCSPlayerController player)
     {
-        return FindAdminMethod(player);
+        return FindAdminByControllerMethod(player);
+    }
+    public static Admin? Admin(int id)
+    {
+        return FindAdminByIdMethod(id);
     }
     public static bool IsAdmin(this CCSPlayerController player)
     {
-        return FindAdminMethod(player) != null;
+        return FindAdminByControllerMethod(player) != null;
     }
     public static IAdminConfig Config()
     {

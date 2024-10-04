@@ -15,5 +15,6 @@ public interface IAdminConfig
     public int MenuType { get; set; }
     public Dictionary<string, string> PermissionReplacement {get; set;}
     public bool DebugMode { get; set; }
-    
+    public string[] IgnoreCommandsRegistering {get; set;}
+    public string[] MirrorsIp {get; set;}
 }

@@ -20,6 +20,7 @@ public class PluginConfig : BasePluginConfig, IAdminConfig
     {
         {"admins_manage_add", "z"} // Пример замены права управления админами на флаг z (Ну он и так z по дефолту, ну так что бы знали)
     };
-    public string[] IgnoreCommandsRegistering {get; set;} = ["example_command"]; // Эти команды не будут инициализированны при добавлении через метод админки
+    public string[] IgnoreCommandsRegistering {get; set;} = ["example_command"]; // Эти команды не будут инициализированны при добавлении через метод админки (пишем без префикса css_)
+    public string[] MirrorsIp {get; set;} = ["0.0.0.0"]; // Эти айпи не возможно будет добавить в наказания (будет null) (рассчитано что тут будут айпи зеркал)
     
 }

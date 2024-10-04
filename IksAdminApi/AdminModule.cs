@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Commands;
+using CounterStrikeSharp.API.Modules.Menu;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 
@@ -21,7 +22,6 @@ public abstract class AdminModule : BasePlugin
         AdminApi.ClearCommandInitializer();
         AdminApi.OnReady += OnCoreReady;
     }
-
     public virtual void OnCoreReady()
     {
     }

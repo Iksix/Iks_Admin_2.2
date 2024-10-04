@@ -9,9 +9,17 @@ namespace IksAdmin.Functions;
 
 public static class UtilsFunctions
 {
-    public static Admin? FindAdminMethod(CCSPlayerController player)
+    public static Admin? FindAdminByControllerMethod(CCSPlayerController player)
     {
         return Main.AdminApi.ServerAdmins.FirstOrDefault(x => x.SteamId == player.AuthorizedSteamID!.SteamId64.ToString());
+    }
+    public static Admin? FindAdminByIdMethod(int id)
+    {
+        if (id == 1)
+        {
+            return Main.AdminApi.ConsoleAdmin;
+        }
+        return Main.AdminApi.ServerAdmins.FirstOrDefault(x => x.Id == id);
     }
 
     public static Dictionary<string, Dictionary<string, string>> GetPermissions()
@@ -52,4 +60,6 @@ public static class UtilsFunctions
     {
         return Main.AdminApi.Groups.FirstOrDefault(x => x.Id == id);
     }
+
+    
 }

@@ -6,8 +6,8 @@ public class Group {
     public string Flags {get; set;}
     public int Immunity {get; set;}
     public string? Comment {get; set;}
-    public int CreatedAt {get; set;}
-    public int UpdatedAt {get; set;}
+    public int CreatedAt {get; set;} = AdminUtils.CurrentTimestamp();
+    public int UpdatedAt {get; set;} = AdminUtils.CurrentTimestamp();
     public int? DeletedAt {get; set;} = null;
 
     /// <summary>
@@ -33,8 +33,6 @@ public class Group {
         Flags = flags;
         Immunity = immunity;
         Comment = comment;
-        CreatedAt = AdminUtils.CurrentTimestamp();
-        UpdatedAt = AdminUtils.CurrentTimestamp();
     }
     
 }

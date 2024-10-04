@@ -56,13 +56,15 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
     {
         AdminApi = new AdminApi(this, Config, Localizer, ModuleDirectory, Database.ConnectionString);
         AdminModule.AdminApi = AdminApi;
+        AdminUtils.AdminApi = AdminApi;
         AdminApi.OnModuleLoaded += OnModuleLoaded;
         AdminApi.OnModuleUnload += OnModuleUnload;
         Capabilities.RegisterPluginCapability(_pluginCapability, () => AdminApi);
         Admin.GetCurrentFlagsFunc = UtilsFunctions.GetCurrentFlagsFunc;
         Admin.GetCurrentImmunityFunc = UtilsFunctions.GetCurrentImmunityFunc;
         AdminUtils.GetGroupFromIdFunc = UtilsFunctions.GetGroupFromIdFunc;
-        AdminUtils.FindAdminMethod = UtilsFunctions.FindAdminMethod;
+        AdminUtils.FindAdminByControllerMethod = UtilsFunctions.FindAdminByControllerMethod;
+        AdminUtils.FindAdminByIdMethod = UtilsFunctions.FindAdminByIdMethod;
         AdminUtils.GetPremissions = UtilsFunctions.GetPermissions;
         AdminUtils.GetConfigMethod = UtilsFunctions.GetConfigMethod;
         AdminUtils.Debug = UtilsFunctions.SetDebugMethod;
@@ -157,10 +159,9 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             "ban",
             "Ban the player",
             "blocks_manage.add",
-            "css_am_add <steamId> <name> <time> <serverKey> <groupName>\n" +
-            "css_am_add <steamId> <name> <time> <server key> <flags> <immunity>",
-            AdminsManageCommands.Add,
-            minArgs: 5 
+            "css_ban <#uid/#steamId/name> <time> <reason> [name]",
+            BlocksManageCommands.Ban,
+            minArgs: 3 
         );
         AdminApi.ClearCommandInitializer();
     }
@@ -218,7 +219,7 @@ public class AdminApi : IIksAdminApi
     public Dictionary<CCSPlayerController, Action<string>> NextPlayerMessage {get; set;} = new();
     public List<AdminModule> LoadedModules {get; set;} = new(); 
 
-    private string CommandInitializer = "IksAdmin";
+    private string CommandInitializer = "core";
 
     public Dictionary<string, List<CommandModel>> RegistredCommands {get; set;} = new Dictionary<string, List<CommandModel>>();
 
@@ -444,6 +445,11 @@ public class AdminApi : IIksAdminApi
         string? notEnoughPermissionsMessage = null,
         int minArgs = 0)
     {
+        if (Config.IgnoreCommandsRegistering.Contains(command))
+        {
+            Debug($"Adding new command [{command}] was skipped from config");
+            return;
+        }
         var tagString = tag == null ? Localizer["Tag"] : tag;
         CommandCallback callback = (p, info) => {
             if (commandUsage == CommandUsage.CLIENT_ONLY && p == null)

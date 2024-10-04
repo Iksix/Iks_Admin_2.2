@@ -18,8 +18,8 @@ public class Admin
     public string? Discord {get; set;}
     public string? Vk {get; set;}
     public int Disabled {get; set;}
-    public int CreatedAt {get; set;}
-    public int UpdatedAt {get; set;}
+    public int CreatedAt {get; set;} = AdminUtils.CurrentTimestamp();
+    public int UpdatedAt {get; set;} = AdminUtils.CurrentTimestamp();
     public int? DeletedAt {get; set;} = null;
     public int? EndAt {get; set;}
     public bool Online {get {
@@ -49,6 +49,7 @@ public class Admin
         return keys;
     } }
     public CCSPlayerController? Controller { get => AdminUtils.GetControllerBySteamId(SteamId); } 
+    public bool isConsole { get => Id == 1;}
 
     /// <summary>
     /// For getting from db

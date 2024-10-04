@@ -11,8 +11,8 @@ public class GroupLimitation
     public int GroupId {get; set;}
     public string LimitationKey {get; set;}
     public string LimitationValue {get; set;}
-    public int CreatedAt {get; set;}
-    public int UpdatedAt {get; set;}
+    public int CreatedAt {get; set;} = AdminUtils.CurrentTimestamp();
+    public int UpdatedAt {get; set;} = AdminUtils.CurrentTimestamp();
     public int? DeletedAt {get; set;} = null;
     public Group? Group {get => AdminUtils.GetGroup(GroupId);}
     public int GetInt {get {
@@ -44,7 +44,5 @@ public class GroupLimitation
         GroupId = groupId;
         LimitationKey = limitationKey;
         LimitationValue = limitationValue;
-        CreatedAt = AdminUtils.CurrentTimestamp();
-        UpdatedAt = AdminUtils.CurrentTimestamp();
     }
 }

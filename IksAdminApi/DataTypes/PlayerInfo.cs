@@ -6,7 +6,7 @@ public class PlayerInfo
 {
     public int UserId {get; set;}
     public int Slot {get; set;}
-    public string Ip {get; set;}
+    public string? Ip {get; set;}
     public string? SteamId {get; set;}
     public string PlayerName {get; set;}
     public CCSPlayerController? Controller {get {
@@ -22,7 +22,7 @@ public class PlayerInfo
     {
         UserId = (int)player.UserId!;
         Slot = player.Slot;
-        Ip = player.IpAddress!;
+        Ip = player.IpAddress;
         if (player.AuthorizedSteamID == null)
         {
             SteamId = null;
