@@ -18,6 +18,8 @@ using static CounterStrikeSharp.API.Modules.Commands.CommandInfo;
 using Group = IksAdminApi.Group;
 using IksAdmin.Commands;
 using CounterStrikeSharp.API.Core.Commands;
+using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
+using CounterStrikeSharp.API.ValveConstants.Protobuf;
 namespace IksAdmin;
 
 public class Main : BasePlugin, IPluginConfig<PluginConfig>
@@ -31,6 +33,8 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
     private static readonly PluginCapability<IMenuApi?> MenuCapability = new("menu:nfcore");   
     public static AdminApi AdminApi = null!;
     private readonly PluginCapability<IIksAdminApi> _pluginCapability  = new("iksadmin:core");
+    public static Dictionary<CCSPlayerController, string> HtmlMessages = new();
+    public static Dictionary<CCSPlayerController, Timer> HtmlMessagesTimer = new();
     
 
     public static string GenerateMenuId(string id)
@@ -72,6 +76,16 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
         AddCommandListener("say", OnSay);
         InitializePermissions();
         InitializeCommands();
+        RegisterListener<Listeners.OnTick>(() => {
+            foreach (var msg in HtmlMessages)
+            {
+                var player = msg.Key;
+                var message = msg.Value;
+                if (player == null || !player.IsValid || player.IsBot) continue;
+                if (message == "") continue;
+                player.PrintToCenterHtml(message);
+            }
+        });
     }
 
     private void OnModuleLoaded(AdminModule module)
@@ -181,12 +195,15 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
         }
         
     }
-    [ConsoleCommand("css_admin_reload_cfg")]
-    public void OnReloadCfg(CCSPlayerController caller, CommandInfo info)
+    
+    [GameEventHandler]
+    public HookResult OnPlayerDisconnect(EventPlayerDisconnect @event, GameEventInfo info)
     {
-        OnConfigParsed(Config);
-        Helper.SetSortMenus();
+        HtmlMessages.Remove(@event.Userid!);
+        HtmlMessagesTimer.Remove(@event.Userid!);
+        return HookResult.Continue;
     }
+    
     public override void Unload(bool hotReload)
     {
         foreach (var commands in AdminApi.RegistredCommands)
@@ -528,14 +545,26 @@ public class AdminApi : IIksAdminApi
         switch (result)
         {
             case 0:
-                if (announce) Server.NextFrame(() => Announces.BanAdded(ban));
+                Server.NextFrame(() => {
+                    if (announce)
+                        Announces.BanAdded(ban);
+                    CCSPlayerController? player = null;
+                    if (ban.BanIp == 0)
+                        player = AdminUtils.GetControllerBySteamId(ban.SteamId!);
+                    else 
+                        player = AdminUtils.GetControllerByIp(ban.Ip!);
+                    if (player != null)
+                    {
+                        DisconnectPlayer(player, ban.Reason);
+                    }
+                });
                 break;
             case 1:
                 Server.NextFrame(() => {
                     var controller = ban.Admin!.Controller;
                     if (controller != null)
                     {
-                        controller.Print(Localizer["ActionError.AlreadyBanned"]);
+                        Helper.Print(controller, Localizer["ActionError.AlreadyBanned"]);
                     }
                 });
                 break;
@@ -544,7 +573,7 @@ public class AdminApi : IIksAdminApi
                     var controller = ban.Admin!.Controller;
                     if (controller != null)
                     {
-                        controller.Print(Localizer["ActionError.Other"]);
+                        Helper.Print(controller, Localizer["ActionError.Other"]);
                     }
                 });
                 break;
@@ -587,5 +616,97 @@ public class AdminApi : IIksAdminApi
     public bool CanDoActionWithPlayer(Admin admin, string targetId)
     {
         throw new NotImplementedException();
+    }
+
+    public void DisconnectPlayer(CCSPlayerController player, string reason)
+    {
+        bool advanced = Config.AdvancedKick;
+        if (!advanced) 
+        {
+            player.Disconnect(NetworkDisconnectionReason.NETWORK_DISCONNECT_BANADDED);
+            return;
+        }
+        Main.HtmlMessages.Add(player, Localizer["HTML.AdvancedKickMessage"].Value.Replace("{reason}", reason));
+        Plugin.AddTimer(Config.AdvancedKickTime, () => {
+            if (player != null)
+            {
+                Main.HtmlMessages.Remove(player);
+                player.Disconnect(NetworkDisconnectionReason.NETWORK_DISCONNECT_KICKBANADDED);
+            }
+        });
+    }
+
+    public void DoActionWithIdentity(CCSPlayerController? actioneer, string identity, Action<CCSPlayerController> action, string[]? blockedArgs = null)
+    {
+        if (blockedArgs != null && blockedArgs.Contains(identity))
+        {
+            actioneer.Print("This identity is blocked for this action!");
+            return;
+        }
+        if (identity == "@me" && actioneer == null)
+        {
+            actioneer.Print("This identity is blocked for NULL PLAYERS!");
+            return;
+        }
+        List<CCSPlayerController> targets = new();
+        switch (identity)
+        {
+            case "@all":
+                targets = Utilities.GetPlayers().Where(x => x.IsValid).ToList();
+                break;
+            case "@me":
+                targets = new List<CCSPlayerController>() { actioneer! };
+                break;
+            case "@ct":
+                targets = Utilities.GetPlayers().Where(x => x.IsValid && x.TeamNum == 3).ToList();
+                break;
+            case "@t":
+                targets = Utilities.GetPlayers().Where(x => x.IsValid && x.TeamNum == 2).ToList();
+                break;
+            case "@spec":
+                targets = Utilities.GetPlayers().Where(x => x.IsValid && x.TeamNum == 1).ToList();
+                break;
+            case "@bots":
+                targets = Utilities.GetPlayers().Where(x => x.IsValid && x.IsBot).ToList();
+                break;
+            case "@players":
+                targets = Utilities.GetPlayers().Where(x => x.IsValid && !x.IsBot).ToList();
+                break;
+        }
+        if (targets.Count > 0)
+        {
+            foreach (var target1 in targets)
+            {
+                action.Invoke(target1);
+            }
+            return;
+        }
+        if (identity.StartsWith("#"))
+        {
+            var target = AdminUtils.GetControllerBySteamId(identity.Remove(0, 1));
+            if (target != null)
+            {
+                action.Invoke(target);
+                return;
+            }
+            else {
+                if (uint.TryParse(identity.Remove(0, 1), out uint uid))
+                    target = AdminUtils.GetControllerByUid(uid);
+                if (target != null)
+                {
+                    action.Invoke(target);
+                    return;
+                }
+            }
+            return;
+        }
+        var targetName = AdminUtils.GetControllerByName(identity);
+        if (targetName != null)
+        {
+            action.Invoke(targetName);
+            return;
+        }
+        Helper.Print(actioneer, Localizer["ActionError.TargetNotFound"]);
+        return;
     }
 }

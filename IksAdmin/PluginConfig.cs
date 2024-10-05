@@ -14,6 +14,8 @@ public class PluginConfig : BasePluginConfig, IAdminConfig
     public string Password { get; set; } = "Password";
     public string Port { get; set; } = "3306";
     // ===
+    public bool AdvancedKick {get; set;} = true;
+    public int AdvancedKickTime {get; set;} = 5;
     public bool DebugMode { get; set; } = true;
     public int MenuType { get; set; } = 2; // -1 = Default(Player select) [MM] | 0 = ChatMenu | 1 = ConsoleMenu | 2 = HtmlMenu | 3 = ButtonMenu [MM]
     public Dictionary<string, string> PermissionReplacement { get; set; } = new Dictionary<string, string>()

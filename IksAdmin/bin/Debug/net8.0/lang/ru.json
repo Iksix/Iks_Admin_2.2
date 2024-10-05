@@ -24,8 +24,11 @@
     "ActionError.Other" : "{red}Возникла неизвестная ошибка обратитесь к владельцу сервера ✖", // Значит что ошибка выводится в консоль, чекаем там
     "ActionError.NotEnoughPermissionsForUnban" : "{red}У вас не достаточно прав для снятия этого наказания ✖",
     "ActionError.AlreadyBanned" : "{red}Этот игрок/айпи уже забанен ✖",
+    "ActionError.TargetNotFound" : "{red}Цель не найдена ✖",
 
     "Announce.BanAdded" : "Админ {red}{admin}{white} заблокировал игрока {red}{name}\nПричина: {red}{reason}\nСрок: {red}{duration}",
     "Announce.BanAddedIp" : "Админ {red}{admin}{white} заблокировал игрока {red}{name}{white} по айпи\nПричина: {red}{reason}\nСрок: {red}{duration}",
-    "Announce.Unbanned" : "Админ {red}{admin}{white} разблокировал игрока {red}{name}\nПричина: {red}{reason}"
+    "Announce.Unbanned" : "Админ {red}{admin}{white} разблокировал игрока {red}{name}\nПричина: {red}{reason}",
+
+    "HTML.AdvancedKickMessage" : "<font color='red'>ВАС ЗАБЛОКИРОВАЛИ</font> <br> <font color='white'>Причина: {reason}</font>"
 }

@@ -33,6 +33,8 @@ public interface IIksAdminApi
     public IDynamicMenu CreateMenu(string id, string title, MenuType? type = null, MenuColors titleColor = MenuColors.Default, PostSelectAction postSelectAction = PostSelectAction.Nothing, Action<CCSPlayerController>? backAction = null, IDynamicMenu? backMenu = null);
     public void CloseMenu(CCSPlayerController player);
     // FUNC ===
+    public void DoActionWithIdentity(CCSPlayerController? actioneer, string identity, Action<CCSPlayerController> action, string[]? blockedArgs = null);
+    public void DisconnectPlayer(CCSPlayerController player, string reason);
     public bool CanDoActionWithPlayer(Admin admin, string targetId);
     public void SetCommandInititalizer(string moduleName);
     public void ClearCommandInitializer();

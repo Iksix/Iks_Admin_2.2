@@ -14,7 +14,7 @@ public static class BlocksFunctions
     public static void Ban(PlayerBan ban)
     {
         Task.Run(async () => {
-           
+            await AdminApi.AddBan(ban);
         });
     }
 }
