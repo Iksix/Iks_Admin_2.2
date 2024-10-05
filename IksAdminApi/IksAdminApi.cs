@@ -33,6 +33,7 @@ public interface IIksAdminApi
     public IDynamicMenu CreateMenu(string id, string title, MenuType? type = null, MenuColors titleColor = MenuColors.Default, PostSelectAction postSelectAction = PostSelectAction.Nothing, Action<CCSPlayerController>? backAction = null, IDynamicMenu? backMenu = null);
     public void CloseMenu(CCSPlayerController player);
     // FUNC ===
+    public bool CanDoActionWithPlayer(Admin admin, string targetId);
     public void SetCommandInititalizer(string moduleName);
     public void ClearCommandInitializer();
     public void Debug(string message);
@@ -54,6 +55,23 @@ public interface IIksAdminApi
         string? hasNotPermissionsMessage = null,
         int minArgs = 0
     );
+    // DATABASE FUNC ===
+    /// <summary>
+    /// return statuses: 0 - banned, 1 - already banned, -1 - other
+    /// </summary>
+    public Task<int> AddBan(PlayerBan ban, bool announce = true);
+    /// <summary>
+    /// return statuses: 0 - banned, 1 - ban not finded, 2 - admin haven't permission, -1 - other
+    /// </summary>
+    public Task<int> Unban(Admin admin, string steamId, string? reason, bool announce = true);
+    /// <summary>
+    /// return statuses: 0 - banned, 1 - ban not finded, 2 - admin haven't permission, -1 - other
+    /// </summary>
+    public Task<int> UnbanIp(Admin admin, string steamId, string? reason, bool announce = true);
+    public Task<PlayerBan?> GetActiveBan(string steamId);
+    public Task<List<PlayerBan>> GetAllBans(string steamId);
+    public Task<PlayerBan?> GetActiveBanIp(string ip);
+    public Task<List<PlayerBan>> GetAllIpBans(string ip);
     // EVENTS ===
     public delegate HookResult MenuOpenHandler(CCSPlayerController player, IDynamicMenu menu, IMenu gameMenu);
     public event MenuOpenHandler MenuOpenPre;

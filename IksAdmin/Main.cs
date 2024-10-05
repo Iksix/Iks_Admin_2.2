@@ -521,4 +521,71 @@ public class AdminApi : IIksAdminApi
     {
         OnModuleUnload?.Invoke(module);
     }
+
+    public async Task<int> AddBan(PlayerBan ban, bool announce = true)
+    {
+        var result = await BansControllFunctions.Add(ban);
+        switch (result)
+        {
+            case 0:
+                if (announce) Server.NextFrame(() => Announces.BanAdded(ban));
+                break;
+            case 1:
+                Server.NextFrame(() => {
+                    var controller = ban.Admin!.Controller;
+                    if (controller != null)
+                    {
+                        controller.Print(Localizer["ActionError.AlreadyBanned"]);
+                    }
+                });
+                break;
+            case -1:
+                Server.NextFrame(() => {
+                    var controller = ban.Admin!.Controller;
+                    if (controller != null)
+                    {
+                        controller.Print(Localizer["ActionError.Other"]);
+                    }
+                });
+                break;
+        }
+        return result;
+    }
+
+    public async Task<int> Unban(Admin admin, string steamId, string? reason, bool announce = true)
+    {
+        var result = await BansControllFunctions.Unban(admin, steamId, reason);
+        return result;
+    }
+
+    public async Task<int> UnbanIp(Admin admin, string ip, string? reason, bool announce = true)
+    {
+        var result = await BansControllFunctions.UnbanIp(admin, ip, reason);
+        return result;
+    }
+
+    public async Task<PlayerBan?> GetActiveBan(string steamId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<List<PlayerBan>> GetAllBans(string steamId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<PlayerBan?> GetActiveBanIp(string ip)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<List<PlayerBan>> GetAllIpBans(string ip)
+    {
+        throw new NotImplementedException();
+    }
+
+    public bool CanDoActionWithPlayer(Admin admin, string targetId)
+    {
+        throw new NotImplementedException();
+    }
 }

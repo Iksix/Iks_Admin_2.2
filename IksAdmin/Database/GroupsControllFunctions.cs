@@ -2,7 +2,7 @@ using Dapper;
 using IksAdminApi;
 using MySqlConnector;
 
-namespace IksAdmin.Functions;
+namespace IksAdmin;
 
 public static class GroupsControllFunctions
 {

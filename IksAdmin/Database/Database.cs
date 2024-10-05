@@ -1,7 +1,7 @@
 using Dapper;
 using MySqlConnector;
 
-namespace IksAdmin.Functions;
+namespace IksAdmin;
 
 public static class Database
 {

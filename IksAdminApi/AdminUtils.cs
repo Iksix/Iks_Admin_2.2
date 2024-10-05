@@ -31,6 +31,25 @@ public static class AdminUtils
         return (int)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
     }
 
+    public static DateTime UnixTimeStampToDateTime( int unixTimeStamp )
+    {
+        // Unix timestamp is seconds past epoch
+        DateTime dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+        dateTime = dateTime.AddSeconds( unixTimeStamp ).ToLocalTime();
+        return dateTime;
+    }
+
+    public static string GetDateString( int unixTimeStamp )
+    {
+        var dateTime = UnixTimeStampToDateTime( unixTimeStamp );
+        return dateTime.ToString( "dd.MM.yyyy HH:mm:ss" );
+    }
+
+    public static string GetDurationString( int seconds )
+    {
+        return $"{seconds} сек.";
+    }
+
     public static CCSPlayerController? GetControllerBySteamId(string steamId)
     {
         return Utilities.GetPlayers().FirstOrDefault(x => x != null && x.IsValid && x.AuthorizedSteamID != null && x.Connected == PlayerConnectedState.PlayerConnected && x.AuthorizedSteamID.SteamId64.ToString() == steamId);
@@ -44,6 +63,10 @@ public static class AdminUtils
     public static Admin? Admin(this CCSPlayerController player)
     {
         return FindAdminByControllerMethod(player);
+    }
+    public static Admin? Admin(this PlayerInfo player)
+    {
+        return AdminApi.ServerAdmins.FirstOrDefault(x => x.SteamId == player.SteamId);
     }
     public static Admin? Admin(int id)
     {
@@ -65,6 +88,14 @@ public static class AdminUtils
             if (player != null)
                 player.PrintToChat($" {tag} {str}");
             else Console.WriteLine($" {tag} {str}");
+        }
+    }
+    public static void PrintToServer(string message, string tag = "")
+    {
+        if (message.Trim() == "") return;
+        foreach (var str in message.Split("\n"))
+        {
+            Server.PrintToChatAll($" {tag} {str}");
         }
     }
     public static void Reply(this CommandInfo info, string message, string tag = "")

@@ -2,7 +2,7 @@ using Dapper;
 using IksAdminApi;
 using MySqlConnector;
 
-namespace IksAdmin.Functions;
+namespace IksAdmin;
 
 public static class AdminsControllFunctions
 {
@@ -48,38 +48,38 @@ public static class AdminsControllFunctions
             throw;
         }
     }
-    public static async Task AddServerKeyToAdmin(string steamId, string serverKey)
+public static async Task AddServerKeyToAdmin(string steamId, string serverKey)
+{
+    try
     {
-        try
+        await using var conn = new MySqlConnection(Database.ConnectionString);
+        await conn.OpenAsync();
+        var existingAdmin = await GetAdmin(steamId);
+        if (existingAdmin == null)
         {
-            await using var conn = new MySqlConnection(Database.ConnectionString);
-            await conn.OpenAsync();
-            var existingAdmin = await GetAdmin(steamId);
-            if (existingAdmin == null)
-            {
-                Main.AdminApi.LogError($"Admin {steamId} not finded ✖");
-                return;
-            }
-            Main.AdminApi.Debug($"Admin {steamId} finded ✔");
-            Main.AdminApi.Debug($"Adding server key...");
-            var serverKeys = existingAdmin.ServerKeys.ToList();
-            if (!serverKeys.Contains(serverKey))
-            {
-                serverKeys.Add(serverKey);
-                Main.AdminApi.Debug($"Server key added ✔");
-            } else {
-                Main.AdminApi.Debug($"Server key already exists ✖");
-                return;
-            }
-            existingAdmin.ServerKey = string.Join(";", serverKeys);
-            await UpdateAdminInBase(existingAdmin);
+            Main.AdminApi.LogError($"Admin {steamId} not finded ✖");
+            return;
         }
-        catch (MySqlException e)
+        Main.AdminApi.Debug($"Admin {steamId} finded ✔");
+        Main.AdminApi.Debug($"Adding server key...");
+        var serverKeys = existingAdmin.ServerKeys.ToList();
+        if (!serverKeys.Contains(serverKey))
         {
-            Main.AdminApi.LogError(e.ToString());
-            throw;
+            serverKeys.Add(serverKey);
+            Main.AdminApi.Debug($"Server key added ✔");
+        } else {
+            Main.AdminApi.Debug($"Server key already exists ✖");
+            return;
         }
+        existingAdmin.ServerKey = string.Join(";", serverKeys);
+        await UpdateAdminInBase(existingAdmin);
     }
+    catch (MySqlException e)
+    {
+        Main.AdminApi.LogError(e.ToString());
+        throw;
+    }
+}
     public static async Task<Admin?> GetAdmin(string steamId, string? serverKey = null, bool ignoreDeleted = true)
     {
         try
@@ -241,7 +241,7 @@ public static class AdminsControllFunctions
             Main.AdminApi.ConsoleAdmin = admins.First(x => x.SteamId.ToLower() == "console");
             Main.AdminApi.Debug("2/4 Console admin setted ✔");
             admins = admins.Where(x => x.SteamId.ToLower() != "console").ToList();
-            Main.AdminApi.AllAdmins = admins;
+            Main.AdminApi.AllAdmins = await GetAllAdmins(ignoreDeleted: false);
             Main.AdminApi.Debug("3/4 All admins setted ✔");
             var serverAdmins = admins.Where(x => x.ServerKey == null || x.ServerKeys.Contains(Main.AdminApi.Config.ServerKey)).ToList();
             Main.AdminApi.ServerAdmins = serverAdmins;

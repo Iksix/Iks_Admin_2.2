@@ -10,7 +10,7 @@ namespace IksAdmin.Commands;
 
 public static class BlocksManageCommands
 {
-    internal static void Ban(CCSPlayerController? caller, List<string> args, CommandInfo info)
+    public static void Ban(CCSPlayerController? caller, List<string> args, CommandInfo info)
     {
         throw new NotImplementedException();
     }

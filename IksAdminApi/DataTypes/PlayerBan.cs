@@ -34,6 +34,8 @@ public class PlayerBan
         if (ServerId == null) return null;
         return AdminUtils.AdminApi.AllServers.FirstOrDefault(x => x.Id == ServerId);
     }}
+    public string NameString => Name ?? "[NOT SETTED]";
+    public string IpString => Ip ?? "[NOT SETTED]";
     // used for getting from db
     public PlayerBan(int id, string? steamId, string? ip, string? name, int duration, string reason, int banIp, int? serverId, int adminId, int? unbannedBy, string? unbanReason, int createdAt, int endAt, int updatedAt, int? deletedAt)
     {
@@ -59,8 +61,9 @@ public class PlayerBan
         SteamId = steamId;
         Ip = ip;
         Name = name;
-        Duration = duration;
+        Duration = duration*60;
         Reason = reason; 
+        EndAt = Duration == 0 ? 0 : AdminUtils.CurrentTimestamp() + Duration;
         ServerId = serverId;
         if (banIp) BanIp = 1;
         if (AdminUtils.Config().MirrorsIp.Contains(Ip)) Ip = null;
@@ -71,8 +74,9 @@ public class PlayerBan
         SteamId = player.SteamId;
         Ip = player.Ip;
         Name = player.PlayerName;
-        Duration = duration;
+        Duration = duration*60;
         Reason = reason; 
+        EndAt = Duration == 0 ? 0 : AdminUtils.CurrentTimestamp() + Duration;
         ServerId = serverId;
         if (banIp) BanIp = 1;
         if (AdminUtils.Config().MirrorsIp.Contains(Ip)) Ip = null;

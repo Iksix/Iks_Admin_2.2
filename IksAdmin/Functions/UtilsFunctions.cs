@@ -19,7 +19,7 @@ public static class UtilsFunctions
         {
             return Main.AdminApi.ConsoleAdmin;
         }
-        return Main.AdminApi.ServerAdmins.FirstOrDefault(x => x.Id == id);
+        return Main.AdminApi.AllAdmins.FirstOrDefault(x => x.Id == id);
     }
 
     public static Dictionary<string, Dictionary<string, string>> GetPermissions()
