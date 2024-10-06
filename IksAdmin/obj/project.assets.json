@@ -32,7 +32,7 @@
           "lib/netstandard2.0/CoreRCON.dll": {}
         }
       },
-      "CounterStrikeSharp.API/1.0.264": {
+      "CounterStrikeSharp.API/1.0.276": {
         "type": "package",
         "dependencies": {
           "McMaster.NETCore.Plugins": "1.4.0",
@@ -1004,7 +1004,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
-          "CounterStrikeSharp.Api": "1.0.264"
+          "CounterStrikeSharp.Api": "1.0.276"
         },
         "compile": {
           "bin/placeholder/IksAdminApi.dll": {}
@@ -1045,14 +1045,14 @@
         "logo.png"
       ]
     },
-    "CounterStrikeSharp.API/1.0.264": {
-      "sha512": "9bH5CRsaGGl+QDa0dGbGoYAABAvdDfh3m4cSC0JZbbt5IYQCszxPfaJgMIMVuB7+oM/sE2VWsrTjSYTSYsW/Ow==",
+    "CounterStrikeSharp.API/1.0.276": {
+      "sha512": "3rzfOqg+5jin/XUFg8tvJySlQmuPBHirNCNB0oTTCMe4EUZwWB3nVVBdfuR4C4qjfLeao6qeghGgvQOZNdoTxg==",
       "type": "package",
-      "path": "counterstrikesharp.api/1.0.264",
+      "path": "counterstrikesharp.api/1.0.276",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
-        "counterstrikesharp.api.1.0.264.nupkg.sha512",
+        "counterstrikesharp.api.1.0.276.nupkg.sha512",
         "counterstrikesharp.api.nuspec",
         "lib/net8.0/CounterStrikeSharp.API.dll",
         "lib/net8.0/CounterStrikeSharp.API.runtimeconfig.json",
@@ -2794,7 +2794,7 @@
   "projectFileDependencyGroups": {
     "net8.0": [
       "CoreRcon >= 5.4.1",
-      "CounterStrikeSharp.Api >= 1.0.264",
+      "CounterStrikeSharp.Api >= 1.0.276",
       "IksAdminApi >= 1.0.0",
       "SteamWebAPI2 >= 4.4.1",
       "dapper >= 2.1.35",
@@ -2861,7 +2861,7 @@
           },
           "CounterStrikeSharp.Api": {
             "target": "Package",
-            "version": "[1.0.264, )"
+            "version": "[1.0.276, )"
           },
           "SteamWebAPI2": {
             "target": "Package",

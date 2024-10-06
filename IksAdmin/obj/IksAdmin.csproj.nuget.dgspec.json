@@ -52,7 +52,7 @@
           "dependencies": {
             "CounterStrikeSharp.Api": {
               "target": "Package",
-              "version": "[1.0.264, )"
+              "version": "[1.0.276, )"
             }
           },
           "imports": [
@@ -131,7 +131,7 @@
             },
             "CounterStrikeSharp.Api": {
               "target": "Package",
-              "version": "[1.0.264, )"
+              "version": "[1.0.276, )"
             },
             "SteamWebAPI2": {
               "target": "Package",
