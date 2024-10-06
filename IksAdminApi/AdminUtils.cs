@@ -72,10 +72,12 @@ public static class AdminUtils
             return Utilities.GetPlayers().Where(x => x != null && x.IsValid && x.Connected == PlayerConnectedState.PlayerConnected).ToList();
         return Utilities.GetPlayers().Where(x => x != null && x.IsValid && !x.IsBot && x.AuthorizedSteamID != null && x.Connected == PlayerConnectedState.PlayerConnected).ToList();
     }
-    public static Admin? Admin(this CCSPlayerController player)
+    public static Admin? Admin(this CCSPlayerController? player)
     {
+        if (player == null) return AdminApi.ConsoleAdmin;
         return FindAdminByControllerMethod(player);
     }
+    
     public static Admin? Admin(this PlayerInfo player)
     {
         return AdminApi.ServerAdmins.FirstOrDefault(x => x.SteamId == player.SteamId);

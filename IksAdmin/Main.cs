@@ -20,6 +20,7 @@ using IksAdmin.Commands;
 using CounterStrikeSharp.API.Core.Commands;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 using CounterStrikeSharp.API.ValveConstants.Protobuf;
+using CounterStrikeSharp.API.Modules.Utils;
 namespace IksAdmin;
 
 public class Main : BasePlugin, IPluginConfig<PluginConfig>
@@ -35,6 +36,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
     private readonly PluginCapability<IIksAdminApi> _pluginCapability  = new("iksadmin:core");
     public static Dictionary<CCSPlayerController, string> HtmlMessages = new();
     public static Dictionary<CCSPlayerController, Timer> HtmlMessagesTimer = new();
+    public static List<CCSPlayerController> BlockTeamChange = new();
     
 
     public static string GenerateMenuId(string id)
@@ -74,6 +76,8 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
         AdminUtils.Debug = UtilsFunctions.SetDebugMethod;
         Helper.SetSortMenus();
         AddCommandListener("say", OnSay);
+        AddCommandListener("say_team", OnSay);
+        AddCommandListener("jointeam", OnJoinTeam);
         InitializePermissions();
         InitializeCommands();
         RegisterListener<Listeners.OnTick>(() => {
@@ -86,6 +90,13 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
                 player.PrintToCenterHtml(message);
             }
         });
+
+    }
+
+    private HookResult OnJoinTeam(CCSPlayerController? player, CommandInfo commandInfo)
+    {
+        if (BlockTeamChange.Contains(player!)) return HookResult.Stop;
+        return HookResult.Continue;
     }
 
     private void OnModuleLoaded(AdminModule module)
@@ -172,8 +183,8 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
         AdminApi.AddNewCommand(
             "ban",
             "Ban the player",
-            "blocks_manage.add",
-            "css_ban <#uid/#steamId/name> <time> <reason> [name]",
+            "blocks_manage.ban",
+            "css_ban <#uid/#steamId/name> <time> <reason>",
             BlocksManageCommands.Ban,
             minArgs: 3 
         );
@@ -201,6 +212,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
     {
         HtmlMessages.Remove(@event.Userid!);
         HtmlMessagesTimer.Remove(@event.Userid!);
+        BlockTeamChange.Remove(@event.Userid!);
         return HookResult.Continue;
     }
     
@@ -626,6 +638,8 @@ public class AdminApi : IIksAdminApi
             player.Disconnect(NetworkDisconnectionReason.NETWORK_DISCONNECT_BANADDED);
             return;
         }
+        player.ChangeTeam(CsTeam.Spectator);
+        Main.BlockTeamChange.Add(player);
         Main.HtmlMessages.Add(player, Localizer["HTML.AdvancedKickMessage"].Value.Replace("{reason}", reason));
         Plugin.AddTimer(Config.AdvancedKickTime, () => {
             if (player != null)

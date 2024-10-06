@@ -55,7 +55,7 @@ create table if not exists iks_gags(
     updated_at int not null,
     deleted_at int default null,
     foreign key (admin_id) references iks_admins(id),
-    foreign key (ubanned_by) references iks_admins(id),
+    foreign key (unbanned_by) references iks_admins(id),
     foreign key (server_id) references iks_servers(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
 create table if not exists iks_mutes(
@@ -74,7 +74,7 @@ create table if not exists iks_mutes(
     updated_at int not null,
     deleted_at int default null,
     foreign key (admin_id) references iks_admins(id),
-    foreign key (ubanned_by) references iks_admins(id),
+    foreign key (unbanned_by) references iks_admins(id),
     foreign key (server_id) references iks_servers(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
 create table if not exists iks_bans(
@@ -94,7 +94,7 @@ create table if not exists iks_bans(
     updated_at int not null,
     deleted_at int default null,
     foreign key (admin_id) references iks_admins(id),
-    foreign key (ubanned_by) references iks_admins(id),
+    foreign key (unbanned_by) references iks_admins(id),
     foreign key (server_id) references iks_servers(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
 create table if not exists iks_admins_warns(

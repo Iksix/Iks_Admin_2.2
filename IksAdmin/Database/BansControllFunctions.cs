@@ -32,12 +32,12 @@ public static class BansControllFunctions
             await using var conn = new MySqlConnection(Database.ConnectionString);
             await conn.OpenAsync();
             var ban = await conn.QueryFirstOrDefaultAsync<PlayerBan>($@"
-                ${SelectBans}
+                {SelectBans}
                 where deleted_at is null
                 and steam_id = @steamId
                 and unbanned_by is null
-                and end_at > unix_timestamp() or end_at is null
-                and server_id is null or server_id = @serverId
+                and end_at > unix_timestamp()
+                and (server_id is null or server_id = @serverId)
             ", new {steamId, serverId = Main.AdminApi.ThisServer.Id});
             return ban;
         }
@@ -54,7 +54,7 @@ public static class BansControllFunctions
             await using var conn = new MySqlConnection(Database.ConnectionString);
             await conn.OpenAsync();
             var ban = await conn.QueryFirstOrDefaultAsync<PlayerBan>($@"
-                ${SelectBans}
+                {SelectBans}
                 where deleted_at is null
                 and ip = @ip and ban_ip = 1
                 and unbanned_by is null
@@ -76,7 +76,7 @@ public static class BansControllFunctions
             await using var conn = new MySqlConnection(Database.ConnectionString);
             await conn.OpenAsync();
             var bans = (await conn.QueryAsync<PlayerBan>($@"
-                ${SelectBans}
+                {SelectBans}
                 where deleted_at is null
                 and steam_id = @steamId
                 and server_id is null or server_id = @serverId
@@ -96,7 +96,7 @@ public static class BansControllFunctions
             await using var conn = new MySqlConnection(Database.ConnectionString);
             await conn.OpenAsync();
             var bans = (await conn.QueryAsync<PlayerBan>($@"
-                ${SelectBans}
+                {SelectBans}
                 where deleted_at is null
                 and server_id is null or server_id = @serverId
             ", new {serverId = Main.AdminApi.ThisServer.Id})).ToList();

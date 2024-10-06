@@ -16,8 +16,9 @@ public static class Announces
         AdminUtils.PrintToServer(str.Value
         .Replace("{admin}", ban.Admin!.Name)
         .Replace("{name}", ban.NameString)
+        .Replace("{reason}", ban.Reason)
         .Replace("{ip}", ban.IpString)
-        .Replace("{duration}", AdminUtils.GetDurationString(ban.Duration))
+        .Replace("{duration}", AdminUtils.GetDurationString(ban.Duration)), tag: Localizer["Tag"]
         );
     }
 }
