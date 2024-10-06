@@ -14,6 +14,7 @@ public class PluginConfig : BasePluginConfig, IAdminConfig
     public string Password { get; set; } = "Password";
     public string Port { get; set; } = "3306";
     // ===
+    public string WebApiKey {get; set;} = ""; // Указываете API ключ для получения имени в оффлайн бане
     public bool AdvancedKick {get; set;} = true;
     public int AdvancedKickTime {get; set;} = 5;
     public bool DebugMode { get; set; } = true;

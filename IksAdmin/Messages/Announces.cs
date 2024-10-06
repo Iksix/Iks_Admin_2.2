@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using IksAdminApi;
 using Microsoft.Extensions.Localization;
 
@@ -14,11 +10,11 @@ public static class Announces
     {
         var str = ban.BanIp == 0 ? Localizer["Announce.BanAdded"] : Localizer["Announce.BanAddedIp"];
         AdminUtils.PrintToServer(str.Value
-        .Replace("{admin}", ban.Admin!.Name)
-        .Replace("{name}", ban.NameString)
-        .Replace("{reason}", ban.Reason)
-        .Replace("{ip}", ban.IpString)
-        .Replace("{duration}", AdminUtils.GetDurationString(ban.Duration)), tag: Localizer["Tag"]
+            .Replace("{admin}", ban.Admin!.Name)
+            .Replace("{name}", ban.NameString)
+            .Replace("{reason}", ban.Reason)
+            .Replace("{ip}", ban.IpString)
+            .Replace("{duration}", AdminUtils.GetDurationString(ban.Duration)), tag: Localizer["Tag"]
         );
     }
 }

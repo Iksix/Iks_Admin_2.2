@@ -12,6 +12,7 @@ public interface IAdminConfig
     public string Password { get; set; }
     public string Port { get; set; }
     // OPTIONS ==
+    public string WebApiKey {get; set;}
     public bool AdvancedKick {get; set;}
     public int AdvancedKickTime {get; set;}
     public int MenuType { get; set; }

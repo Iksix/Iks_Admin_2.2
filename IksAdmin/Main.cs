@@ -173,19 +173,27 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
         AdminApi.SetCommandInititalizer(ModuleName);
         AdminApi.AddNewCommand(
             "am_add",
-            "Create admin",
+            "Создать админа",
             "admins_manage.add",
             "css_am_add <steamId> <name> <time> <serverKey> <groupName>\n" +
-            "css_am_add <steamId> <name> <time> <server key> <flags> <immunity>",
+            "css_am_add <steamId> <name> <time> <serverKey> <flags> <immunity>",
             AdminsManageCommands.Add,
             minArgs: 5 
         );
         AdminApi.AddNewCommand(
             "ban",
-            "Ban the player",
+            "Забанить игрока",
             "blocks_manage.ban",
             "css_ban <#uid/#steamId/name> <time> <reason>",
             BlocksManageCommands.Ban,
+            minArgs: 3 
+        );
+        AdminApi.AddNewCommand(
+            "addban",
+            "Забанить игрока по стим айди (для оффлайн бана)",
+            "blocks_manage.ban",
+            "css_addban <steamId> <time> <reason>",
+            BlocksManageCommands.AddBan,
             minArgs: 3 
         );
         AdminApi.ClearCommandInitializer();
