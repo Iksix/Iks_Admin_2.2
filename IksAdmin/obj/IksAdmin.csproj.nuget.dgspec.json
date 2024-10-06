@@ -133,6 +133,10 @@
               "target": "Package",
               "version": "[1.0.264, )"
             },
+            "SteamWebAPI2": {
+              "target": "Package",
+              "version": "[4.4.1, )"
+            },
             "dapper": {
               "target": "Package",
               "version": "[2.1.35, )"

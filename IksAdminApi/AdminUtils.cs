@@ -104,6 +104,12 @@ public static class AdminUtils
             else Console.WriteLine($" {tag} {str}");
         }
     }
+    public static string? GetIp(this CCSPlayerController player)
+    {
+        var ip = player.IpAddress;
+        if (ip == null) return null;
+        return ip.Split(":")[0];
+    }
     public static void PrintToServer(string message, string tag = "")
     {
         if (message.Trim() == "") return;

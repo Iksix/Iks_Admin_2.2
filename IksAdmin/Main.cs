@@ -189,8 +189,16 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             minArgs: 3 
         );
         AdminApi.AddNewCommand(
-            "addban",
-            "Забанить игрока по стим айди (для оффлайн бана)",
+            "banip",
+            "Забанить игрока по айпи (онлайн)",
+            "blocks_manage.ban",
+            "css_ban <#uid/#steamId/name> <time> <reason>",
+            BlocksManageCommands.Ban,
+            minArgs: 3 
+        );
+        AdminApi.AddNewCommand(
+            "addbanip",
+            "Забанить игрока по айпи (оффлайн)",
             "blocks_manage.ban",
             "css_addban <steamId> <time> <reason>",
             BlocksManageCommands.AddBan,

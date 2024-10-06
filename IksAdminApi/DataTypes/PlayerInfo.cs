@@ -22,7 +22,7 @@ public class PlayerInfo
     {
         UserId = (int)player.UserId!;
         Slot = player.Slot;
-        Ip = player.IpAddress;
+        Ip = player.GetIp();
         if (player.AuthorizedSteamID == null)
         {
             SteamId = null;
