@@ -17,4 +17,15 @@ public static class Announces
             .Replace("{duration}", AdminUtils.GetDurationString(ban.Duration)), tag: Localizer["Tag"]
         );
     }
+    public static void Unbanned(PlayerBan ban)
+    {
+        var str = ban.BanIp == 0 ? Localizer["Announce.Unbanned"] : Localizer["Announce.UnbannedIp"];
+        AdminUtils.PrintToServer(str.Value
+            .Replace("{admin}", ban.Admin!.Name)
+            .Replace("{name}", ban.NameString)
+            .Replace("{reason}", ban.Reason)
+            .Replace("{ip}", ban.IpString)
+            .Replace("{duration}", AdminUtils.GetDurationString(ban.Duration)), tag: Localizer["Tag"]
+        );
+    }
 }

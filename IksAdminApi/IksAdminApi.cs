@@ -4,6 +4,7 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Menu;
 using Microsoft.Extensions.Localization;
+using SteamWebAPI2.Utilities;
 
 public interface IIksAdminApi
 {
@@ -33,6 +34,7 @@ public interface IIksAdminApi
     public IDynamicMenu CreateMenu(string id, string title, MenuType? type = null, MenuColors titleColor = MenuColors.Default, PostSelectAction postSelectAction = PostSelectAction.Nothing, Action<CCSPlayerController>? backAction = null, IDynamicMenu? backMenu = null);
     public void CloseMenu(CCSPlayerController player);
     // FUNC ===
+    public Task<ISteamWebResponse<Steam.Models.SteamCommunity.PlayerSummaryModel>?> GetPlayerSummaries(ulong steamId);
     public void DoActionWithIdentity(CCSPlayerController? actioneer, string identity, Action<CCSPlayerController> action, string[]? blockedArgs = null);
     public void DisconnectPlayer(CCSPlayerController player, string reason);
     public bool CanDoActionWithPlayer(Admin admin, string targetId);

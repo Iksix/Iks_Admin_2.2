@@ -21,6 +21,9 @@ using CounterStrikeSharp.API.Core.Commands;
 using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 using CounterStrikeSharp.API.ValveConstants.Protobuf;
 using CounterStrikeSharp.API.Modules.Utils;
+using SteamWebAPI2.Utilities;
+using Steam.Models.SteamCommunity;
+using SteamWebAPI2.Interfaces;
 namespace IksAdmin;
 
 public class Main : BasePlugin, IPluginConfig<PluginConfig>
@@ -738,5 +741,15 @@ public class AdminApi : IIksAdminApi
         }
         Helper.Print(actioneer, Localizer["ActionError.TargetNotFound"]);
         return;
+    }
+    /// <summary>
+    /// Нужен SteamWebApiKey установленный в кфг
+    /// </summary>
+    public async Task<ISteamWebResponse<PlayerSummaryModel>?> GetPlayerSummaries(ulong steamId)
+    {
+        var webInterfaceFactory = new SteamWebInterfaceFactory(Main.AdminApi.Config.WebApiKey);
+        var steamInterface = webInterfaceFactory.CreateSteamWebInterface<SteamUser>(new HttpClient());
+        var playerSummaryResponse = await steamInterface.GetPlayerSummaryAsync(steamId);
+        return playerSummaryResponse;
     }
 }

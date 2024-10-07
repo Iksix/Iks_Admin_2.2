@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="CounterStrikeSharp.Api" Version="1.0.276" />
+    <PackageReference Include="SteamWebAPI2" Version="4.4.1" />
     <Reference Include="../RequirmentsApi/MenuManagerApi.dll" />
   </ItemGroup>
 

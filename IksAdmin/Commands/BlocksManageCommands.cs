@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Commands;
+using CounterStrikeSharp.API.Modules.Entities;
 using IksAdmin.Functions;
 using IksAdminApi;
 using SteamWebAPI2.Interfaces;
@@ -50,12 +51,9 @@ public static class BlocksManageCommands
         }
         var adminId = caller.Admin()!.Id;
         Task.Run(async () => {
-            
             if (Main.AdminApi.Config.WebApiKey != "") 
             {
-                var webInterfaceFactory = new SteamWebInterfaceFactory(Main.AdminApi.Config.WebApiKey);
-                var steamInterface = webInterfaceFactory.CreateSteamWebInterface<SteamUser>(new HttpClient());
-                var playerSummaryResponse = await steamInterface.GetPlayerSummaryAsync(ulong.Parse(steamId));
+                var playerSummaryResponse = await Main.AdminApi.GetPlayerSummaries(ulong.Parse(steamId));
                 name = playerSummaryResponse?.Data.Nickname;
             }
             var ban = new PlayerBan(
