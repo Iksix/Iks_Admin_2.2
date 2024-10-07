@@ -9,7 +9,7 @@
       "IksAdmin/1.0.0": {
         "dependencies": {
           "CoreRCON": "5.4.1",
-          "CounterStrikeSharp.API": "1.0.264",
+          "CounterStrikeSharp.API": "1.0.276",
           "IksAdminApi": "1.0.0",
           "SteamWebAPI2": "4.4.1",
           "Dapper": "2.1.35",
@@ -44,7 +44,7 @@
           }
         }
       },
-      "CounterStrikeSharp.API/1.0.264": {
+      "CounterStrikeSharp.API/1.0.276": {
         "dependencies": {
           "McMaster.NETCore.Plugins": "1.4.0",
           "Microsoft.CSharp": "4.7.0",
@@ -61,8 +61,8 @@
         },
         "runtime": {
           "lib/net8.0/CounterStrikeSharp.API.dll": {
-            "assemblyVersion": "1.0.264.0",
-            "fileVersion": "1.0.264.0"
+            "assemblyVersion": "1.0.276.0",
+            "fileVersion": "1.0.276.0"
           }
         }
       },
@@ -616,10 +616,14 @@
       },
       "IksAdminApi/1.0.0": {
         "dependencies": {
-          "CounterStrikeSharp.API": "1.0.264"
+          "CounterStrikeSharp.API": "1.0.276",
+          "SteamWebAPI2": "4.4.1"
         },
         "runtime": {
-          "IksAdminApi.dll": {}
+          "IksAdminApi.dll": {
+            "assemblyVersion": "1.0.0",
+            "fileVersion": "1.0.0.0"
+          }
         }
       },
       "MenuManagerApi/1.0.0.0": {
@@ -652,12 +656,12 @@
       "path": "corercon/5.4.1",
       "hashPath": "corercon.5.4.1.nupkg.sha512"
     },
-    "CounterStrikeSharp.API/1.0.264": {
+    "CounterStrikeSharp.API/1.0.276": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-9bH5CRsaGGl+QDa0dGbGoYAABAvdDfh3m4cSC0JZbbt5IYQCszxPfaJgMIMVuB7+oM/sE2VWsrTjSYTSYsW/Ow==",
-      "path": "counterstrikesharp.api/1.0.264",
-      "hashPath": "counterstrikesharp.api.1.0.264.nupkg.sha512"
+      "sha512": "sha512-3rzfOqg+5jin/XUFg8tvJySlQmuPBHirNCNB0oTTCMe4EUZwWB3nVVBdfuR4C4qjfLeao6qeghGgvQOZNdoTxg==",
+      "path": "counterstrikesharp.api/1.0.276",
+      "hashPath": "counterstrikesharp.api.1.0.276.nupkg.sha512"
     },
     "Dapper/2.1.35": {
       "type": "package",

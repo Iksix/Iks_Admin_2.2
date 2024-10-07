@@ -28,11 +28,6 @@ public static class Helper
     }
     public static void Print(CCSPlayerController? player, string message)
     {
-        if (player == null)
-        {
-            Console.WriteLine(message);
-            return;
-        }
         Server.NextFrame(() => {
             player.Print(message, Main.AdminApi.Localizer["Tag"]);
         });
