@@ -616,8 +616,7 @@
       },
       "IksAdminApi/1.0.0": {
         "dependencies": {
-          "CounterStrikeSharp.API": "1.0.276",
-          "SteamWebAPI2": "4.4.1"
+          "CounterStrikeSharp.API": "1.0.276"
         },
         "runtime": {
           "IksAdminApi.dll": {

@@ -1,8 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using CounterStrikeSharp.API;
+using CounterStrikeSharp.API.Modules.Commands;
 using IksAdminApi;
 
 namespace IksAdmin.Functions;
@@ -11,19 +8,24 @@ namespace IksAdmin.Functions;
 public static class BlocksFunctions
 {
     public static AdminApi AdminApi = Main.AdminApi!;
-
-    public static void Ban(PlayerBan ban)
+    public static async Task Ban(PlayerBan ban, CommandInfo info)
     {
-        Task.Run(async () => {
-            var result = await AdminApi.AddBan(ban);
+        AdminApi.Debug("Add ban... " + ban.SteamId);
+        var result = await AdminApi.AddBan(ban);
+        AdminApi.Debug("Ban result: " + result);
+        switch (result)
+        {
+            case 0:
                 Server.NextFrame(() => {
-                switch (result)
-                {
-                    case 0:
-                        Helper.Print(ban.Admin?.Controller, AdminApi.Localizer["ActionSuccess.BanSuccess"]);
-                        break;
-                }
-            });
-        });
+                    Helper.Reply(info, AdminApi.Localizer["ActionSuccess.BanSuccess"]);
+                });
+                break;
+            case 1:
+                Server.NextFrame(() => {
+                    Helper.Reply(info, AdminApi.Localizer["ActionError.AlreadyBanned"]);
+                });
+                break;
+        }
+        
     }
 }

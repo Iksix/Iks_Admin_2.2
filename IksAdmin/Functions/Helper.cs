@@ -28,8 +28,18 @@ public static class Helper
     }
     public static void Print(CCSPlayerController? player, string message)
     {
+        Main.AdminApi.Debug("Print: " + message);
         Server.NextFrame(() => {
             player.Print(message, Main.AdminApi.Localizer["Tag"]);
+        });
+    }
+    public static void PrintToAdmin(Admin admin, string message)
+    {
+        Main.AdminApi.Debug("Print to admin: " + message);
+        Server.NextFrame(() => {
+            var controller = admin.Controller;
+            Main.AdminApi.Debug("1");
+            controller.Print(message, Main.AdminApi.Localizer["Tag"]);
         });
     }
     public static void Reply(CommandInfo info, string message)

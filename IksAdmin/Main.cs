@@ -192,6 +192,14 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             minArgs: 3 
         );
         AdminApi.AddNewCommand(
+            "addban",
+            "Забанить игрока по стим айди (оффлайн)",
+            "blocks_manage.ban",
+            "css_addban <steamId> <time> <reason>",
+            BlocksManageCommands.AddBan,
+            minArgs: 3 
+        );
+        AdminApi.AddNewCommand(
             "banip",
             "Забанить игрока по айпи (онлайн)",
             "blocks_manage.ban",
@@ -572,44 +580,53 @@ public class AdminApi : IIksAdminApi
 
     public async Task<int> AddBan(PlayerBan ban, bool announce = true)
     {
-        var result = await BansControllFunctions.Add(ban);
-        switch (result)
+        try
         {
-            case 0:
-                Server.NextFrame(() => {
-                    if (announce)
-                        Announces.BanAdded(ban);
-                    CCSPlayerController? player = null;
-                    if (ban.BanIp == 0)
-                        player = AdminUtils.GetControllerBySteamId(ban.SteamId!);
-                    else 
-                        player = AdminUtils.GetControllerByIp(ban.Ip!);
-                    if (player != null)
-                    {
-                        DisconnectPlayer(player, ban.Reason);
-                    }
-                });
-                break;
-            case 1:
-                Server.NextFrame(() => {
-                    var controller = ban.Admin!.Controller;
-                    if (controller != null)
-                    {
-                        Helper.Print(controller, Localizer["ActionError.AlreadyBanned"]);
-                    }
-                });
-                break;
-            case -1:
-                Server.NextFrame(() => {
-                    var controller = ban.Admin!.Controller;
-                    if (controller != null)
-                    {
-                        Helper.Print(controller, Localizer["ActionError.Other"]);
-                    }
-                });
-                break;
+            var result = await BansControllFunctions.Add(ban);
+            switch (result)
+            {
+                case 0:
+                    Server.NextFrame(() => {
+                        if (announce)
+                            Announces.BanAdded(ban);
+                        CCSPlayerController? player = null;
+                        if (ban.BanIp == 0)
+                            player = AdminUtils.GetControllerBySteamId(ban.SteamId!);
+                        else 
+                            player = AdminUtils.GetControllerByIp(ban.Ip!);
+                        if (player != null)
+                        {
+                            DisconnectPlayer(player, ban.Reason);
+                        }
+                    });
+                    break;
+                case 1:
+                    Server.NextFrame(() => {
+                        var controller = ban.Admin!.Controller;
+                        if (controller != null)
+                        {
+                            Helper.Print(controller, Localizer["ActionError.AlreadyBanned"]);
+                        }
+                    });
+                    break;
+                case -1:
+                    Server.NextFrame(() => {
+                        var controller = ban.Admin!.Controller;
+                        if (controller != null)
+                        {
+                            Helper.Print(controller, Localizer["ActionError.Other"]);
+                        }
+                    });
+                    break;
+            }
+            return result;
         }
-        return result;
+        catch (Exception e)
+        {
+            Main.AdminApi.LogError(e.ToString());
+            throw;
+        }
+        
     }
 
     public async Task<int> Unban(Admin admin, string steamId, string? reason, bool announce = true)
@@ -745,11 +762,20 @@ public class AdminApi : IIksAdminApi
     /// <summary>
     /// Нужен SteamWebApiKey установленный в кфг
     /// </summary>
-    public async Task<ISteamWebResponse<PlayerSummaryModel>?> GetPlayerSummaries(ulong steamId)
+    public async Task<PlayerSummaries> GetPlayerSummaries(ulong steamId)
     {
         var webInterfaceFactory = new SteamWebInterfaceFactory(Main.AdminApi.Config.WebApiKey);
         var steamInterface = webInterfaceFactory.CreateSteamWebInterface<SteamUser>(new HttpClient());
         var playerSummaryResponse = await steamInterface.GetPlayerSummaryAsync(steamId);
-        return playerSummaryResponse;
+        var data = playerSummaryResponse.Data;
+        var summaries = new PlayerSummaries(
+            data.SteamId,
+            data.Nickname,
+            data.ProfileUrl,
+            data.AvatarUrl,
+            data.AvatarFullUrl,
+            data.AvatarUrl
+        );
+        return summaries;
     }
 }

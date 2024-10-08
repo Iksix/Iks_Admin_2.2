@@ -97,11 +97,13 @@ public static class AdminUtils
     public static void Print(this CCSPlayerController? player, string message, string tag = "")
     {
         if (message.Trim() == "") return;
+        if (player == null)
+        {
+            Server.PrintToChatAll(message);
+        }
         foreach (var str in message.Split("\n"))
         {
-            if (player != null)
-                player.PrintToChat($" {tag} {str}");
-            else Console.WriteLine($" {tag} {str}");
+            player.PrintToChat($" {tag} {str}");
         }
     }
     public static string? GetIp(this CCSPlayerController player)

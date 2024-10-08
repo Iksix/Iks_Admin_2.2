@@ -13,7 +13,7 @@ public class PlayerBan
     public string? Name {get; set;}
     public string Reason {get; set;}
     public int Duration {get; set;}
-    public int BanIp {get; set;} = 0;
+    public sbyte BanIp {get; set;} = 0;
     public int? ServerId {get; set;} = null;
     public int AdminId {get; set;}
     public int EndAt {get; set;}
@@ -37,7 +37,10 @@ public class PlayerBan
     public string NameString => Name ?? "[NOT SETTED]";
     public string IpString => Ip ?? "[NOT SETTED]";
     // used for getting from db
-    public PlayerBan(int id, string? steamId, string? ip, string? name, int duration, string reason, int banIp, int? serverId, int adminId, int? unbannedBy, string? unbanReason, int createdAt, int endAt, int updatedAt, int? deletedAt)
+    public PlayerBan(int id, string? steamId, string? ip, string? name, 
+    int duration, string reason, sbyte banIp, int? serverId, int adminId, 
+    int? unbannedBy, string? unbanReason, int createdAt, int endAt, int 
+    updatedAt, int? deletedAt)
     {
         Id = id;
         SteamId = steamId;

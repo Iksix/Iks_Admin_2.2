@@ -9,22 +9,10 @@
       "IksAdminApi/1.0.0": {
         "dependencies": {
           "CounterStrikeSharp.API": "1.0.276",
-          "SteamWebAPI2": "4.4.1",
           "MenuManagerApi": "1.0.0.0"
         },
         "runtime": {
           "IksAdminApi.dll": {}
-        }
-      },
-      "AutoMapper/12.0.0": {
-        "dependencies": {
-          "Microsoft.CSharp": "4.7.0"
-        },
-        "runtime": {
-          "lib/netstandard2.1/AutoMapper.dll": {
-            "assemblyVersion": "12.0.0.0",
-            "fileVersion": "12.0.0.0"
-          }
         }
       },
       "CounterStrikeSharp.API/1.0.276": {
@@ -457,14 +445,6 @@
           }
         }
       },
-      "Newtonsoft.Json/13.0.1": {
-        "runtime": {
-          "lib/netstandard2.0/Newtonsoft.Json.dll": {
-            "assemblyVersion": "13.0.0.0",
-            "fileVersion": "13.0.1.25517"
-          }
-        }
-      },
       "Scrutor/4.2.2": {
         "dependencies": {
           "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0",
@@ -519,24 +499,6 @@
           }
         }
       },
-      "SteamWebAPI2/4.4.1": {
-        "dependencies": {
-          "Microsoft.Extensions.DependencyInjection": "8.0.0",
-          "Microsoft.Extensions.Options": "8.0.0",
-          "AutoMapper": "12.0.0",
-          "Newtonsoft.Json": "13.0.1"
-        },
-        "runtime": {
-          "lib/netstandard2.1/Steam.Models.dll": {
-            "assemblyVersion": "1.0.0.0",
-            "fileVersion": "1.0.0.0"
-          },
-          "lib/netstandard2.1/SteamWebAPI2.dll": {
-            "assemblyVersion": "4.4.1.0",
-            "fileVersion": "4.4.1.0"
-          }
-        }
-      },
       "System.Buffers/4.5.1": {},
       "System.Data.DataSetExtensions/4.5.0": {},
       "System.Diagnostics.DiagnosticSource/8.0.0": {},
@@ -585,13 +547,6 @@
       "type": "project",
       "serviceable": false,
       "sha512": ""
-    },
-    "AutoMapper/12.0.0": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-0Rmg0zI5AFu1O/y//o9VGyhxKjhggWpk9mOA1tp0DEVx40c61bs+lnQv+0jUq8XbniF7FKgIVvI1perqiMtLrA==",
-      "path": "automapper/12.0.0",
-      "hashPath": "automapper.12.0.0.nupkg.sha512"
     },
     "CounterStrikeSharp.API/1.0.276": {
       "type": "package",
@@ -831,13 +786,6 @@
       "path": "microsoft.extensions.primitives/8.0.0",
       "hashPath": "microsoft.extensions.primitives.8.0.0.nupkg.sha512"
     },
-    "Newtonsoft.Json/13.0.1": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-ppPFpBcvxdsfUonNcvITKqLl3bqxWbDCZIzDWHzjpdAHRFfZe0Dw9HmA0+za13IdyrgJwpkDTDA9fHaxOrt20A==",
-      "path": "newtonsoft.json/13.0.1",
-      "hashPath": "newtonsoft.json.13.0.1.nupkg.sha512"
-    },
     "Scrutor/4.2.2": {
       "type": "package",
       "serviceable": true,
@@ -872,13 +820,6 @@
       "sha512": "sha512-uwV5hdhWPwUH1szhO8PJpFiahqXmzPzJT/sOijH/kFgUx+cyoDTMM8MHD0adw9+Iem6itoibbUXHYslzXsLEAg==",
       "path": "serilog.sinks.file/5.0.0",
       "hashPath": "serilog.sinks.file.5.0.0.nupkg.sha512"
-    },
-    "SteamWebAPI2/4.4.1": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-hejID7bZsWT1HLqcCzbCUC2QftUYc25Mtz5tbZjhDFsbr6ra1qvVPZhAaL/ERxSaNWqiESrQXbQE1U7W7Ezmrg==",
-      "path": "steamwebapi2/4.4.1",
-      "hashPath": "steamwebapi2.4.4.1.nupkg.sha512"
     },
     "System.Buffers/4.5.1": {
       "type": "package",

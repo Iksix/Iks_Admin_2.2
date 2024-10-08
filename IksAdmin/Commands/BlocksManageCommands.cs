@@ -23,7 +23,9 @@ public static class BlocksManageCommands
                 serverId: Main.AdminApi.ThisServer.Id
             );
             ban.AdminId = caller.Admin()!.Id;
-            BlocksFunctions.Ban(ban);
+            Task.Run(async () => {
+                await BlocksFunctions.Ban(ban, info);
+            });
         }, blockedArgs: ["@all", "@ct", "@t", "@players", "@spec", "@bot"]);
     }
 
@@ -46,7 +48,7 @@ public static class BlocksManageCommands
             if (Main.AdminApi.Config.WebApiKey != "") 
             {
                 var playerSummaryResponse = await Main.AdminApi.GetPlayerSummaries(ulong.Parse(steamId));
-                name = playerSummaryResponse?.Data.Nickname;
+                name = playerSummaryResponse.PersonaName;
             }
             var ban = new PlayerBan(
                 steamId,
@@ -57,7 +59,7 @@ public static class BlocksManageCommands
                 serverId: Main.AdminApi.ThisServer.Id
             );
             ban.AdminId = adminId;
-            BlocksFunctions.Ban(ban);
+            await BlocksFunctions.Ban(ban, info);
         });
     }
 }

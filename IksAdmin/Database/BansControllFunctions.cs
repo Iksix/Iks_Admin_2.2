@@ -31,17 +31,16 @@ public static class BansControllFunctions
         {
             await using var conn = new MySqlConnection(Database.ConnectionString);
             await conn.OpenAsync();
-            var ban = await conn.QueryFirstOrDefaultAsync<PlayerBan>($@"
-                {SelectBans}
+            var ban = await conn.QueryFirstOrDefaultAsync<PlayerBan>(SelectBans + @"
                 where deleted_at is null
                 and steam_id = @steamId
                 and unbanned_by is null
                 and end_at > unix_timestamp()
                 and (server_id is null or server_id = @serverId)
-            ", new {steamId, serverId = Main.AdminApi.ThisServer.Id});
+            ", new {steamId, serverId = Main.AdminApi.ThisServer.Id, timestamp = AdminUtils.CurrentTimestamp()});
             return ban;
         }
-        catch (MySqlException e)
+        catch (Exception e)
         {
             Main.AdminApi.LogError(e.ToString());
             throw;
@@ -63,7 +62,7 @@ public static class BansControllFunctions
             ", new {ip, serverId = Main.AdminApi.ThisServer.Id});
             return ban;
         }
-        catch (MySqlException e)
+        catch (Exception e)
         {
             Main.AdminApi.LogError(e.ToString());
             throw;
@@ -83,7 +82,7 @@ public static class BansControllFunctions
             ", new {steamId, serverId = Main.AdminApi.ThisServer.Id})).ToList();
             return bans;
         }
-        catch (MySqlException e)
+        catch (Exception e)
         {
             Main.AdminApi.LogError(e.ToString());
             throw;
@@ -102,7 +101,7 @@ public static class BansControllFunctions
             ", new {serverId = Main.AdminApi.ThisServer.Id})).ToList();
             return bans;
         }
-        catch (MySqlException e)
+        catch (Exception e)
         {
             Main.AdminApi.LogError(e.ToString());
             throw;
@@ -123,7 +122,6 @@ public static class BansControllFunctions
             else if (punishment.BanIp == 0 && punishment.SteamId != null) existingBan = await GetActiveBan(punishment.SteamId);
             if (existingBan != null)
                 return 1;
-            
             await conn.QueryAsync(@"
                 insert into iks_bans
                 (steam_id, ip, name, duration, reason, ban_ip, server_id, admin_id, unbanned_by, unban_reason, created_at, end_at, updated_at, deleted_at)
@@ -145,10 +143,9 @@ public static class BansControllFunctions
                 updatedAt = punishment.UpdatedAt,
                 deletedAt = punishment.DeletedAt
             });
-
             return 0;
         }
-        catch (MySqlException e)
+        catch (Exception e)
         {
             Main.AdminApi.LogError(e.ToString());
             return -1;
@@ -182,7 +179,7 @@ public static class BansControllFunctions
             });
             return 0;
         }
-        catch (MySqlException e)
+        catch (Exception e)
         {
             Main.AdminApi.LogError(e.ToString());
             return -1;
@@ -215,7 +212,7 @@ public static class BansControllFunctions
             });
             return 0;
         }
-        catch (MySqlException e)
+        catch (Exception e)
         {
             Main.AdminApi.LogError(e.ToString());
             return -1;
