@@ -22,8 +22,9 @@ using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 using CounterStrikeSharp.API.ValveConstants.Protobuf;
 using CounterStrikeSharp.API.Modules.Utils;
 using SteamWebAPI2.Utilities;
-using Steam.Models.SteamCommunity;
 using SteamWebAPI2.Interfaces;
+using System.Security.Cryptography.X509Certificates;
+using CounterStrikeSharp.API.Modules.Entities;
 namespace IksAdmin;
 
 public class Main : BasePlugin, IPluginConfig<PluginConfig>
@@ -40,6 +41,8 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
     public static Dictionary<CCSPlayerController, string> HtmlMessages = new();
     public static Dictionary<CCSPlayerController, Timer> HtmlMessagesTimer = new();
     public static List<CCSPlayerController> BlockTeamChange = new();
+    public static Dictionary<string, bool> KickOnFullConnect = new();
+    public static Dictionary<string, string> KickOnFullConnectReason = new();
     
 
     public static string GenerateMenuId(string id)
@@ -93,7 +96,16 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
                 player.PrintToCenterHtml(message);
             }
         });
+        RegisterListener<Listeners.OnClientAuthorized>(OnAuthorized);
 
+    }
+
+    private void OnAuthorized(int playerSlot, SteamID steamId)
+    {
+        var steamId64 = steamId.SteamId64.ToString();
+        Task.Run(async () => {
+            await AdminApi.ReloadInfractions(steamId64, true);
+        });
     }
 
     private HookResult OnJoinTeam(CCSPlayerController? player, CommandInfo commandInfo)
@@ -163,6 +175,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
         AdminApi.RegisterPermission("groups_manage.refresh", "z");
         // Blocks manage ===
         AdminApi.RegisterPermission("blocks_manage.ban", "b");
+        AdminApi.RegisterPermission("blocks_manage.unban", "b");
         AdminApi.RegisterPermission("blocks_manage.mute", "m"); 
         AdminApi.RegisterPermission("blocks_manage.gag", "g"); 
         AdminApi.RegisterPermission("blocks_manage.remove_immunity", "i"); // Снять наказание выданное админом ниже по иммунитету
@@ -190,6 +203,14 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             "css_ban <#uid/#steamId/name> <time> <reason>",
             BlocksManageCommands.Ban,
             minArgs: 3 
+        );
+        AdminApi.AddNewCommand(
+            "unban",
+            "Разбанить игрока",
+            "blocks_manage.unban",
+            "css_unban <steamId> <reason>",
+            BlocksManageCommands.Unban,
+            minArgs: 2 
         );
         AdminApi.AddNewCommand(
             "addban",
@@ -232,6 +253,23 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             AdminApi.Debug("Start without Menu Manager");
         }
         
+    }
+
+    [GameEventHandler]
+    public HookResult OnPlayerConnectFull(EventPlayerConnectFull @event, GameEventInfo info)
+    {
+        var player = @event.Userid;
+        if (player == null) return HookResult.Continue;
+        if (player.IsBot) return HookResult.Continue;
+        var steamId = player!.AuthorizedSteamID!.SteamId64.ToString();
+        if (KickOnFullConnect.ContainsKey(steamId))
+        {
+            var reason = KickOnFullConnectReason[steamId];
+            bool instantlyKick = true;
+            AdminApi.DisconnectPlayer(player, reason, instantlyKick);
+            return HookResult.Continue;
+        }
+        return HookResult.Continue;
     }
     
     [GameEventHandler]
@@ -278,6 +316,8 @@ public class AdminApi : IIksAdminApi
     private string CommandInitializer = "core";
 
     public Dictionary<string, List<CommandModel>> RegistredCommands {get; set;} = new Dictionary<string, List<CommandModel>>();
+    public List<PlayerMute> Mutes {get; set; } = new();
+    public List<PlayerGag> Gags {get; set; } = new();
 
     public AdminApi(BasePlugin plugin, IAdminConfig config, IStringLocalizer localizer, string moduleDirectory, string dbConnectionString)
     {
@@ -601,22 +641,10 @@ public class AdminApi : IIksAdminApi
                     });
                     break;
                 case 1:
-                    Server.NextFrame(() => {
-                        var controller = ban.Admin!.Controller;
-                        if (controller != null)
-                        {
-                            Helper.Print(controller, Localizer["ActionError.AlreadyBanned"]);
-                        }
-                    });
+                    Debug("Ban already exists!");
                     break;
                 case -1:
-                    Server.NextFrame(() => {
-                        var controller = ban.Admin!.Controller;
-                        if (controller != null)
-                        {
-                            Helper.Print(controller, Localizer["ActionError.Other"]);
-                        }
-                    });
+                    Debug("Some error while ban");
                     break;
             }
             return result;
@@ -643,22 +671,26 @@ public class AdminApi : IIksAdminApi
 
     public async Task<PlayerBan?> GetActiveBan(string steamId)
     {
-        throw new NotImplementedException();
+        var ban = await BansControllFunctions.GetActiveBan(steamId);
+        return ban;
     }
 
     public async Task<List<PlayerBan>> GetAllBans(string steamId)
     {
-        throw new NotImplementedException();
+        var ban = await BansControllFunctions.GetAllBans(steamId);
+        return ban;
     }
 
     public async Task<PlayerBan?> GetActiveBanIp(string ip)
     {
-        throw new NotImplementedException();
+        var ban = await BansControllFunctions.GetActiveBanIp(ip);
+        return ban;
     }
 
     public async Task<List<PlayerBan>> GetAllIpBans(string ip)
     {
-        throw new NotImplementedException();
+        var ban = await BansControllFunctions.GetAllIpBans(ip);
+        return ban;
     }
 
     public bool CanDoActionWithPlayer(Admin admin, string targetId)
@@ -666,10 +698,10 @@ public class AdminApi : IIksAdminApi
         throw new NotImplementedException();
     }
 
-    public void DisconnectPlayer(CCSPlayerController player, string reason)
+    public void DisconnectPlayer(CCSPlayerController player, string reason, bool instantly = false)
     {
         bool advanced = Config.AdvancedKick;
-        if (!advanced) 
+        if (!advanced || instantly) 
         {
             player.Disconnect(NetworkDisconnectionReason.NETWORK_DISCONNECT_BANADDED);
             return;
@@ -762,7 +794,7 @@ public class AdminApi : IIksAdminApi
     /// <summary>
     /// Нужен SteamWebApiKey установленный в кфг
     /// </summary>
-    public async Task<PlayerSummaries> GetPlayerSummaries(ulong steamId)
+    public async Task<PlayerSummaries?> GetPlayerSummaries(ulong steamId)
     {
         var webInterfaceFactory = new SteamWebInterfaceFactory(Main.AdminApi.Config.WebApiKey);
         var steamInterface = webInterfaceFactory.CreateSteamWebInterface<SteamUser>(new HttpClient());
@@ -777,5 +809,22 @@ public class AdminApi : IIksAdminApi
             data.AvatarUrl
         );
         return summaries;
+    }
+    /// <summary>
+    /// Перезагрузка/проверка и выдача/снятие наказаний игрока
+    /// </summary>
+    public async Task ReloadInfractions(string steamId, bool instantlyKick = false)
+    {
+        // Проверяем наличие бана и кикаем если есть =)
+        Debug("Reload infractions for: " + steamId);
+        var ban = await GetActiveBan(steamId);
+        Debug("Has ban: " + (ban != null).ToString());
+        if (ban != null)
+        {
+            Main.KickOnFullConnect.Add(steamId, instantlyKick);
+            Main.KickOnFullConnectReason.Add(steamId, ban.Reason);
+            return;
+        }
+        
     }
 }

@@ -1,4 +1,3 @@
-using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Modules.Commands;
 using IksAdminApi;
 
@@ -16,14 +15,13 @@ public static class BlocksFunctions
         switch (result)
         {
             case 0:
-                Server.NextFrame(() => {
-                    Helper.Reply(info, AdminApi.Localizer["ActionSuccess.BanSuccess"]);
-                });
+                Helper.PrintToSteamId(ban.Admin!.SteamId, AdminApi.Localizer["ActionSuccess.BanSuccess"]);
                 break;
             case 1:
-                Server.NextFrame(() => {
-                    Helper.Reply(info, AdminApi.Localizer["ActionError.AlreadyBanned"]);
-                });
+                Helper.PrintToSteamId(ban.Admin!.SteamId, AdminApi.Localizer["ActionError.AlreadyBanned"]);
+                break;
+            case -1:
+                Helper.PrintToSteamId(ban.Admin!.SteamId, AdminApi.Localizer["ActionError.AlreadyBanned"]);
                 break;
         }
         

@@ -8,7 +8,7 @@ namespace IksAdminApi;
 public class PlayerGag
 {
     public int Id {get; set;}
-    public string? SteamId {get; set;}
+    public string SteamId {get; set;}
     public string? Ip {get; set;}
     public string? Name {get; set;}
     public string Reason {get; set;}
@@ -34,7 +34,7 @@ public class PlayerGag
         return AdminUtils.AdminApi.AllServers.FirstOrDefault(x => x.Id == ServerId);
     }}
     // used for getting from db
-    public PlayerGag(int id, string? steamId, string? ip, string? name, int duration, string reason, int? serverId, int adminId, int? unbannedBy, string? unbanReason, int createdAt, int endAt, int updatedAt, int? deletedAt)
+    public PlayerGag(int id, string steamId, string? ip, string? name, int duration, string reason, int? serverId, int adminId, int? unbannedBy, string? unbanReason, int createdAt, int endAt, int updatedAt, int? deletedAt)
     {
         Id = id;
         SteamId = steamId;
@@ -52,7 +52,7 @@ public class PlayerGag
         UnbanReason = unbanReason;
     }
     // creating ===
-    public PlayerGag(string? steamId, string? ip, string? name, string reason, int duration, int? serverId = null)
+    public PlayerGag(string steamId, string? ip, string? name, string reason, int duration, int? serverId = null)
     {
         SteamId = steamId;
         Ip = ip;

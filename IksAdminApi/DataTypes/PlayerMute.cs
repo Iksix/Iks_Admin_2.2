@@ -8,7 +8,7 @@ namespace IksAdminApi;
 public class PlayerMute
 {
     public int Id {get; set;}
-    public string? SteamId {get; set;}
+    public string SteamId {get; set;}
     public string? Ip {get; set;}
     public string? Name {get; set;}
     public string Reason {get; set;}
@@ -34,7 +34,7 @@ public class PlayerMute
         return AdminUtils.AdminApi.AllServers.FirstOrDefault(x => x.Id == ServerId);
     }}
     // used for getting from db
-    public PlayerMute(int id, string? steamId, string? ip, string? name, int duration, string reason, int? serverId, int adminId, int? unbannedBy, string? unbanReason, int createdAt, int endAt, int updatedAt, int? deletedAt)
+    public PlayerMute(int id, string steamId, string? ip, string? name, int duration, string reason, int? serverId, int adminId, int? unbannedBy, string? unbanReason, int createdAt, int endAt, int updatedAt, int? deletedAt)
     {
         Id = id;
         SteamId = steamId;
@@ -52,7 +52,7 @@ public class PlayerMute
         UnbanReason = unbanReason;
     }
     // creating ===
-    public PlayerMute(string? steamId, string? ip, string? name, string reason, int duration, int? serverId = null)
+    public PlayerMute(string steamId, string? ip, string? name, string reason, int duration, int? serverId = null)
     {
         SteamId = steamId;
         Ip = ip;
@@ -65,7 +65,7 @@ public class PlayerMute
 
     public PlayerMute(PlayerInfo player, string reason, int duration, int? serverId = null)
     {
-        SteamId = player.SteamId;
+        SteamId = player.SteamId!;
         Ip = player.Ip;
         Name = player.PlayerName;
         Duration = duration;

@@ -33,12 +33,29 @@ public static class Helper
             player.Print(message, Main.AdminApi.Localizer["Tag"]);
         });
     }
+    public static void PrintToSteamId(string steamId, string message)
+    {
+        Main.AdminApi.Debug("Print to steamId: " + message);
+        if (steamId == "CONSOLE")
+        {
+            Console.WriteLine(message);
+            return;
+        }
+        Server.NextFrame(() => {
+            var controller = AdminUtils.GetControllerBySteamId(steamId);
+            controller.Print(message, Main.AdminApi.Localizer["Tag"]);
+        });
+    }
     public static void PrintToAdmin(Admin admin, string message)
     {
         Main.AdminApi.Debug("Print to admin: " + message);
+        if (admin.SteamId == "CONSOLE")
+        {
+            Console.WriteLine(message);
+            return;
+        }
         Server.NextFrame(() => {
-            var controller = admin.Controller;
-            Main.AdminApi.Debug("1");
+            var controller = AdminUtils.GetControllerBySteamId(admin.SteamId);
             controller.Print(message, Main.AdminApi.Localizer["Tag"]);
         });
     }

@@ -52,7 +52,7 @@ public static class AdminUtils
 
     public static CCSPlayerController? GetControllerBySteamId(string steamId)
     {
-        return Utilities.GetPlayers().FirstOrDefault(x => x != null && x.IsValid && x.AuthorizedSteamID != null && x.Connected == PlayerConnectedState.PlayerConnected && x.AuthorizedSteamID.SteamId64.ToString() == steamId);
+        return Utilities.GetPlayers().FirstOrDefault(x => x != null && x.IsValid && x.AuthorizedSteamID != null && x.AuthorizedSteamID.SteamId64.ToString() == steamId);
     }
     public static CCSPlayerController? GetControllerByUid(uint userId)
     {

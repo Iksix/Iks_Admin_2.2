@@ -4,9 +4,9 @@ using MySqlConnector;
 
 namespace IksAdmin;
 
-public static class BansControllFunctions
+public static class MutesControllFunctions
 {
-    private static readonly string SelectBans = @"
+    private static readonly string SelectMute = @"
     select
     id as id,
     steam_id as steamId,
@@ -14,7 +14,6 @@ public static class BansControllFunctions
     name as name,
     duration as duration,
     reason as reason,
-    ban_ip as banIp,
     server_id as serverId,
     admin_id as adminId,
     unbanned_by as unbannedBy,
@@ -23,22 +22,22 @@ public static class BansControllFunctions
     end_at as endAt,
     updated_at as updatedAt,
     deleted_at as deletedAt
-    from iks_bans
+    from iks_mutes
     ";
-    public static async Task<PlayerBan?> GetActiveBan(string steamId)
+    public static async Task<PlayerMute?> GetActiveMute(string steamId)
     {
         try
         {
             await using var conn = new MySqlConnection(Database.ConnectionString);
             await conn.OpenAsync();
-            var ban = await conn.QueryFirstOrDefaultAsync<PlayerBan>(SelectBans + @"
+            var mutes = await conn.QueryFirstOrDefaultAsync<PlayerMute>(SelectMute + @"
                 where deleted_at is null
                 and steam_id = @steamId
                 and unbanned_by is null
                 and end_at > unix_timestamp()
                 and (server_id is null or server_id = @serverId)
             ", new {steamId, serverId = Main.AdminApi.ThisServer.Id, timestamp = AdminUtils.CurrentTimestamp()});
-            return ban;
+            return mutes;
         }
         catch (Exception e)
         {
@@ -46,61 +45,19 @@ public static class BansControllFunctions
             throw;
         }
     }
-    public static async Task<PlayerBan?> GetActiveBanIp(string ip)
+    public static async Task<List<PlayerMute>> GetAllMutes(string steamId)
     {
         try
         {
             await using var conn = new MySqlConnection(Database.ConnectionString);
             await conn.OpenAsync();
-            var ban = await conn.QueryFirstOrDefaultAsync<PlayerBan>($@"
-                {SelectBans}
-                where deleted_at is null
-                and ip = @ip and ban_ip = 1
-                and unbanned_by is null
-                and end_at > unix_timestamp()
-                and (server_id is null or server_id = @serverId)
-            ", new {ip, serverId = Main.AdminApi.ThisServer.Id});
-            return ban;
-        }
-        catch (Exception e)
-        {
-            Main.AdminApi.LogError(e.ToString());
-            throw;
-        }
-    }
-    public static async Task<List<PlayerBan>> GetAllIpBans(string ip)
-    {
-        try
-        {
-            await using var conn = new MySqlConnection(Database.ConnectionString);
-            await conn.OpenAsync();
-            var bans = (await conn.QueryAsync<PlayerBan>($@"
-                {SelectBans}
-                where deleted_at is null
-                and ip = @ip and ban_ip = 1
-                and (server_id is null or server_id = @serverId)
-            ", new {ip, serverId = Main.AdminApi.ThisServer.Id})).ToList();
-            return bans;
-        }
-        catch (Exception e)
-        {
-            Main.AdminApi.LogError(e.ToString());
-            throw;
-        }
-    }
-    public static async Task<List<PlayerBan>> GetAllBans(string steamId)
-    {
-        try
-        {
-            await using var conn = new MySqlConnection(Database.ConnectionString);
-            await conn.OpenAsync();
-            var bans = (await conn.QueryAsync<PlayerBan>($@"
-                {SelectBans}
+            var mutes = (await conn.QueryAsync<PlayerMute>($@"
+                {SelectMute}
                 where deleted_at is null
                 and steam_id = @steamId
                 and (server_id is null or server_id = @serverId)
             ", new {steamId, serverId = Main.AdminApi.ThisServer.Id})).ToList();
-            return bans;
+            return mutes;
         }
         catch (Exception e)
         {
@@ -108,18 +65,18 @@ public static class BansControllFunctions
             throw;
         }
     }
-    public static async Task<List<PlayerBan>> GetAllBans()
+    public static async Task<List<PlayerMute>> GetAllMutes()
     {
         try
         {
             await using var conn = new MySqlConnection(Database.ConnectionString);
             await conn.OpenAsync();
-            var bans = (await conn.QueryAsync<PlayerBan>($@"
-                {SelectBans}
+            var mutes = (await conn.QueryAsync<PlayerMute>($@"
+                {SelectMute}
                 where deleted_at is null
                 and (server_id is null or server_id = @serverId)
             ", new {serverId = Main.AdminApi.ThisServer.Id})).ToList();
-            return bans;
+            return mutes;
         }
         catch (Exception e)
         {
@@ -130,30 +87,26 @@ public static class BansControllFunctions
     /// <summary>
     /// return statuses: 0 - banned, 1 - already banned, -1 - other
     /// </summary>
-    public static async Task<int> Add(PlayerBan punishment)
+    public static async Task<int> Add(PlayerMute punishment)
     {
         try
         {
             await using var conn = new MySqlConnection(Database.ConnectionString);
             await conn.OpenAsync();
-            PlayerBan? existingBan = null;
-            if (punishment.BanIp == 1 && punishment.Ip != null)
-                existingBan = await GetActiveBanIp(punishment.Ip);
-            else if (punishment.BanIp == 0 && punishment.SteamId != null) existingBan = await GetActiveBan(punishment.SteamId);
-            if (existingBan != null)
+            PlayerMute? existingMute = await GetActiveMute(punishment.SteamId);
+            if (existingMute != null)
                 return 1;
             await conn.QueryAsync(@"
-                insert into iks_bans
-                (steam_id, ip, name, duration, reason, ban_ip, server_id, admin_id, unbanned_by, unban_reason, created_at, end_at, updated_at, deleted_at)
+                insert into iks_mutes
+                (steam_id, ip, name, duration, reason, server_id, admin_id, unbanned_by, unban_reason, created_at, end_at, updated_at, deleted_at)
                 values
-                (@steamId, @ip, @name, @duration, @reason, @banIp, @serverId, @adminId, @unbannedBy, @unbanReason, @createdAt, @endAt, @updatedAt, @deletedAt)
+                (@steamId, @ip, @name, @duration, @reason, @serverId, @adminId, @unbannedBy, @unbanReason, @createdAt, @endAt, @updatedAt, @deletedAt)
             ", new {
                 steamId = punishment.SteamId,
                 ip = punishment.Ip,
                 name = punishment.Name,
                 duration = punishment.Duration,
                 reason = punishment.Reason,
-                banIp = punishment.BanIp,
                 serverId = punishment.ServerId,
                 adminId = punishment.AdminId,
                 unbannedBy = punishment.UnbannedBy,
@@ -174,60 +127,27 @@ public static class BansControllFunctions
     /// <summary>
     /// return statuses: 0 - unbanned, 1 - ban not finded, -1 - other
     /// </summary>
-    public static async Task<int> Unban(Admin admin, string steamId, string? reason)
+    public static async Task<int> Unmute(Admin admin, string steamId, string? reason)
     {
         try
         {
             await using var conn = new MySqlConnection(Database.ConnectionString);
             await conn.OpenAsync();
-            PlayerBan? existingBan = await GetActiveBan(steamId);
+            PlayerMute? existingMute = await GetActiveMute(steamId);
 
-            if (existingBan == null)
+            if (existingMute == null)
                 return 1;
 
-            if (!CanUnban(admin, existingBan)) return 2;
+            if (!CanUnmute(admin, existingMute)) return 2;
 
             await conn.QueryAsync(@"
-                update iks_bans set 
+                update iks_mutes set 
                 unbanned_by = @adminId, 
                 unban_reason = @reason
-                where id = @banId
+                where id = @id
             ", new {
                 adminId = admin.Id,
-                banId = existingBan.Id,
-                reason
-            });
-            return 0;
-        }
-        catch (Exception e)
-        {
-            Main.AdminApi.LogError(e.ToString());
-            return -1;
-        }
-    }
-    /// <summary>
-    /// return statuses: 0 - unbanned, 1 - ban not finded, -1 - other
-    /// </summary>
-    public static async Task<int> UnbanIp(Admin admin, string ip, string? reason)
-    {
-        try
-        {
-            await using var conn = new MySqlConnection(Database.ConnectionString);
-            await conn.OpenAsync();
-            PlayerBan? existingBan = await GetActiveBanIp(ip);
-
-            if (existingBan == null) return 1;
-
-            if (!CanUnban(admin, existingBan)) return 2;
-
-            await conn.QueryAsync(@"
-                update iks_bans set 
-                unbanned_by = @adminId, 
-                unban_reason = @reason
-                where id = @banId
-            ", new {
-                adminId = admin.Id,
-                banId = existingBan.Id,
+                id = existingMute.Id,
                 reason
             });
             return 0;
@@ -239,9 +159,9 @@ public static class BansControllFunctions
         }
     }
 
-    private static bool CanUnban(Admin admin, PlayerBan existingBan)
+    private static bool CanUnmute(Admin admin, PlayerMute mute)
     {
-        var bannedBy = existingBan.Admin;
+        var bannedBy = mute.Admin;
         if (bannedBy == null) return true;
         if (bannedBy.SteamId == admin.SteamId) return true;
         if (bannedBy.SteamId != "CONSOLE")

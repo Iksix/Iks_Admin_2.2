@@ -41,7 +41,7 @@ where not exists (select 1 from iks_admins where steam_id = 'CONSOLE');
 
 create table if not exists iks_gags(
     id int not null auto_increment primary key,
-    steam_id varchar(17),
+    steam_id varchar(17) not null,
     ip varchar(32),
     name varchar(64),
     duration int not null,
@@ -60,7 +60,7 @@ create table if not exists iks_gags(
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
 create table if not exists iks_mutes(
     id int not null auto_increment primary key,
-    steam_id varchar(17),
+    steam_id varchar(17) not null,
     ip varchar(32),
     name varchar(64),
     duration int not null,

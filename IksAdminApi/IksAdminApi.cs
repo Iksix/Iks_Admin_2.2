@@ -8,6 +8,9 @@ using Microsoft.Extensions.Localization;
 public interface IIksAdminApi
 {
     // GLOBALS ===
+    public List<PlayerMute> Mutes {get; set;}
+    public List<PlayerGag> Gags {get; set;}
+
     public IAdminConfig Config { get; set; }
     public IStringLocalizer Localizer { get; set; }
     public BasePlugin Plugin { get; set; } 
@@ -33,9 +36,10 @@ public interface IIksAdminApi
     public IDynamicMenu CreateMenu(string id, string title, MenuType? type = null, MenuColors titleColor = MenuColors.Default, PostSelectAction postSelectAction = PostSelectAction.Nothing, Action<CCSPlayerController>? backAction = null, IDynamicMenu? backMenu = null);
     public void CloseMenu(CCSPlayerController player);
     // FUNC ===
+    public Task ReloadInfractions(string steamId, bool instantlyKick = false);
     public Task<PlayerSummaries?> GetPlayerSummaries(ulong steamId);
     public void DoActionWithIdentity(CCSPlayerController? actioneer, string identity, Action<CCSPlayerController> action, string[]? blockedArgs = null);
-    public void DisconnectPlayer(CCSPlayerController player, string reason);
+    public void DisconnectPlayer(CCSPlayerController player, string reason, bool instantly = false);
     public bool CanDoActionWithPlayer(Admin admin, string targetId);
     public void SetCommandInititalizer(string moduleName);
     public void ClearCommandInitializer();
