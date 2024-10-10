@@ -24,7 +24,7 @@ public static class BlocksManageCommands
             );
             ban.AdminId = caller.Admin()!.Id;
             Task.Run(async () => {
-                await BlocksFunctions.Ban(ban, info);
+                await BlocksFunctions.Ban(ban);
             });
         }, blockedArgs: ["@all", "@ct", "@t", "@players", "@spec", "@bot"]);
     }
@@ -59,16 +59,17 @@ public static class BlocksManageCommands
                 serverId: Main.AdminApi.ThisServer.Id
             );
             ban.AdminId = adminId;
-            await BlocksFunctions.Ban(ban, info);
+            await BlocksFunctions.Ban(ban);
         });
     }
 
     public static void Unban(CCSPlayerController? caller, List<string> args, CommandInfo info)
     {
+        var admin = caller.Admin()!;
         var steamId = args[0];
         var reason = args[1];
         Task.Run(async () => {
-
+            await BlocksFunctions.Unban(admin, steamId, reason);
         });
     }
     public static void UnbanIp(CCSPlayerController? caller, List<string> args, CommandInfo info)
@@ -76,7 +77,7 @@ public static class BlocksManageCommands
         var ip = args[0];
         var reason = args[1];
         Task.Run(async () => {
-
+            
         });
     }
 }

@@ -68,11 +68,11 @@ public interface IIksAdminApi
     /// </summary>
     public Task<int> AddBan(PlayerBan ban, bool announce = true);
     /// <summary>
-    /// return statuses: 0 - banned, 1 - ban not finded, 2 - admin haven't permission, -1 - other
+    /// return statuses: 0 - unbanned, 1 - ban not finded, 2 - admin haven't permission, -1 - other
     /// </summary>
     public Task<int> Unban(Admin admin, string steamId, string? reason, bool announce = true);
     /// <summary>
-    /// return statuses: 0 - banned, 1 - ban not finded, 2 - admin haven't permission, -1 - other
+    /// return statuses: 0 - unbanned, 1 - ban not finded, 2 - admin haven't permission, -1 - other
     /// </summary>
     public Task<int> UnbanIp(Admin admin, string steamId, string? reason, bool announce = true);
     public Task<PlayerBan?> GetActiveBan(string steamId);

@@ -222,9 +222,9 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
         );
         AdminApi.AddNewCommand(
             "banip",
-            "Забанить игрока по айпи (онлайн)",
+            "Забанить по айпи (онлайн)",
             "blocks_manage.ban",
-            "css_ban <#uid/#steamId/name> <time> <reason>",
+            "css_banip <#uid/#sid/name> <time> <reason>",
             BlocksManageCommands.Ban,
             minArgs: 3 
         );
@@ -232,7 +232,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             "addbanip",
             "Забанить игрока по айпи (оффлайн)",
             "blocks_manage.ban",
-            "css_addban <steamId> <time> <reason>",
+            "css_addbanip <ip> <time> <reason>",
             BlocksManageCommands.AddBan,
             minArgs: 3 
         );
