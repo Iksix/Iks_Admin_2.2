@@ -29,10 +29,18 @@
 
     "ActionSuccess.BanSuccess" : "{green}Цель успешно забанена!",
     "ActionSuccess.UnbanSuccess" : "{green}Цель успешно разбанена!",
-
+    
+    "MessageWhenGag" : "{red}У вас есть активный гаг!\nЗавершится: {red}{date} ",
+    
     "Announce.BanAdded" : "Админ {red}{admin}{white} заблокировал игрока {red}{name}\nПричина: {red}{reason}\nСрок: {red}{duration}",
     "Announce.BanAddedIp" : "Админ {red}{admin}{white} заблокировал игрока {red}{name}{white} по айпи\nПричина: {red}{reason}\nСрок: {red}{duration}",
     "Announce.Unbanned" : "Админ {red}{admin}{white} разблокировал игрока {red}{name}\nПричина: {red}{reason}",
+    
+    "HTML.AdvancedKickMessage" : "<font color='red'>ВАС ЗАБЛОКИРОВАЛИ</font> <br> <font color='white'>Причина: {reason}</font>",
 
-    "HTML.AdvancedKickMessage" : "<font color='red'>ВАС ЗАБЛОКИРОВАЛИ</font> <br> <font color='white'>Причина: {reason}</font>"
+    "Prefix.Seconds" : "сек.",
+    "Prefix.Minutes" : "мин.",
+    "Prefix.Hours" : "час.",
+    "Prefix.Days" : "дн.",
+    "Other.Never" : "Никогда"
 }

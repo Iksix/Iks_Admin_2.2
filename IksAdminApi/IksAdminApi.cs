@@ -36,6 +36,8 @@ public interface IIksAdminApi
     public IDynamicMenu CreateMenu(string id, string title, MenuType? type = null, MenuColors titleColor = MenuColors.Default, PostSelectAction postSelectAction = PostSelectAction.Nothing, Action<CCSPlayerController>? backAction = null, IDynamicMenu? backMenu = null);
     public void CloseMenu(CCSPlayerController player);
     // FUNC ===
+    public void GagPlayerInGame(PlayerGag gag);
+    public bool IsPlayerGagged(string steamId);
     public Task ReloadInfractions(string steamId, string? ip = null, bool instantlyKick = false);
     public Task<PlayerSummaries?> GetPlayerSummaries(ulong steamId);
     public void DoActionWithIdentity(CCSPlayerController? actioneer, string identity, Action<CCSPlayerController> action, string[]? blockedArgs = null);
@@ -79,6 +81,11 @@ public interface IIksAdminApi
     public Task<List<PlayerBan>> GetAllBans(string steamId);
     public Task<PlayerBan?> GetActiveBanIp(string ip);
     public Task<List<PlayerBan>> GetAllIpBans(string ip);
+
+    public Task<PlayerMute?> GetActiveMute(string steamId);
+    public Task<List<PlayerMute>> GetAllMutes(string steamId);
+    public Task<PlayerGag?> GetActiveGag(string steamId);
+    public Task<List<PlayerGag>> GetAllGags(string steamId);
     // EVENTS ===
     public delegate HookResult MenuOpenHandler(CCSPlayerController player, IDynamicMenu menu, IMenu gameMenu);
     public event MenuOpenHandler MenuOpenPre;

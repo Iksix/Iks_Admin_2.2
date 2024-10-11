@@ -31,6 +31,15 @@ public static class AdminUtils
         return (int)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
     }
 
+    public static PlayerGag? GetGag(this CCSPlayerController player)
+    {
+        return AdminApi.Gags.FirstOrDefault(x => x.SteamId == player.AuthorizedSteamID!.SteamId64.ToString());
+    }
+    public static PlayerMute? GetMute(this CCSPlayerController player)
+    {
+        return AdminApi.Mutes.FirstOrDefault(x => x.SteamId == player.AuthorizedSteamID!.SteamId64.ToString());
+    }
+
     public static DateTime UnixTimeStampToDateTime( int unixTimeStamp )
     {
         // Unix timestamp is seconds past epoch
@@ -64,7 +73,7 @@ public static class AdminUtils
     }
     public static CCSPlayerController? GetControllerByIp(string ip)
     {
-        return Utilities.GetPlayers().FirstOrDefault(x => x != null && x.IsValid && x.AuthorizedSteamID != null && x.Connected == PlayerConnectedState.PlayerConnected && x.IpAddress == ip);
+        return Utilities.GetPlayers().FirstOrDefault(x => x != null && x.IsValid && x.AuthorizedSteamID != null && x.Connected == PlayerConnectedState.PlayerConnected && x.GetIp() == ip);
     }
     public static List<CCSPlayerController> GetOnlinePlayers(bool includeBots = false)
     {

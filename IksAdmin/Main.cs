@@ -159,6 +159,14 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             AdminApi.RemoveNextPlayerMessageHook(player);
             return HookResult.Handled;
         }
+        var gag = player.GetGag();
+        if (gag != null)
+        {
+            Helper.Print(player, Localizer["MessageWhenGag"].Value
+                .Replace("{date}", gag.EndAt == 0 ? Localizer["Other.Never"] : AdminUtils.GetDateString(gag.EndAt))
+            );
+            return HookResult.Stop;
+        }
 
         return HookResult.Continue;
     }
@@ -177,7 +185,9 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
         AdminApi.RegisterPermission("groups_manage.refresh", "z");
         // Blocks manage ===
         AdminApi.RegisterPermission("blocks_manage.ban", "b");
+        AdminApi.RegisterPermission("blocks_manage.ban_ip", "b");
         AdminApi.RegisterPermission("blocks_manage.unban", "b");
+        AdminApi.RegisterPermission("blocks_manage.unban_ip", "b");
         AdminApi.RegisterPermission("blocks_manage.mute", "m"); 
         AdminApi.RegisterPermission("blocks_manage.gag", "g"); 
         AdminApi.RegisterPermission("blocks_manage.remove_immunity", "i"); // Снять наказание выданное админом ниже по иммунитету
@@ -217,7 +227,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
         AdminApi.AddNewCommand(
             "unbanip",
             "Разбанить игрока",
-            "blocks_manage.unban",
+            "blocks_manage.unban_ip",
             "css_unbanip <ip> <reason>",
             BlocksManageCommands.UnbanIp,
             minArgs: 2 
@@ -233,17 +243,17 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
         AdminApi.AddNewCommand(
             "banip",
             "Забанить по айпи (онлайн)",
-            "blocks_manage.ban",
+            "blocks_manage.ban_ip",
             "css_banip <#uid/#sid/name> <time> <reason>",
-            BlocksManageCommands.Ban,
+            BlocksManageCommands.BanIp,
             minArgs: 3 
         );
         AdminApi.AddNewCommand(
             "addbanip",
             "Забанить игрока по айпи (оффлайн)",
-            "blocks_manage.ban",
+            "blocks_manage.ban_ip",
             "css_addbanip <ip> <time> <reason>",
-            BlocksManageCommands.AddBan,
+            BlocksManageCommands.AddBanIp,
             minArgs: 3 
         );
         AdminApi.ClearCommandInitializer();
@@ -288,6 +298,10 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
         HtmlMessages.Remove(@event.Userid!);
         HtmlMessagesTimer.Remove(@event.Userid!);
         BlockTeamChange.Remove(@event.Userid!);
+        var player = @event.Userid;
+        if (player == null || player.IsBot) return HookResult.Continue;
+        AdminApi.Gags.Remove(player.GetGag()!);
+        AdminApi.Mutes.Remove(player.GetMute()!);
         return HookResult.Continue;
     }
     
@@ -847,6 +861,75 @@ public class AdminApi : IIksAdminApi
                 return;
             }
         }
-        
+        var gag = await GetActiveGag(steamId);
+        if (gag != null)
+        {
+            Server.NextFrame(() => {
+                GagPlayerInGame(gag);
+            });
+        }
+        var mute = await GetActiveMute(steamId);
+        if (mute != null)
+        {
+            Server.NextFrame(() => {
+                MutePlayerInGame(mute);
+            });
+        }
+    }
+
+    public void MutePlayerInGame(PlayerMute mute)
+    {
+        var player = AdminUtils.GetControllerBySteamId(mute.SteamId);
+        if (player != null)
+        {
+            Mutes.Add(mute);
+            player.VoiceFlags = VoiceFlags.Muted;
+        }
+    }
+    public void UnmutePlayerInGame(PlayerMute mute)
+    {
+        var player = AdminUtils.GetControllerBySteamId(mute.SteamId);
+        if (player != null)
+        {
+            player.VoiceFlags = VoiceFlags.Normal;
+        }
+        Mutes.Remove(mute);
+    }
+    public void GagPlayerInGame(PlayerGag gag)
+    {
+        var player = AdminUtils.GetControllerBySteamId(gag.SteamId);
+        if (player != null)
+        {
+            Gags.Add(gag);
+        }
+    }
+    public void UngagPlayerInGame(PlayerGag gag)
+    {
+        Gags.Remove(gag);
+    }
+    public bool IsPlayerGagged(string steamId)
+    {
+        var gag = Gags.FirstOrDefault(x => x.SteamId == steamId);
+        return gag != null;
+    }
+
+    public async Task<PlayerMute?> GetActiveMute(string steamId)
+    {
+        return await MutesControllFunctions.GetActiveMute(steamId);
+    }
+
+    public async Task<List<PlayerMute>> GetAllMutes(string steamId)
+    {
+        return await MutesControllFunctions.GetAllMutes(steamId);
+    }
+
+    public async Task<PlayerGag?> GetActiveGag(string steamId)
+    {
+        return await GagsControllFunctions.GetActiveGag(steamId);
+    }
+
+    public async Task<List<PlayerGag>> GetAllGags(string steamId)
+    {
+        return await GagsControllFunctions.GetAllGags(steamId);
     }
 }
