@@ -103,8 +103,10 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
     private void OnAuthorized(int playerSlot, SteamID steamId)
     {
         var steamId64 = steamId.SteamId64.ToString();
+        var player = Utilities.GetPlayerFromSlot(playerSlot);
+        var ip = player!.IpAddress;
         Task.Run(async () => {
-            await AdminApi.ReloadInfractions(steamId64, true);
+            await AdminApi.ReloadInfractions(steamId64, ip, true);
         });
     }
 
@@ -210,6 +212,14 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             "blocks_manage.unban",
             "css_unban <steamId> <reason>",
             BlocksManageCommands.Unban,
+            minArgs: 2 
+        );
+        AdminApi.AddNewCommand(
+            "unbanip",
+            "Разбанить игрока",
+            "blocks_manage.unban",
+            "css_unbanip <ip> <reason>",
+            BlocksManageCommands.UnbanIp,
             minArgs: 2 
         );
         AdminApi.AddNewCommand(
@@ -813,7 +823,7 @@ public class AdminApi : IIksAdminApi
     /// <summary>
     /// Перезагрузка/проверка и выдача/снятие наказаний игрока
     /// </summary>
-    public async Task ReloadInfractions(string steamId, bool instantlyKick = false)
+    public async Task ReloadInfractions(string steamId, string? ip = null, bool instantlyKick = false)
     {
         // Проверяем наличие бана и кикаем если есть =)
         Debug("Reload infractions for: " + steamId);
@@ -824,6 +834,18 @@ public class AdminApi : IIksAdminApi
             Main.KickOnFullConnect.Add(steamId, instantlyKick);
             Main.KickOnFullConnectReason.Add(steamId, ban.Reason);
             return;
+        }
+        if (ip != null)
+        {
+            Debug("Reload infractions for: " + ip);
+            ban = await GetActiveBanIp(ip);
+            Debug("Has ip ban: " + (ban != null).ToString());
+            if (ban != null)
+            {
+                Main.KickOnFullConnect.Add(steamId, instantlyKick);
+                Main.KickOnFullConnectReason.Add(steamId, ban.Reason);
+                return;
+            }
         }
         
     }

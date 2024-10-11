@@ -21,10 +21,9 @@ public static class BlocksFunctions
                 Helper.PrintToSteamId(ban.Admin!.SteamId, AdminApi.Localizer["ActionError.AlreadyBanned"]);
                 break;
             case -1:
-                Helper.PrintToSteamId(ban.Admin!.SteamId, AdminApi.Localizer["ActionError.AlreadyBanned"]);
+                Helper.PrintToSteamId(ban.Admin!.SteamId, AdminApi.Localizer["ActionError.Other"]);
                 break;
         }
-        
     }
 
     public static async Task Unban(Admin admin, string steamId, string reason)
@@ -35,16 +34,37 @@ public static class BlocksFunctions
         switch (result)
         {
             case 0:
-                Helper.PrintToSteamId(admin.SteamId, AdminApi.Localizer["ActionSuccess.BanSuccess"]);
+                Helper.PrintToSteamId(admin.SteamId, AdminApi.Localizer["ActionSuccess.UnbanSuccess"]);
                 break;
             case 1:
-                Helper.PrintToSteamId(admin.SteamId, AdminApi.Localizer["ActionError.AlreadyBanned"]);
+                Helper.PrintToSteamId(admin.SteamId, AdminApi.Localizer["ActionError.PunishmentNotFound"]);
                 break;
             case 2:
-                Helper.PrintToSteamId(admin.SteamId, AdminApi.Localizer["ActionError.AlreadyBanned"]);
+                Helper.PrintToSteamId(admin.SteamId, AdminApi.Localizer["ActionError.NotEnoughPermissionsForUnban"]);
                 break;
             case -1:
-                Helper.PrintToSteamId(admin.SteamId, AdminApi.Localizer["ActionError.AlreadyBanned"]);
+                Helper.PrintToSteamId(admin.SteamId, AdminApi.Localizer["ActionError.Other"]);
+                break;
+        }
+    }
+    public static async Task UnbanIp(Admin admin, string ip, string reason)
+    {
+        AdminApi.Debug("Trying to unban ip... " + ip);
+        var result = await AdminApi.Unban(admin, ip, reason);
+        AdminApi.Debug("Unban ip result: " + result);
+        switch (result)
+        {
+            case 0:
+                Helper.PrintToSteamId(admin.SteamId, AdminApi.Localizer["ActionSuccess.UnbanSuccess"]);
+                break;
+            case 1:
+                Helper.PrintToSteamId(admin.SteamId, AdminApi.Localizer["ActionError.PunishmentNotFound"]);
+                break;
+            case 2:
+                Helper.PrintToSteamId(admin.SteamId, AdminApi.Localizer["ActionError.NotEnoughPermissionsForUnban"]);
+                break;
+            case -1:
+                Helper.PrintToSteamId(admin.SteamId, AdminApi.Localizer["ActionError.Other"]);
                 break;
         }
     }

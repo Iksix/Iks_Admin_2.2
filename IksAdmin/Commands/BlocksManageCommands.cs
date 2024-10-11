@@ -74,10 +74,11 @@ public static class BlocksManageCommands
     }
     public static void UnbanIp(CCSPlayerController? caller, List<string> args, CommandInfo info)
     {
-        var ip = args[0];
+        var admin = caller.Admin()!;
+        var steamId = args[0];
         var reason = args[1];
         Task.Run(async () => {
-            
+            await BlocksFunctions.UnbanIp(admin, steamId, reason);
         });
     }
 }

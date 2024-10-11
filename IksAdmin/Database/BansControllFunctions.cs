@@ -171,9 +171,7 @@ public static class BansControllFunctions
             return -1;
         }
     }
-    /// <summary>
-    /// return statuses: 0 - unbanned, 1 - ban not finded, -1 - other
-    /// </summary>
+
     public static async Task<int> Unban(Admin admin, string steamId, string? reason)
     {
         try
@@ -205,9 +203,6 @@ public static class BansControllFunctions
             return -1;
         }
     }
-    /// <summary>
-    /// return statuses: 0 - unbanned, 1 - ban not finded, -1 - other
-    /// </summary>
     public static async Task<int> UnbanIp(Admin admin, string ip, string? reason)
     {
         try
@@ -239,7 +234,7 @@ public static class BansControllFunctions
         }
     }
 
-    private static bool CanUnban(Admin admin, PlayerBan existingBan)
+    private static bool 1CanUnban(Admin admin, PlayerBan existingBan)
     {
         var bannedBy = existingBan.Admin;
         if (bannedBy == null) return true;

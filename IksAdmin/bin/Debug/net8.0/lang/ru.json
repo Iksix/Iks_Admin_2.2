@@ -25,8 +25,10 @@
     "ActionError.NotEnoughPermissionsForUnban" : "{red}У вас не достаточно прав для снятия этого наказания ✖",
     "ActionError.AlreadyBanned" : "{red}Этот игрок/айпи уже забанен ✖",
     "ActionError.TargetNotFound" : "{red}Цель не найдена ✖",
+    "ActionError.PunishmentNotFound" : "{red}Наказание не найдено ✖",
 
     "ActionSuccess.BanSuccess" : "{green}Цель успешно забанена!",
+    "ActionSuccess.UnbanSuccess" : "{green}Цель успешно разбанена!",
 
     "Announce.BanAdded" : "Админ {red}{admin}{white} заблокировал игрока {red}{name}\nПричина: {red}{reason}\nСрок: {red}{duration}",
     "Announce.BanAddedIp" : "Админ {red}{admin}{white} заблокировал игрока {red}{name}{white} по айпи\nПричина: {red}{reason}\nСрок: {red}{duration}",
