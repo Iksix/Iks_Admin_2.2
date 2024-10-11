@@ -234,7 +234,7 @@ public static class BansControllFunctions
         }
     }
 
-    private static bool 1CanUnban(Admin admin, PlayerBan existingBan)
+    private static bool CanUnban(Admin admin, PlayerBan existingBan)
     {
         var bannedBy = existingBan.Admin;
         if (bannedBy == null) return true;
