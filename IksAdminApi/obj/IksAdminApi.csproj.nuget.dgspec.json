@@ -1,25 +1,32 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\iks__\\Desktop\\Repos\\Iks_Admin_2.2\\IksAdminApi\\IksAdminApi.csproj": {}
+    "E:\\__iksAdmin\\Iks_Admin_2.2\\IksAdminApi\\IksAdminApi.csproj": {}
   },
   "projects": {
-    "C:\\Users\\iks__\\Desktop\\Repos\\Iks_Admin_2.2\\IksAdminApi\\IksAdminApi.csproj": {
+    "E:\\__iksAdmin\\Iks_Admin_2.2\\IksAdminApi\\IksAdminApi.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\iks__\\Desktop\\Repos\\Iks_Admin_2.2\\IksAdminApi\\IksAdminApi.csproj",
+        "projectUniqueName": "E:\\__iksAdmin\\Iks_Admin_2.2\\IksAdminApi\\IksAdminApi.csproj",
         "projectName": "IksAdminApi",
-        "projectPath": "C:\\Users\\iks__\\Desktop\\Repos\\Iks_Admin_2.2\\IksAdminApi\\IksAdminApi.csproj",
-        "packagesPath": "C:\\Users\\iks__\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\iks__\\Desktop\\Repos\\Iks_Admin_2.2\\IksAdminApi\\obj\\",
+        "projectPath": "E:\\__iksAdmin\\Iks_Admin_2.2\\IksAdminApi\\IksAdminApi.csproj",
+        "packagesPath": "C:\\Users\\iks\\.nuget\\packages\\",
+        "outputPath": "E:\\__iksAdmin\\Iks_Admin_2.2\\IksAdminApi\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "D:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "C:\\Users\\iks__\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\iks\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
         ],
         "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -64,7 +71,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.402/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.303/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

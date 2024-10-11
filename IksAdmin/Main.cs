@@ -80,6 +80,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
         AdminUtils.GetPremissions = UtilsFunctions.GetPermissions;
         AdminUtils.GetConfigMethod = UtilsFunctions.GetConfigMethod;
         AdminUtils.Debug = UtilsFunctions.SetDebugMethod;
+        AdminApi.SetConfigs();
         Helper.SetSortMenus();
         AddCommandListener("say", OnSay);
         AddCommandListener("say_team", OnSay);
@@ -184,12 +185,23 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
         AdminApi.RegisterPermission("groups_manage.edit", "z");
         AdminApi.RegisterPermission("groups_manage.refresh", "z");
         // Blocks manage ===
+
+        // BAN ===
         AdminApi.RegisterPermission("blocks_manage.ban", "b");
+        AdminApi.RegisterPermission("blocks_manage.own_ban_reason", "b"); // С этим флагом у админа появляется пункт в меню для выбора собственной причины
         AdminApi.RegisterPermission("blocks_manage.ban_ip", "b");
         AdminApi.RegisterPermission("blocks_manage.unban", "b");
         AdminApi.RegisterPermission("blocks_manage.unban_ip", "b");
+
+        // MUTE
         AdminApi.RegisterPermission("blocks_manage.mute", "m"); 
+        AdminApi.RegisterPermission("blocks_manage.unmute", "m"); 
+        AdminApi.RegisterPermission("blocks_manage.own_mute_reason", "m"); // С этим флагом у админа появляется пункт в меню для выбора собственной причины
+        // GAG
         AdminApi.RegisterPermission("blocks_manage.gag", "g"); 
+        AdminApi.RegisterPermission("blocks_manage.ungag", "g"); 
+        AdminApi.RegisterPermission("blocks_manage.own_gag_reason", "g"); // С этим флагом у админа появляется пункт в меню для выбора собственной причины
+
         AdminApi.RegisterPermission("blocks_manage.remove_immunity", "i"); // Снять наказание выданное админом ниже по иммунитету
         AdminApi.RegisterPermission("blocks_manage.remove_all", "u"); // Снять наказание выданное кем угодно (кроме консоли)
         AdminApi.RegisterPermission("blocks_manage.remove_console", "c"); // Снять наказание выданное консолью
@@ -343,6 +355,9 @@ public class AdminApi : IIksAdminApi
     public List<PlayerMute> Mutes {get; set; } = new();
     public List<PlayerGag> Gags {get; set; } = new();
 
+    // CONFIGS ===
+    public BansConfig BansConfig {get; set;} = new BansConfig();
+
     public AdminApi(BasePlugin plugin, IAdminConfig config, IStringLocalizer localizer, string moduleDirectory, string dbConnectionString)
     {
         Plugin = plugin;
@@ -350,36 +365,46 @@ public class AdminApi : IIksAdminApi
         Localizer = localizer;
         ModuleDirectory = moduleDirectory;
         DbConnectionString = dbConnectionString;
+        Task.Run(async () => {
+            await ReloadDataFromDb();
+        });
+    }
+
+    public void SetConfigs()
+    {
+        BansConfig.Set();
+    }
+
+    public async Task ReloadDataFromDb()
+    {
         var serverModel = new ServerModel(
                 Config.ServerKey,
                 Config.ServerIp,
                 Config.ServerName,
                 Config.RconPassword
             );
-            
-        Task.Run(async () => {
-            try
-            {
-                Debug("Init Database");
-                await Database.Init();
-                Debug("Refresh Admins");
-                await RefreshAdmins();
-                await ServersControllFunctions.Add(serverModel);
-                AllServers = await ServersControllFunctions.GetAll();
-                ThisServer = AllServers.First(x => x.ServerKey == serverModel.ServerKey);
-                await SendRconToAllServers("css_am_reload_servers", true);
-                await SendRconToAllServers("css_am_reload_admins", true);
-                Server.NextFrame(() => {
-                    OnReady?.Invoke();
-                });
-            }
-            catch (System.Exception e)
-            {
-                LogError(e.ToString());
-                throw;
-            }
-        });
+        try
+        {
+            Debug("Init Database");
+            await Database.Init();
+            Debug("Refresh Admins");
+            await RefreshAdmins();
+            await ServersControllFunctions.Add(serverModel);
+            AllServers = await ServersControllFunctions.GetAll();
+            ThisServer = AllServers.First(x => x.ServerKey == serverModel.ServerKey);
+            await SendRconToAllServers("css_am_reload_servers", true);
+            await SendRconToAllServers("css_am_reload_admins", true);
+            Server.NextFrame(() => {
+                OnReady?.Invoke();
+            });
+        }
+        catch (System.Exception e)
+        {
+            LogError(e.ToString());
+            throw;
+        }
     }
+
     public void CloseMenu(CCSPlayerController player)
     {
         if (Main.MenuApi != null)
