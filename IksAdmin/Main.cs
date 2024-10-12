@@ -227,7 +227,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             "ban",
             "Забанить игрока",
             "blocks_manage.ban",
-            "css_ban <#uid/#steamId/name> <time> <reason>",
+            "css_ban <#uid/#steamId/name/@...> <time> <reason>",
             BansManageCommands.Ban,
             minArgs: 3 
         );
@@ -259,7 +259,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             "banip",
             "Забанить по айпи (онлайн)",
             "blocks_manage.ban_ip",
-            "css_banip <#uid/#sid/name> <time> <reason>",
+            "css_banip <#uid/#sid/name/@...> <time> <reason>",
             BansManageCommands.BanIp,
             minArgs: 3 
         );
@@ -276,8 +276,8 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             "gag",
             "Выдать гаг игроку (онлайн)",
             "blocks_manage.ban_ip",
-            "css_gag <#uid/#sid/name> <time> <reason>",
-            BansManageCommands.AddBanIp,
+            "css_gag <#uid/#sid/name/@...> <time> <reason>",
+            GagsManageCommands.Gag,
             minArgs: 3 
         );
 
@@ -721,13 +721,53 @@ public class AdminApi : IIksAdminApi
 
     public async Task<int> Unban(Admin admin, string steamId, string? reason, bool announce = true)
     {
-        var result = await BansControllFunctions.Unban(admin, steamId, reason);
+        var ban = await GetActiveBan(steamId);
+        if (ban == null)
+        {
+            Debug("Ban not finded ✖!");
+            return 1;
+        }
+        var result = await BansControllFunctions.Unban(admin, ban, reason);
+        switch (result)
+        {
+            case 0:
+                ban.UnbannedBy = admin.Id;
+                ban.UnbanReason = reason;
+                Server.NextFrame(() => {
+                    if (announce)
+                        Announces.Unbanned(ban);
+                });
+                break;
+            case -1:
+                Debug("Some error while unban");
+                break;
+        }
         return result;
     }
 
     public async Task<int> UnbanIp(Admin admin, string ip, string? reason, bool announce = true)
     {
-        var result = await BansControllFunctions.UnbanIp(admin, ip, reason);
+        var ban = await GetActiveBanIp(ip);
+        if (ban == null)
+        {
+            Debug("Ban not finded ✖!");
+            return 1;
+        }
+        var result = await BansControllFunctions.UnbanIp(admin, ban, reason);
+        switch (result)
+        {
+            case 0:
+                ban.UnbannedBy = admin.Id;
+                ban.UnbanReason = reason;
+                Server.NextFrame(() => {
+                    if (announce)
+                        Announces.Unbanned(ban);
+                });
+                break;
+            case -1:
+                Debug("Some error while unban");
+                break;
+        }
         return result;
     }
 
@@ -969,5 +1009,94 @@ public class AdminApi : IIksAdminApi
     public async Task<List<PlayerGag>> GetAllGags(string steamId)
     {
         return await GagsControllFunctions.GetAllGags(steamId);
+    }
+
+    public async Task<int> AddGag(PlayerGag gag, bool announce = true)
+    {
+        try
+        {
+            var result = await GagsControllFunctions.Add(gag);
+            switch (result)
+            {
+                case 0:
+                    Server.NextFrame(() => {
+                        if (announce)
+                            Announces.GagAdded(gag);
+                        Server.NextFrame(() => {
+                            GagPlayerInGame(gag);
+                        });
+                    });
+                    break;
+                case 1:
+                    Debug("Gag already exists!");
+                    break;
+                case -1:
+                    Debug("Some error while gag");
+                    break;
+            }
+            return result;
+        }
+        catch (Exception e)
+        {
+            Main.AdminApi.LogError(e.ToString());
+            throw;
+        }
+    }
+
+    public async Task<int> Ungag(Admin admin, string steamId, string? reason, bool announce = true)
+    {
+        var gag = await GetActiveGag(steamId);
+        if (gag == null)
+        {
+            Debug("Ban not finded ✖!");
+            return 1;
+        }
+        var result = await GagsControllFunctions.Ungag(admin, gag, reason);
+        switch (result)
+        {
+            case 0:
+                gag.UnbannedBy = admin.Id;
+                gag.UnbanReason = reason;
+                Server.NextFrame(() => {
+                    if (announce)
+                        Announces.Ungagged(gag);
+                });
+                break;
+            case -1:
+                Debug("Some error while unban");
+                break;
+        }
+        return result;
+    }
+
+    public Task<int> AddMute(PlayerMute mute, bool announce = true)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<int> Unmute(Admin admin, string steamId, string? reason, bool announce = true)
+    {
+        var mute = await GetActiveMute(steamId);
+        if (mute == null)
+        {
+            Debug("Ban not finded ✖!");
+            return 1;
+        }
+        var result = await MutesControllFunctions.Unmute(admin, mute, reason);
+        switch (result)
+        {
+            case 0:
+                mute.UnbannedBy = admin.Id;
+                mute.UnbanReason = reason;
+                Server.NextFrame(() => {
+                    if (announce)
+                        Announces.Unmuted(mute);
+                });
+                break;
+            case -1:
+                Debug("Some error while unban");
+                break;
+        }
+        return result;
     }
 }

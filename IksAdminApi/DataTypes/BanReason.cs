@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace IksAdminApi;
 
-public class BanReason
+public class BanReason : IReason
 {
     public string Title {get; set;} // Причина отображаемая в меню
     public string Text {get; set;} // Причина отображаемая при бане

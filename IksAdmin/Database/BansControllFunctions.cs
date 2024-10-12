@@ -172,18 +172,14 @@ public static class BansControllFunctions
         }
     }
 
-    public static async Task<int> Unban(Admin admin, string steamId, string? reason)
+    public static async Task<int> Unban(Admin admin, PlayerBan ban, string? reason)
     {
         try
         {
             await using var conn = new MySqlConnection(Database.ConnectionString);
             await conn.OpenAsync();
-            PlayerBan? existingBan = await GetActiveBan(steamId);
 
-            if (existingBan == null)
-                return 1;
-
-            if (!CanUnban(admin, existingBan)) return 2;
+            if (!CanUnban(admin, ban)) return 2;
 
             await conn.QueryAsync(@"
                 update iks_bans set 
@@ -192,7 +188,7 @@ public static class BansControllFunctions
                 where id = @banId
             ", new {
                 adminId = admin.Id,
-                banId = existingBan.Id,
+                banId = ban.Id,
                 reason
             });
             return 0;
@@ -203,13 +199,13 @@ public static class BansControllFunctions
             return -1;
         }
     }
-    public static async Task<int> UnbanIp(Admin admin, string ip, string? reason)
+    public static async Task<int> UnbanIp(Admin admin, PlayerBan ban, string? reason)
     {
         try
         {
             await using var conn = new MySqlConnection(Database.ConnectionString);
             await conn.OpenAsync();
-            PlayerBan? existingBan = await GetActiveBanIp(ip);
+            PlayerBan? existingBan = await GetActiveBanIp(ban.Ip!);
 
             if (existingBan == null) return 1;
 

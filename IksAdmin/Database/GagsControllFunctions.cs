@@ -127,18 +127,14 @@ public static class GagsControllFunctions
     /// <summary>
     /// return statuses: 0 - unbanned, 1 - ban not finded, 2 - admin can't do this, -1 - other
     /// </summary>
-    public static async Task<int> Ungag(Admin admin, string steamId, string? reason)
+    public static async Task<int> Ungag(Admin admin, PlayerGag gag, string? reason)
     {
         try
         {
             await using var conn = new MySqlConnection(Database.ConnectionString);
             await conn.OpenAsync();
-            PlayerGag? existingGag = await GetActiveGag(steamId);
 
-            if (existingGag == null)
-                return 1;
-
-            if (!CanUngag(admin, existingGag)) return 2;
+            if (!CanUngag(admin, gag)) return 2;
 
             await conn.QueryAsync(@"
                 update iks_gags set 
@@ -147,7 +143,7 @@ public static class GagsControllFunctions
                 where id = @id
             ", new {
                 adminId = admin.Id,
-                id = existingGag.Id,
+                id = gag.Id,
                 reason
             });
             return 0;

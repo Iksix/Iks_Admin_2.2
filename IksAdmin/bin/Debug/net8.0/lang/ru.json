@@ -35,6 +35,10 @@
     "Announce.BanAdded" : "Админ {red}{admin}{white} заблокировал игрока {red}{name}\nПричина: {red}{reason}\nСрок: {red}{duration}",
     "Announce.BanAddedIp" : "Админ {red}{admin}{white} заблокировал игрока {red}{name}{white} по айпи\nПричина: {red}{reason}\nСрок: {red}{duration}",
     "Announce.Unbanned" : "Админ {red}{admin}{white} разблокировал игрока {red}{name}\nПричина: {red}{reason}",
+    "Announce.GagAdded" : "Админ {red}{admin}{white} выдал гаг игроку {red}{name}\nПричина: {red}{reason}\nСрок: {red}{duration}",
+    "Announce.Ungagged" : "Админ {red}{admin}{white} снял гаг с игрока {red}{name}\nПричина: {red}{reason}\nСрок: {red}{duration}",
+    "Announce.MuteAdded" : "Админ {red}{admin}{white} выдал мут игроку {red}{name}\nПричина: {red}{reason}\nСрок: {red}{duration}",
+    "Announce.Unmuted" : "Админ {red}{admin}{white} снял мут с игрока {red}{name}\nПричина: {red}{reason}\nСрок: {red}{duration}",
     
     "HTML.AdvancedKickMessage" : "<font color='red'>ВАС ЗАБЛОКИРОВАЛИ</font> <br> <font color='white'>Причина: {reason}</font>",
 

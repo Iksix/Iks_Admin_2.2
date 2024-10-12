@@ -64,7 +64,7 @@ public interface IIksAdminApi
         string? hasNotPermissionsMessage = null,
         int minArgs = 0
     );
-    // DATABASE FUNC ===
+    // DATABASE/PUNISHMENTS FUNC ===
     /// <summary>
     /// return statuses: 0 - banned, 1 - already banned, -1 - other
     /// </summary>
@@ -82,6 +82,22 @@ public interface IIksAdminApi
     public Task<PlayerBan?> GetActiveBanIp(string ip);
     public Task<List<PlayerBan>> GetAllIpBans(string ip);
 
+    /// <summary>
+    /// return statuses: 0 - gaged, 1 - already banned, -1 - other
+    /// </summary>
+    public Task<int> AddGag(PlayerGag ban, bool announce = true);
+    /// <summary>
+    /// return statuses: 0 - ungaged, 1 - ban not finded, 2 - admin haven't permission, -1 - other
+    /// </summary>
+    public Task<int> Ungag(Admin admin, string steamId, string? reason, bool announce = true);
+    /// <summary>
+    /// return statuses: 0 - gaged, 1 - already banned, -1 - other
+    /// </summary>
+    public Task<int> AddMute(PlayerMute ban, bool announce = true);
+    /// <summary>
+    /// return statuses: 0 - ungaged, 1 - ban not finded, 2 - admin haven't permission, -1 - other
+    /// </summary>
+    public Task<int> Unmute(Admin admin, string steamId, string? reason, bool announce = true);
     public Task<PlayerMute?> GetActiveMute(string steamId);
     public Task<List<PlayerMute>> GetAllMutes(string steamId);
     public Task<PlayerGag?> GetActiveGag(string steamId);

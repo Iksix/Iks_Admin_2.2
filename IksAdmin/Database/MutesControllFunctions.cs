@@ -127,18 +127,14 @@ public static class MutesControllFunctions
     /// <summary>
     /// return statuses: 0 - unbanned, 1 - ban not finded, -1 - other
     /// </summary>
-    public static async Task<int> Unmute(Admin admin, string steamId, string? reason)
+    public static async Task<int> Unmute(Admin admin, PlayerMute mute, string? reason)
     {
         try
         {
             await using var conn = new MySqlConnection(Database.ConnectionString);
             await conn.OpenAsync();
-            PlayerMute? existingMute = await GetActiveMute(steamId);
 
-            if (existingMute == null)
-                return 1;
-
-            if (!CanUnmute(admin, existingMute)) return 2;
+            if (!CanUnmute(admin, mute)) return 2;
 
             await conn.QueryAsync(@"
                 update iks_mutes set 
@@ -147,7 +143,7 @@ public static class MutesControllFunctions
                 where id = @id
             ", new {
                 adminId = admin.Id,
-                id = existingMute.Id,
+                id = mute.Id,
                 reason
             });
             return 0;
