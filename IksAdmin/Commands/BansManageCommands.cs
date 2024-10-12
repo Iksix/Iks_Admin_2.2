@@ -5,7 +5,7 @@ using IksAdminApi;
 
 namespace IksAdmin.Commands;
 
-public static class BlocksManageCommands
+public static class BansManageCommands
 {
     public static void Ban(CCSPlayerController? caller, List<string> args, CommandInfo info)
     {
@@ -24,9 +24,9 @@ public static class BlocksManageCommands
             );
             ban.AdminId = caller.Admin()!.Id;
             Task.Run(async () => {
-                await BlocksFunctions.Ban(ban);
+                await BansFunctions.Ban(ban);
             });
-        }, blockedArgs: ["@all", "@ct", "@t", "@players", "@spec", "@bot"]);
+        }, blockedArgs: BansConfig.Config.BlockedIdentifiers);
     }
 
     public static void AddBan(CCSPlayerController? caller, List<string> args, CommandInfo info)
@@ -59,7 +59,7 @@ public static class BlocksManageCommands
                 serverId: Main.AdminApi.ThisServer.Id
             );
             ban.AdminId = adminId;
-            await BlocksFunctions.Ban(ban);
+            await BansFunctions.Ban(ban);
         });
     }
 
@@ -69,7 +69,7 @@ public static class BlocksManageCommands
         var steamId = args[0];
         var reason = args[1];
         Task.Run(async () => {
-            await BlocksFunctions.Unban(admin, steamId, reason);
+            await BansFunctions.Unban(admin, steamId, reason);
         });
     }
     public static void UnbanIp(CCSPlayerController? caller, List<string> args, CommandInfo info)
@@ -78,7 +78,7 @@ public static class BlocksManageCommands
         var steamId = args[0];
         var reason = args[1];
         Task.Run(async () => {
-            await BlocksFunctions.UnbanIp(admin, steamId, reason);
+            await BansFunctions.UnbanIp(admin, steamId, reason);
         });
     }
 
@@ -99,9 +99,9 @@ public static class BlocksManageCommands
             );
             ban.AdminId = caller.Admin()!.Id;
             Task.Run(async () => {
-                await BlocksFunctions.Ban(ban);
+                await BansFunctions.Ban(ban);
             });
-        }, blockedArgs: ["@all", "@ct", "@t", "@players", "@spec", "@bot"]);
+        }, blockedArgs: BansConfig.Config.BlockedIdentifiers);
     }
 
     public static void AddBanIp(CCSPlayerController? caller, List<string> args, CommandInfo info)
@@ -134,7 +134,7 @@ public static class BlocksManageCommands
                 banIp: true
             );
             ban.AdminId = adminId;
-            await BlocksFunctions.Ban(ban);
+            await BansFunctions.Ban(ban);
         });
     }
 }

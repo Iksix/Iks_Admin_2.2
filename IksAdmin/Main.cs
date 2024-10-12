@@ -220,12 +220,15 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             AdminsManageCommands.Add,
             minArgs: 5 
         );
+
+        // BLOCKS MANAGE ====
+        // BANS ===
         AdminApi.AddNewCommand(
             "ban",
             "Забанить игрока",
             "blocks_manage.ban",
             "css_ban <#uid/#steamId/name> <time> <reason>",
-            BlocksManageCommands.Ban,
+            BansManageCommands.Ban,
             minArgs: 3 
         );
         AdminApi.AddNewCommand(
@@ -233,7 +236,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             "Разбанить игрока",
             "blocks_manage.unban",
             "css_unban <steamId> <reason>",
-            BlocksManageCommands.Unban,
+            BansManageCommands.Unban,
             minArgs: 2 
         );
         AdminApi.AddNewCommand(
@@ -241,7 +244,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             "Разбанить игрока",
             "blocks_manage.unban_ip",
             "css_unbanip <ip> <reason>",
-            BlocksManageCommands.UnbanIp,
+            BansManageCommands.UnbanIp,
             minArgs: 2 
         );
         AdminApi.AddNewCommand(
@@ -249,7 +252,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             "Забанить игрока по стим айди (оффлайн)",
             "blocks_manage.ban",
             "css_addban <steamId> <time> <reason>",
-            BlocksManageCommands.AddBan,
+            BansManageCommands.AddBan,
             minArgs: 3 
         );
         AdminApi.AddNewCommand(
@@ -257,7 +260,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             "Забанить по айпи (онлайн)",
             "blocks_manage.ban_ip",
             "css_banip <#uid/#sid/name> <time> <reason>",
-            BlocksManageCommands.BanIp,
+            BansManageCommands.BanIp,
             minArgs: 3 
         );
         AdminApi.AddNewCommand(
@@ -265,9 +268,19 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             "Забанить игрока по айпи (оффлайн)",
             "blocks_manage.ban_ip",
             "css_addbanip <ip> <time> <reason>",
-            BlocksManageCommands.AddBanIp,
+            BansManageCommands.AddBanIp,
             minArgs: 3 
         );
+        // GAG ===
+        AdminApi.AddNewCommand(
+            "gag",
+            "Выдать гаг игроку (онлайн)",
+            "blocks_manage.ban_ip",
+            "css_gag <#uid/#sid/name> <time> <reason>",
+            BansManageCommands.AddBanIp,
+            minArgs: 3 
+        );
+
         AdminApi.ClearCommandInitializer();
     }
     public override void OnAllPluginsLoaded(bool hotReload)

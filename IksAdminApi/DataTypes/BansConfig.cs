@@ -10,6 +10,7 @@ namespace IksAdminApi;
 public class BansConfig : PluginCFG<BansConfig>, IPluginCFG
 {
     public static BansConfig Config = new BansConfig();
+    public string[] BlockedIdentifiers {get; set;} = ["@all", "@ct", "@t", "@players", "@spec", "@bot"];
     public List<BanReason> Reasons { get; set; } = new ()
     {
         new BanReason("Example reason title 1", "Another text for reason", 0, 30, null, false),
