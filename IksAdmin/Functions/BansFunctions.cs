@@ -1,4 +1,3 @@
-using CounterStrikeSharp.API.Modules.Commands;
 using IksAdminApi;
 
 namespace IksAdmin.Functions;

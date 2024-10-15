@@ -48,7 +48,8 @@ public static class BansManageCommands
             if (Main.AdminApi.Config.WebApiKey != "") 
             {
                 var playerSummaryResponse = await Main.AdminApi.GetPlayerSummaries(ulong.Parse(steamId));
-                name = playerSummaryResponse!.PersonaName;
+                if (playerSummaryResponse != null)
+                    name = playerSummaryResponse!.PersonaName;
             }
             var ban = new PlayerBan(
                 steamId,

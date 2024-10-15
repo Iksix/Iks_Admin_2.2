@@ -259,7 +259,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             "banip",
             "Забанить по айпи (онлайн)",
             "blocks_manage.ban_ip",
-            "css_banip <#uid/#sid/name/@...> <time> <reason>",
+            "css_banip <#uid/#steamId/name/@...> <time> <reason>",
             BansManageCommands.BanIp,
             minArgs: 3 
         );
@@ -275,10 +275,34 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
         AdminApi.AddNewCommand(
             "gag",
             "Выдать гаг игроку (онлайн)",
-            "blocks_manage.ban_ip",
-            "css_gag <#uid/#sid/name/@...> <time> <reason>",
+            "blocks_manage.gag",
+            "css_gag <#uid/#steamId/name/@...> <time> <reason>",
             GagsManageCommands.Gag,
             minArgs: 3 
+        );
+        AdminApi.AddNewCommand(
+            "ungag",
+            "Снять гаг с игрока (онлайн)",
+            "blocks_manage.ungag",
+            "css_ungag <#uid/#steamId/name/@...> <reason>",
+            GagsManageCommands.Ungag,
+            minArgs: 2 
+        );
+        AdminApi.AddNewCommand(
+            "addgag",
+            "Выдать гаг игроку (оффлайн)",
+            "blocks_manage.gag",
+            "css_addgag <steamId> <time> <reason>",
+            GagsManageCommands.AddGag,
+            minArgs: 3 
+        );
+        AdminApi.AddNewCommand(
+            "removegag",
+            "Снять гаг с игрока (оффлайн)",
+            "blocks_manage.ungag",
+            "css_ungag <steamId> <reason>",
+            GagsManageCommands.RemoveGag,
+            minArgs: 2 
         );
 
         AdminApi.ClearCommandInitializer();
@@ -369,7 +393,9 @@ public class AdminApi : IIksAdminApi
     public List<PlayerGag> Gags {get; set; } = new();
 
     // CONFIGS ===
-    public BansConfig BansConfig {get; set;} = new BansConfig();
+    public BansConfig BansConfig {get; set;} = new ();
+    public MutesConfig MutesConfig {get; set;} = new ();
+    public GagsConfig GagsConfig {get; set;} = new ();
 
     public AdminApi(BasePlugin plugin, IAdminConfig config, IStringLocalizer localizer, string moduleDirectory, string dbConnectionString)
     {
@@ -386,6 +412,8 @@ public class AdminApi : IIksAdminApi
     public void SetConfigs()
     {
         BansConfig.Set();
+        MutesConfig.Set();
+        GagsConfig.Set();
     }
 
     public async Task ReloadDataFromDb()
@@ -684,6 +712,15 @@ public class AdminApi : IIksAdminApi
     {
         try
         {
+            Debug($"Baning player...");
+            var reservedReason = BansConfig.Config.Reasons.FirstOrDefault(x => x.Title.ToLower() == ban.Reason.ToLower());
+            if (reservedReason != null)
+            {
+                Debug($"Do reservedReason transformations...");
+                if (reservedReason.BanOnAllServers)
+                    ban.ServerId = null;
+                ban.Reason = reservedReason.Text;
+            }
             var result = await BansControllFunctions.Add(ban);
             switch (result)
             {
@@ -1015,6 +1052,15 @@ public class AdminApi : IIksAdminApi
     {
         try
         {
+            Debug($"Gaging player {gag.SteamId}!");
+            var reservedReason = GagsConfig.Config.Reasons.FirstOrDefault(x => x.Title.ToLower() == gag.Reason.ToLower());
+            if (reservedReason != null)
+            {
+                Debug($"Do reservedReason transformations...");
+                if (reservedReason.BanOnAllServers)
+                    gag.ServerId = null;
+                gag.Reason = reservedReason.Text;
+            }
             var result = await GagsControllFunctions.Add(gag);
             switch (result)
             {
@@ -1045,10 +1091,11 @@ public class AdminApi : IIksAdminApi
 
     public async Task<int> Ungag(Admin admin, string steamId, string? reason, bool announce = true)
     {
+        Debug($"Ungag player {steamId}!");
         var gag = await GetActiveGag(steamId);
         if (gag == null)
         {
-            Debug("Ban not finded ✖!");
+            Debug("Gag not finded ✖!");
             return 1;
         }
         var result = await GagsControllFunctions.Ungag(admin, gag, reason);
@@ -1058,28 +1105,69 @@ public class AdminApi : IIksAdminApi
                 gag.UnbannedBy = admin.Id;
                 gag.UnbanReason = reason;
                 Server.NextFrame(() => {
+                    UngagPlayerInGame(gag);
                     if (announce)
                         Announces.Ungagged(gag);
                 });
                 break;
+            case 2:
+                Debug("Not enough permissions for ungag this player");
+                break;
             case -1:
-                Debug("Some error while unban");
+                Debug("Some error while ungag");
                 break;
         }
         return result;
     }
 
-    public Task<int> AddMute(PlayerMute mute, bool announce = true)
+    public async Task<int> AddMute(PlayerMute mute, bool announce = true)
     {
-        throw new NotImplementedException();
+        try
+        {
+            Debug($"Muting player {mute.SteamId}!");
+            var reservedReason = MutesConfig.Config.Reasons.FirstOrDefault(x => x.Title.ToLower() == mute.Reason.ToLower());
+            if (reservedReason != null)
+            {
+                Debug($"Do reservedReason transformations...");
+                if (reservedReason.BanOnAllServers)
+                    mute.ServerId = null;
+                mute.Reason = reservedReason.Text;
+            }
+            var result = await MutesControllFunctions.Add(mute);
+            switch (result)
+            {
+                case 0:
+                    Server.NextFrame(() => {
+                        if (announce)
+                            Announces.MuteAdded(mute);
+                        Server.NextFrame(() => {
+                            MutePlayerInGame(mute);
+                        });
+                    });
+                    break;
+                case 1:
+                    Debug("Mute already exists!");
+                    break;
+                case -1:
+                    Debug("Some error while mute");
+                    break;
+            }
+            return result;
+        }
+        catch (Exception e)
+        {
+            Main.AdminApi.LogError(e.ToString());
+            throw;
+        }
     }
 
     public async Task<int> Unmute(Admin admin, string steamId, string? reason, bool announce = true)
     {
+        Debug($"Unmute player {steamId}!");
         var mute = await GetActiveMute(steamId);
         if (mute == null)
         {
-            Debug("Ban not finded ✖!");
+            Debug("Mute not finded ✖!");
             return 1;
         }
         var result = await MutesControllFunctions.Unmute(admin, mute, reason);
@@ -1089,12 +1177,16 @@ public class AdminApi : IIksAdminApi
                 mute.UnbannedBy = admin.Id;
                 mute.UnbanReason = reason;
                 Server.NextFrame(() => {
+                    UnmutePlayerInGame(mute);
                     if (announce)
                         Announces.Unmuted(mute);
                 });
                 break;
+            case 2:
+                Debug("Not enough permissions for unmute this player");
+                break;
             case -1:
-                Debug("Some error while unban");
+                Debug("Some error while unmute");
                 break;
         }
         return result;

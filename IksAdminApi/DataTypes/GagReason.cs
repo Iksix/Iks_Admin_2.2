@@ -1,8 +1,8 @@
 namespace IksAdminApi;
 
-public class BanReason : Reason
+public class GagReason : Reason
 {
-    public BanReason(string title, string? text = null, int minTime = 0, int maxTime = 0, int? duration = null, bool banOnAllServers = false)
+    public GagReason(string title, string? text = null, int minTime = 0, int maxTime = 0, int? duration = null, bool banOnAllServers = false)
     {
         Title = title;
         if (text == null)

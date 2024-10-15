@@ -23,11 +23,15 @@
     
     "ActionError.Other" : "{red}Возникла неизвестная ошибка обратитесь к владельцу сервера ✖", // Значит что ошибка выводится в консоль, чекаем там
     "ActionError.NotEnoughPermissionsForUnban" : "{red}У вас не достаточно прав для снятия этого наказания ✖",
-    "ActionError.AlreadyBanned" : "{red}Этот игрок/айпи уже забанен ✖",
+    "ActionError.AlreadyBanned" : "{red}Этот игрок/айпи уже наказан ✖",
     "ActionError.TargetNotFound" : "{red}Цель не найдена ✖",
     "ActionError.PunishmentNotFound" : "{red}Наказание не найдено ✖",
 
     "ActionSuccess.BanSuccess" : "{green}Цель успешно забанена!",
+    "ActionSuccess.GagSuccess" : "{green}Игрок успешно гагнут!",
+    "ActionSuccess.UngagSuccess" : "{green}С игрока успешно снят гаг!",
+    "ActionSuccess.MuteSuccess" : "{green}Игрок успешно замучен!",
+    "ActionSuccess.UnmuteSuccess" : "{green}С игрока успешно снят мут!",
     "ActionSuccess.UnbanSuccess" : "{green}Цель успешно разбанена!",
     
     "MessageWhenGag" : "{red}У вас есть активный гаг!\nЗавершится: {red}{date} ",

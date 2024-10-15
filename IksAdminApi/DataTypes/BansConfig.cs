@@ -10,6 +10,7 @@ namespace IksAdminApi;
 public class BansConfig : PluginCFG<BansConfig>, IPluginCFG
 {
     public static BansConfig Config = new BansConfig();
+    public bool TitleToTextInReasons {get; set;} = true;
     public string[] BlockedIdentifiers {get; set;} = ["@all", "@ct", "@t", "@players", "@spec", "@bot"];
     public List<BanReason> Reasons { get; set; } = new ()
     {
@@ -19,7 +20,7 @@ public class BansConfig : PluginCFG<BansConfig>, IPluginCFG
 
     public void Set()
     {
-        Config = ReadOrCreate<BansConfig>("bans", Config);
+        Config = ReadOrCreate<BansConfig>("bans_cfg", Config);
         AdminUtils.Debug("Bans config loaded ✔");
         AdminUtils.Debug("Reasons count " + Config.Reasons.Count);
     }
