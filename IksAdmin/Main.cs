@@ -304,6 +304,39 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             GagsManageCommands.RemoveGag,
             minArgs: 2 
         );
+        // MUTE ===
+        AdminApi.AddNewCommand(
+            "mute",
+            "Выдать гаг игроку (онлайн)",
+            "blocks_manage.mute",
+            "css_mute <#uid/#steamId/name/@...> <time> <reason>",
+            MutesManageCommands.Mute,
+            minArgs: 3 
+        );
+        AdminApi.AddNewCommand(
+            "unmute",
+            "Снять гаг с игрока (онлайн)",
+            "blocks_manage.unmute",
+            "css_unmute <#uid/#steamId/name/@...> <reason>",
+            MutesManageCommands.Unmute,
+            minArgs: 2 
+        );
+        AdminApi.AddNewCommand(
+            "addmute",
+            "Выдать гаг игроку (оффлайн)",
+            "blocks_manage.mute",
+            "css_addmute <steamId> <time> <reason>",
+            MutesManageCommands.AddMute,
+            minArgs: 3 
+        );
+        AdminApi.AddNewCommand(
+            "removemute",
+            "Снять гаг с игрока (оффлайн)",
+            "blocks_manage.unmute",
+            "css_unmute <steamId> <reason>",
+            MutesManageCommands.RemoveMute,
+            minArgs: 2 
+        );
 
         AdminApi.ClearCommandInitializer();
     }

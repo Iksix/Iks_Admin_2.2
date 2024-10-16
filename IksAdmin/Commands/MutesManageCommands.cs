@@ -81,7 +81,7 @@ public class MutesManageCommands
             });
         }, blockedArgs: MutesConfig.Config.UnblockBlockedIdentifiers);
     }
-    public static void RemoveGag(CCSPlayerController? caller, List<string> args, CommandInfo info)
+    public static void RemoveMute(CCSPlayerController? caller, List<string> args, CommandInfo info)
     {
         //css_removemute <steamId> <reason>
         var steamId = args[0];
