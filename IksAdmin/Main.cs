@@ -220,6 +220,14 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             AdminsManageCommands.Add,
             minArgs: 5 
         );
+        AdminApi.AddNewCommand(
+            "am_addflag",
+            "Добавить флаг админу",
+            "admins_manage.edit",
+            "css_am_addflag <steamId> <flagsToAdd>",
+            AdminsManageCommands.AddFlag,
+            minArgs: 2 
+        );
 
         // BLOCKS MANAGE ====
         // BANS ===

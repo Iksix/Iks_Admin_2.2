@@ -95,6 +95,12 @@ public static class AdminUtils
     {
         return FindAdminByIdMethod(id);
     }
+    public static Admin? Admin(string steamId)
+    {
+        if (steamId.ToLower() == "console")
+            return AdminApi.ConsoleAdmin;
+        return AdminApi.ServerAdmins.FirstOrDefault(x => x.SteamId == steamId);
+    }
     public static bool IsAdmin(this CCSPlayerController player)
     {
         return FindAdminByControllerMethod(player) != null;
