@@ -40,6 +40,16 @@ public static class AdminManageFunctions
 
     public static void AddFlag(CCSPlayerController? caller, CommandInfo info, Admin admin, string flags)
     {
-        throw new NotImplementedException();
+        if (admin.Flags == null)
+        {
+            admin.Flags = flags;
+        } else{
+            admin.Flags += flags;
+        }
+        Helper.Reply(info, "Flags setted to admin ✔");
+        Task.Run(async () => {
+            await AdminsControllFunctions.UpdateAdminInBase(admin);
+            await Main.AdminApi!.SendRconToAllServers("css_am_reload_admins");
+        });
     }
 }

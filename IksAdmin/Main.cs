@@ -614,6 +614,7 @@ public class AdminApi : IIksAdminApi
     {
         await AdminsControllFunctions.RefreshAdmins();
     }
+    
 
     public void HookNextPlayerMessage(CCSPlayerController player, Action<string> action)
     {
