@@ -66,7 +66,7 @@ public interface IIksAdminApi
     );
     // DATABASE/PUNISHMENTS FUNC ===
     /// <summary>
-    /// return statuses: 0 - banned, 1 - already banned, -1 - other
+    /// return statuses: 0 - banned, 1 - already banned, 2 - stopped by limitations, -1 - other
     /// </summary>
     public Task<int> AddBan(PlayerBan ban, bool announce = true);
     /// <summary>
@@ -83,7 +83,7 @@ public interface IIksAdminApi
     public Task<List<PlayerBan>> GetAllIpBans(string ip);
 
     /// <summary>
-    /// return statuses: 0 - gaged, 1 - already banned, -1 - other
+    /// return statuses: 0 - gaged, 1 - already banned, 2 - stopped by limitations, -1 - other
     /// </summary>
     public Task<int> AddGag(PlayerGag ban, bool announce = true);
     /// <summary>
@@ -91,7 +91,7 @@ public interface IIksAdminApi
     /// </summary>
     public Task<int> Ungag(Admin admin, string steamId, string? reason, bool announce = true);
     /// <summary>
-    /// return statuses: 0 - gaged, 1 - already banned, -1 - other
+    /// return statuses: 0 - gaged, 1 - already banned, 2 - stopped by limitations, -1 - other
     /// </summary>
     public Task<int> AddMute(PlayerMute ban, bool announce = true);
     /// <summary>

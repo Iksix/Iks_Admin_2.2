@@ -26,7 +26,7 @@
     "ActionError.AlreadyBanned" : "{red}Этот игрок/айпи уже наказан ✖",
     "ActionError.TargetNotFound" : "{red}Цель не найдена ✖",
     "ActionError.PunishmentNotFound" : "{red}Наказание не найдено ✖",
-
+    
     "ActionSuccess.BanSuccess" : "{green}Цель успешно забанена!",
     "ActionSuccess.GagSuccess" : "{green}Игрок успешно гагнут!",
     "ActionSuccess.UngagSuccess" : "{green}С игрока успешно снят гаг!",
@@ -44,6 +44,9 @@
     "Announce.MuteAdded" : "Админ {red}{admin}{white} выдал мут игроку {red}{name}\nПричина: {red}{reason}\nСрок: {red}{duration}",
     "Announce.Unmuted" : "Админ {red}{admin}{white} снял мут с игрока {red}{name}\nПричина: {red}{reason}\nСрок: {red}{duration}",
     
+    "Limitations.TimeLimit" : "{red}Вы можете выдать это наказание только в промежутке от {min}мин. - {max}мин. ",
+    "Limitations.MaxByDayLimit" : "{red}Вы привысили свой суточный лимит наказаний!\nСледующее наказание будет доступно: {date} ",
+
     "HTML.AdvancedKickMessage" : "<font color='red'>ВАС ЗАБЛОКИРОВАЛИ</font> <br> <font color='white'>Причина: {reason}</font>",
 
     "Prefix.Seconds" : "сек.",

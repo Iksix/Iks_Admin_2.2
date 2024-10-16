@@ -9,6 +9,9 @@ public class Group {
     public int CreatedAt {get; set;} = AdminUtils.CurrentTimestamp();
     public int UpdatedAt {get; set;} = AdminUtils.CurrentTimestamp();
     public int? DeletedAt {get; set;} = null;
+    public GroupLimitation[] Limitations {get {
+        return AdminUtils.AdminApi.GroupLimitations.Where(x => x.GroupId == Id).ToArray();
+    }}
 
     /// <summary>
     /// For getting from db

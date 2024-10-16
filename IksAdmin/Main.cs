@@ -721,6 +721,37 @@ public class AdminApi : IIksAdminApi
                     ban.ServerId = null;
                 ban.Reason = reservedReason.Text;
             }
+            var admin = ban.Admin!;
+            var group = admin.Group;
+            if (group != null)
+            {
+                var limitations = group.Limitations;
+                var maxTime = group.Limitations.FirstOrDefault(x => x.LimitationKey == "max_ban_time")?.LimitationKey;
+                var minTime = group.Limitations.FirstOrDefault(x => x.LimitationKey == "min_ban_time")?.LimitationKey;
+                var minTimeInt = minTime == null ? 0 : int.Parse(minTime);
+                var maxTimeInt = maxTime == null ? int.MaxValue : int.Parse(maxTime);
+                var maxByDay = group.Limitations.FirstOrDefault(x => x.LimitationKey == "max_bans_in_day")?.LimitationKey;
+                var maxByDayInt = maxByDay == null ? int.MaxValue : int.Parse(maxByDay);
+                if (ban.Duration > maxTimeInt || minTimeInt > ban.Duration)
+                {
+                    Helper.PrintToSteamId(admin.SteamId, AdminUtils.AdminApi.Localizer["Limitations.TimeLimit"].Value
+                        .Replace("{min}", minTimeInt.ToString())
+                        .Replace("{max}", maxTimeInt.ToString())
+                    );
+                    return 3;
+                }
+                if (maxByDay != null)
+                {
+                    var lastPunishments = await BansControllFunctions.GetLastAdminBans(admin, 60*60*24);
+                    if (lastPunishments.Count > maxByDayInt)
+                    {
+                        Helper.PrintToSteamId(admin.SteamId, AdminUtils.AdminApi.Localizer["Limitations.MaxByDayLimit"].Value
+                            .Replace("{date}", AdminUtils.GetDateString(lastPunishments[0].CreatedAt + 60*60*24))
+                        );
+                        return 3;
+                    }
+                }
+            }
             var result = await BansControllFunctions.Add(ban);
             switch (result)
             {
@@ -1061,6 +1092,39 @@ public class AdminApi : IIksAdminApi
                     gag.ServerId = null;
                 gag.Reason = reservedReason.Text;
             }
+
+            var admin = gag.Admin!;
+            var group = admin.Group;
+            if (group != null)
+            {
+                var limitations = group.Limitations;
+                var maxTime = group.Limitations.FirstOrDefault(x => x.LimitationKey == "max_gag_time")?.LimitationKey;
+                var minTime = group.Limitations.FirstOrDefault(x => x.LimitationKey == "min_gag_time")?.LimitationKey;
+                var minTimeInt = minTime == null ? 0 : int.Parse(minTime);
+                var maxTimeInt = maxTime == null ? int.MaxValue : int.Parse(maxTime);
+                var maxByDay = group.Limitations.FirstOrDefault(x => x.LimitationKey == "max_gags_in_day")?.LimitationKey;
+                var maxByDayInt = maxByDay == null ? int.MaxValue : int.Parse(maxByDay);
+                if (gag.Duration > maxTimeInt || minTimeInt > gag.Duration)
+                {
+                    Helper.PrintToSteamId(admin.SteamId, AdminUtils.AdminApi.Localizer["Limitations.TimeLimit"].Value
+                        .Replace("{min}", minTimeInt.ToString())
+                        .Replace("{max}", maxTimeInt.ToString())
+                    );
+                    return 3;
+                }
+                if (maxByDay != null)
+                {
+                    var lastPunishments = await GagsControllFunctions.GetLastAdminGags(admin, 60*60*24);
+                    if (lastPunishments.Count > maxByDayInt)
+                    {
+                        Helper.PrintToSteamId(admin.SteamId, AdminUtils.AdminApi.Localizer["Limitations.MaxByDayLimit"].Value
+                            .Replace("{date}", AdminUtils.GetDateString(lastPunishments[0].CreatedAt + 60*60*24))
+                        );
+                        return 3;
+                    }
+                }
+            }
+
             var result = await GagsControllFunctions.Add(gag);
             switch (result)
             {
@@ -1128,10 +1192,42 @@ public class AdminApi : IIksAdminApi
             var reservedReason = MutesConfig.Config.Reasons.FirstOrDefault(x => x.Title.ToLower() == mute.Reason.ToLower());
             if (reservedReason != null)
             {
-                Debug($"Do reservedReason transformations...");
+                Debug($"Do reservedReason transformations..." );
                 if (reservedReason.BanOnAllServers)
                     mute.ServerId = null;
                 mute.Reason = reservedReason.Text;
+            }
+
+            var admin = mute.Admin!;
+            var group = admin.Group;
+            if (group != null)
+            {
+                var limitations = group.Limitations;
+                var maxTime = group.Limitations.FirstOrDefault(x => x.LimitationKey == "max_mute_time")?.LimitationKey;
+                var minTime = group.Limitations.FirstOrDefault(x => x.LimitationKey == "min_mute_time")?.LimitationKey;
+                var minTimeInt = minTime == null ? 0 : int.Parse(minTime);
+                var maxTimeInt = maxTime == null ? int.MaxValue : int.Parse(maxTime);
+                var maxByDay = group.Limitations.FirstOrDefault(x => x.LimitationKey == "max_mutes_in_day")?.LimitationKey;
+                var maxByDayInt = maxByDay == null ? int.MaxValue : int.Parse(maxByDay);
+                if (mute.Duration > maxTimeInt || minTimeInt > mute.Duration)
+                {
+                    Helper.PrintToSteamId(admin.SteamId, AdminUtils.AdminApi.Localizer["Limitations.TimeLimit"].Value
+                        .Replace("{min}", minTimeInt.ToString())
+                        .Replace("{max}", maxTimeInt.ToString())
+                    );
+                    return 3;
+                }
+                if (maxByDay != null)
+                {
+                    var lastPunishments = await MutesControllFunctions.GetLastAdminMutes(admin, 60*60*24);
+                    if (lastPunishments.Count > maxByDayInt)
+                    {
+                        Helper.PrintToSteamId(admin.SteamId, AdminUtils.AdminApi.Localizer["Limitations.MaxByDayLimit"].Value
+                            .Replace("{date}", AdminUtils.GetDateString(lastPunishments[0].CreatedAt + 60*60*24))
+                        );
+                        return 3;
+                    }
+                }
             }
             var result = await MutesControllFunctions.Add(mute);
             switch (result)

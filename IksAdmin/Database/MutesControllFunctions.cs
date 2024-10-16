@@ -65,6 +65,27 @@ public static class MutesControllFunctions
             throw;
         }
     }
+    public static async Task<List<PlayerMute>> GetLastAdminMutes(Admin admin, int time)
+    {
+        try
+        {
+            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await conn.OpenAsync();
+            var mutes = (await conn.QueryAsync<PlayerMute>($@"
+                {SelectMute}
+                where deleted_at is null
+                and admin_id = @steamId
+                and (server_id is null or server_id = @serverId)
+                and created_at > unix_timestamp() - @time
+            ", new {time, admin_id = admin.Id, serverId = Main.AdminApi.ThisServer.Id})).ToList();
+            return mutes;
+        }
+        catch (Exception e)
+        {
+            Main.AdminApi.LogError(e.ToString());
+            throw;
+        }
+    }
     public static async Task<List<PlayerMute>> GetAllMutes()
     {
         try

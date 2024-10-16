@@ -45,6 +45,28 @@ public static class GagsControllFunctions
             throw;
         }
     }
+
+    public static async Task<List<PlayerGag>> GetLastAdminGags(Admin admin, int time)
+    {
+        try
+        {
+            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await conn.OpenAsync();
+            var gags = (await conn.QueryAsync<PlayerGag>($@"
+                {SelectGag}
+                where deleted_at is null
+                and admin_id = @steamId
+                and (server_id is null or server_id = @serverId)
+                and created_at > unix_timestamp() - @time
+            ", new {time, admin_id = admin.Id, serverId = Main.AdminApi.ThisServer.Id})).ToList();
+            return gags;
+        }
+        catch (Exception e)
+        {
+            Main.AdminApi.LogError(e.ToString());
+            throw;
+        }
+    }
     public static async Task<List<PlayerGag>> GetAllGags(string steamId)
     {
         try
