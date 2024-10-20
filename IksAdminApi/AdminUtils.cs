@@ -127,6 +127,19 @@ public static class AdminUtils
         if (ip == null) return null;
         return ip.Split(":")[0];
     }
+
+    public static string? GetSteamId(this CCSPlayerController? player)
+    {
+        if (player == null) return "CONSOLE";
+        var steamId = player.AuthorizedSteamID;
+        return steamId == null ? null : steamId.SteamId64.ToString();
+    }
+
+    public static bool IsConsoleId(string steamId)
+    {
+        return steamId.ToLower() == "console";
+    }
+
     public static void PrintToServer(string message, string tag = "")
     {
         if (message.Trim() == "") return;

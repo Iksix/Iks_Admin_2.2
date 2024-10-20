@@ -163,7 +163,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
         var gag = player.GetGag();
         if (gag != null)
         {
-            Helper.Print(player, Localizer["MessageWhenGag"].Value
+            Helper.Print(player, Localizer["Message.WhenGag"].Value
                 .Replace("{date}", gag.EndAt == 0 ? Localizer["Other.Never"] : AdminUtils.GetDateString(gag.EndAt))
             );
             return HookResult.Stop;
@@ -188,7 +188,8 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
 
         // BAN ===
         AdminApi.RegisterPermission("blocks_manage.ban", "b");
-        AdminApi.RegisterPermission("blocks_manage.own_ban_reason", "b"); // С этим флагом у админа появляется пункт в меню для выбора собственной причины
+        AdminApi.RegisterPermission("blocks_manage.own_ban_reason", "b"); // С этим флагом у админа появляется пункт в меню для выбора собственной причины и возможность банить по кастомной причине через команду
+        AdminApi.RegisterPermission("blocks_manage.own_ban_time", "b"); // С этим флагом у админа появляется пункт в меню для выбора собственного времени и банить через команду с сообственным временем
         AdminApi.RegisterPermission("blocks_manage.ban_ip", "b");
         AdminApi.RegisterPermission("blocks_manage.unban", "b");
         AdminApi.RegisterPermission("blocks_manage.unban_ip", "b");
@@ -197,11 +198,13 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
         AdminApi.RegisterPermission("blocks_manage.mute", "m"); 
         AdminApi.RegisterPermission("blocks_manage.unmute", "m"); 
         AdminApi.RegisterPermission("blocks_manage.own_mute_reason", "m"); // С этим флагом у админа появляется пункт в меню для выбора собственной причины
+        AdminApi.RegisterPermission("blocks_manage.own_mute_time", "m"); 
         // GAG
         AdminApi.RegisterPermission("blocks_manage.gag", "g"); 
         AdminApi.RegisterPermission("blocks_manage.ungag", "g"); 
         AdminApi.RegisterPermission("blocks_manage.own_gag_reason", "g"); // С этим флагом у админа появляется пункт в меню для выбора собственной причины
-
+        AdminApi.RegisterPermission("blocks_manage.own_gag_time", "g"); 
+        // OTHER
         AdminApi.RegisterPermission("blocks_manage.remove_immunity", "i"); // Снять наказание выданное админом ниже по иммунитету
         AdminApi.RegisterPermission("blocks_manage.remove_all", "u"); // Снять наказание выданное кем угодно (кроме консоли)
         AdminApi.RegisterPermission("blocks_manage.remove_console", "c"); // Снять наказание выданное консолью
@@ -227,6 +230,14 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             "css_am_addflag <steamId> <flagsToAdd>",
             AdminsManageCommands.AddFlag,
             minArgs: 2 
+        );
+        AdminApi.AddNewCommand(
+            "am_addflag_or_admin",
+            "Добавить флаг админу или создать админа(В случае если такого админа нет)",
+            "admins_manage.edit,admins_manage.add",
+            "am_addflag_or_admin <steamId> <name> <time> <serverKey> <flags> <immunity>",
+            AdminsManageCommands.AddFlagOrAdmin,
+            minArgs: 6
         );
 
         // BLOCKS MANAGE ====
@@ -690,11 +701,16 @@ public class AdminApi : IIksAdminApi
                 info.Reply(Localizer["Error.OnlyServerCommand"], tagString);
                 return;
             }
-            if (!p.HasPermissions(permission))
+            var perms = permission.Split(",");
+            foreach (var perm in perms)
             {
-                info.Reply(notEnoughPermissionsMessage == null ?Localizer["Error.NotEnoughPermissions"] : notEnoughPermissionsMessage, tagString);
-                return;
+                if (!p.HasPermissions(perm))
+                {
+                    info.Reply(notEnoughPermissionsMessage == null ? Localizer["Error.NotEnoughPermissions"] : notEnoughPermissionsMessage, tagString);
+                    return;
+                }
             }
+            
             var args = AdminUtils.GetArgsFromCommandLine(info.GetCommandString);
             if (args.Count < minArgs)
             {
@@ -905,9 +921,25 @@ public class AdminApi : IIksAdminApi
         return ban;
     }
 
-    public bool CanDoActionWithPlayer(Admin admin, string targetId)
+    public bool CanDoActionWithPlayer(string callerId, string targetId)
     {
-        throw new NotImplementedException();
+        var callerAdmin = AdminUtils.Admin(callerId);
+        var targetAdmin = AdminUtils.Admin(callerId);
+
+        if (targetAdmin == null) return true;
+
+        if (targetAdmin != null)
+        {
+            if (callerAdmin == null) return false;
+            if (callerAdmin.HasPermissions("other.equals_immunity_action"))
+            {
+                if (callerAdmin.CurrentImmunity >= targetAdmin.CurrentImmunity) return true;
+            } else {
+                if (callerAdmin.CurrentImmunity > targetAdmin.CurrentImmunity) return true;
+            }
+        }
+
+        return false;
     }
 
     public void DisconnectPlayer(CCSPlayerController player, string reason, bool instantly = false)

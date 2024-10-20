@@ -51,6 +51,80 @@ public class Admin
     public CCSPlayerController? Controller { get => AdminUtils.GetControllerBySteamId(SteamId); } 
     public bool isConsole { get => Id == 1;}
 
+
+    // Limitations ===
+    public int MinBanTime {get {
+        if (Group == null) return 0;
+        var limit = Group.Limitations.FirstOrDefault(x => x.LimitationKey == "min_ban_time");
+        if (limit == null) return 0;
+        else return int.Parse(limit.LimitationValue);
+    }}
+    public int MaxBanTime {get {
+        if (Group == null) return 0;
+        var limit = Group.Limitations.FirstOrDefault(x => x.LimitationKey == "max_ban_time");
+        if (limit == null) return 0;
+        else return int.Parse(limit.LimitationValue);
+    }}
+    public int MinGagTime {get {
+        if (Group == null) return 0;
+        var limit = Group.Limitations.FirstOrDefault(x => x.LimitationKey == "min_gag_time");
+        if (limit == null) return 0;
+        else return int.Parse(limit.LimitationValue);
+    }}
+    public int MaxGagTime {get {
+        if (Group == null) return 0;
+        var limit = Group.Limitations.FirstOrDefault(x => x.LimitationKey == "max_gag_time");
+        if (limit == null) return 0;
+        else return int.Parse(limit.LimitationValue);
+    }}
+    public int MinMuteTime {get {
+        if (Group == null) return 0;
+        var limit = Group.Limitations.FirstOrDefault(x => x.LimitationKey == "min_mute_time");
+        if (limit == null) return 0;
+        else return int.Parse(limit.LimitationValue);
+    }}
+    public int MaxMuteTime {get {
+        if (Group == null) return 0;
+        var limit = Group.Limitations.FirstOrDefault(x => x.LimitationKey == "max_mute_time");
+        if (limit == null) return 0;
+        else return int.Parse(limit.LimitationValue);
+    }}
+    public int MaxBansInDay {get {
+        if (Group == null) return 0;
+        var limit = Group.Limitations.FirstOrDefault(x => x.LimitationKey == "max_bans_in_day");
+        if (limit == null) return 0;
+        else return int.Parse(limit.LimitationValue);
+    }}
+    public int MaxGagsInDay {get {
+        if (Group == null) return 0;
+        var limit = Group.Limitations.FirstOrDefault(x => x.LimitationKey == "max_gags_in_day");
+        if (limit == null) return 0;
+        else return int.Parse(limit.LimitationValue);
+    }}
+    public int MaxMutesInDay {get {
+        if (Group == null) return 0;
+        var limit = Group.Limitations.FirstOrDefault(x => x.LimitationKey == "max_mutes_in_day");
+        if (limit == null) return 0;
+        else return int.Parse(limit.LimitationValue);
+    }}
+    public int MaxBansInRound {get {
+        if (Group == null) return 0;
+        var limit = Group.Limitations.FirstOrDefault(x => x.LimitationKey == "max_bans_in_round");
+        if (limit == null) return 0;
+        else return int.Parse(limit.LimitationValue);
+    }}
+    public int MaxGagsInRound {get {
+        if (Group == null) return 0;
+        var limit = Group.Limitations.FirstOrDefault(x => x.LimitationKey == "max_gags_in_round");
+        if (limit == null) return 0;
+        else return int.Parse(limit.LimitationValue);
+    }}
+    public int MaxMutesInRound {get {
+        if (Group == null) return 0;
+        var limit = Group.Limitations.FirstOrDefault(x => x.LimitationKey == "max_mutes_in_round");
+        if (limit == null) return 0;
+        else return int.Parse(limit.LimitationValue);
+    }}
     /// <summary>
     /// For getting from db
     /// </summary>

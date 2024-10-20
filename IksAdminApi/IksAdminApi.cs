@@ -42,7 +42,7 @@ public interface IIksAdminApi
     public Task<PlayerSummaries?> GetPlayerSummaries(ulong steamId);
     public void DoActionWithIdentity(CCSPlayerController? actioneer, string identity, Action<CCSPlayerController> action, string[]? blockedArgs = null);
     public void DisconnectPlayer(CCSPlayerController player, string reason, bool instantly = false);
-    public bool CanDoActionWithPlayer(Admin admin, string targetId);
+    public bool CanDoActionWithPlayer(string callerId, string targetId);
     public void SetCommandInititalizer(string moduleName);
     public void ClearCommandInitializer();
     public void Debug(string message);

@@ -4,6 +4,8 @@
     "MenuTitle.GroupsManage" : "Управление группами",
     "MenuTitle.GroupAdding" : "Добавление группы",
 
+    "MenuOption.Other.OwnReason" : "Своя причина",
+
     "MenuOption.AdminAdd" : "Добавить админа",
     "MenuOption.AdminDelete" : "Удалить админа",
     "MenuOption.AdminEdit" : "Редактировать админа",
@@ -34,7 +36,8 @@
     "ActionSuccess.UnmuteSuccess" : "{green}С игрока успешно снят мут!",
     "ActionSuccess.UnbanSuccess" : "{green}Цель успешно разбанена!",
     
-    "MessageWhenGag" : "{red}У вас есть активный гаг!\nЗавершится: {red}{date} ",
+    "Message.WhenGag" : "{red}У вас есть активный гаг!\nЗавершится: {red}{date} ",
+    "Message.PrintOwnReason" : "Введите свою причину в чат: {red}!причина",
     
     "Announce.BanAdded" : "Админ {red}{admin}{white} заблокировал игрока {red}{name}\nПричина: {red}{reason}\nСрок: {red}{duration}",
     "Announce.BanAddedIp" : "Админ {red}{admin}{white} заблокировал игрока {red}{name}{white} по айпи\nПричина: {red}{reason}\nСрок: {red}{duration}",
