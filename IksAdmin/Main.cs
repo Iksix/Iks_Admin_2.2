@@ -25,6 +25,7 @@ using SteamWebAPI2.Utilities;
 using SteamWebAPI2.Interfaces;
 using System.Security.Cryptography.X509Certificates;
 using CounterStrikeSharp.API.Modules.Entities;
+using AutoMapper.Internal;
 namespace IksAdmin;
 
 public class Main : BasePlugin, IPluginConfig<PluginConfig>
@@ -383,6 +384,11 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
         if (player == null) return HookResult.Continue;
         if (player.IsBot) return HookResult.Continue;
         var steamId = player!.AuthorizedSteamID!.SteamId64.ToString();
+        var disconnected = AdminApi.DisconnectedPlayers.FirstOrDefault(x => x.SteamId == steamId);
+        if (disconnected != null)
+        {
+            AdminApi.DisconnectedPlayers.Remove(disconnected);
+        }
         if (KickOnFullConnect.ContainsKey(steamId))
         {
             var reason = KickOnFullConnectReason[steamId];
@@ -401,6 +407,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
         BlockTeamChange.Remove(@event.Userid!);
         var player = @event.Userid;
         if (player == null || player.IsBot) return HookResult.Continue;
+        AdminApi.DisconnectedPlayers.Insert(0, new PlayerInfo(player));
         AdminApi.Gags.Remove(player.GetGag()!);
         AdminApi.Mutes.Remove(player.GetMute()!);
         return HookResult.Continue;
@@ -448,6 +455,7 @@ public class AdminApi : IIksAdminApi
     public BansConfig BansConfig {get; set;} = new ();
     public MutesConfig MutesConfig {get; set;} = new ();
     public GagsConfig GagsConfig {get; set;} = new ();
+    public List<PlayerInfo> DisconnectedPlayers {get; set;} = new();
 
     public AdminApi(BasePlugin plugin, IAdminConfig config, IStringLocalizer localizer, string moduleDirectory, string dbConnectionString)
     {

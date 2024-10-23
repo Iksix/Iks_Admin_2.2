@@ -8,6 +8,7 @@ using Microsoft.Extensions.Localization;
 public interface IIksAdminApi
 {
     // GLOBALS ===
+    public List<PlayerInfo> DisconnectedPlayers {get; set;}
     public List<PlayerMute> Mutes {get; set;}
     public List<PlayerGag> Gags {get; set;}
 
