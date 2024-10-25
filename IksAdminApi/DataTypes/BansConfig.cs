@@ -17,6 +17,16 @@ public class BansConfig : PluginCFG<BansConfig>, IPluginCFG
         new BanReason("Example reason title 1", "Another text for reason", 0, 30, null, false),
         new BanReason("Example reason title 2", banOnAllServers: true, duration: 0),
     };
+
+    public Dictionary<int, string> Times {get; set;} = new()
+    {
+        {60, "1 мин"},
+        {3600, "1 час"},
+        {3600 * 24, "1 день"},
+        {3600 * 24 * 7, "1 неделя"},
+        {3600 * 24 * 30, "1 месяц"},        
+        {0, "Навсегда"}        
+    };
     
 
     public void Set()

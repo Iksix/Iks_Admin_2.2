@@ -111,6 +111,7 @@ public static class BlocksManageMenu
     {
         var menu = AdminApi.CreateMenu(Main.GenerateMenuId("bm_ban_time"), Localizer["MenuTitle.SelectReason"], backMenu: backMenu);
         var config = BansConfig.Config;
+        var times = config.Times;
         var admin = caller.Admin()!;
 
         var ban = new PlayerBan(target, reason, 0, serverId: AdminApi.ThisServer.Id);
@@ -131,27 +132,24 @@ public static class BlocksManageMenu
             });
         }
 
-        foreach (var time in reasons)
+        foreach (var time in times)
         {
-            if (reason.Duration != null)
+            if (caller.Admin()!.MaxBanTime != 0)
             {
-                if (caller.Admin()!.MaxBanTime != 0)
-                {
-                    if (reason.Duration > caller.Admin()!.MaxBanTime)
-                        continue;
-                }
-                if (caller.Admin()!.MinBanTime != 0)
-                {
-                    if (reason.Duration < caller.Admin()!.MinBanTime)
-                        continue;
-                }
+                if (time.Key > caller.Admin()!.MaxBanTime)
+                    continue;
+            }
+            if (caller.Admin()!.MinBanTime != 0)
+            {
+                if (time.Key < caller.Admin()!.MinBanTime)
+                    continue;
             }
 
-            menu.AddMenuOption(Main.GenerateOptionId(reason.Title), reason.Title, (_, _) => {
-                if (reason.Duration == null)
-                {
-                    OpenTimeSelectMenu(caller, target, reason.Text, menu);
-                }
+            menu.AddMenuOption(Main.GenerateOptionId("ban_time_" + time.Key), time.Value, (_, _) => {
+                ban.Duration = time.Key;
+                Task.Run(async () => {
+                    await BansFunctions.Ban(ban);
+                });
             });
         }
         

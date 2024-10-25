@@ -19,6 +19,16 @@ public class GagsConfig : PluginCFG<GagsConfig>, IPluginCFG
         new GagReason("Example reason title 2", banOnAllServers: true, duration: 0),
     };
 
+    public Dictionary<int, string> Times {get; set;} = new()
+    {
+        {60, "1 мин"},
+        {3600, "1 час"},
+        {3600 * 24, "1 день"},
+        {3600 * 24 * 7, "1 неделя"},
+        {3600 * 24 * 30, "1 месяц"},        
+        {0, "Навсегда"}        
+    };
+
     public void Set()
     {
         Config = ReadOrCreate<GagsConfig>("gags_cfg", Config);
