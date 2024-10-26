@@ -115,7 +115,7 @@ public static class BlocksManageMenu
         var admin = caller.Admin()!;
 
         var ban = new PlayerBan(target, reason, 0, serverId: AdminApi.ThisServer.Id);
-
+        ban.AdminId = admin.Id;
         if (admin.HasPermissions("blocks_manage.own_ban_time"))
         {
             menu.AddMenuOption(Main.GenerateOptionId("own_ban_time") ,Localizer["MenuOption.Other.OwnTime"], (_, _) => {
@@ -128,6 +128,7 @@ public static class BlocksManageMenu
                     }
                     ban.Duration = timeInt;
                     Helper.Print(caller, Localizer["ActionSuccess.TimeSetted"]);
+                    OpenBanTypeSelectMenu(caller, ban);
                 });
             });
         }
@@ -146,13 +147,35 @@ public static class BlocksManageMenu
             }
 
             menu.AddMenuOption(Main.GenerateOptionId("ban_time_" + time.Key), time.Value, (_, _) => {
+                AdminApi.CloseMenu(caller);
                 ban.Duration = time.Key;
-                Task.Run(async () => {
+                OpenBanTypeSelectMenu(caller, ban);
+            });
+        }
+        
+        menu.Open(caller);
+    }
+
+    private static void OpenBanTypeSelectMenu(CCSPlayerController caller, PlayerBan ban)
+    {
+        var menu = AdminApi.CreateMenu(Main.GenerateMenuId("bm_ban_type"), Localizer["MenuTitle.Bans"]);
+        var admin = caller.Admin();
+        menu.AddMenuOption(Main.GenerateOptionId("bm_ban_steam_id"), Localizer["MenuOption.BanSteamId"], (_, _) => {
+            AdminApi.CloseMenu(caller);
+            Task.Run(async () => {
+                await BansFunctions.Ban(ban);
+            });
+        });
+        if (caller.HasPermissions("blocks_manage.ban_ip"))
+        {
+            AdminApi.CloseMenu(caller);
+            menu.AddMenuOption(Main.GenerateOptionId("bm_ban_ip"), Localizer["MenuOption.BanIp"], (_, _) => {
+            ban.BanIp = 1;
+            Task.Run(async () => {
                     await BansFunctions.Ban(ban);
                 });
             });
         }
-        
         menu.Open(caller);
     }
 }
