@@ -20,4 +20,6 @@ public interface IAdminConfig
     public bool DebugMode { get; set; }
     public string[] IgnoreCommandsRegistering {get; set;}
     public string[] MirrorsIp {get; set;}
+
+    public int LastPunishmentTime {get; set;}
 }

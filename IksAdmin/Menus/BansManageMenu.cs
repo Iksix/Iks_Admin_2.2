@@ -7,7 +7,7 @@ using Microsoft.Extensions.Localization;
 
 namespace IksAdmin.Menus;
 
-public static class BlocksManageMenu
+public static class BansManageMenu
 {
     static IIksAdminApi AdminApi {get; set;} = Main.AdminApi;
     static IStringLocalizer Localizer {get; set;} = Main.AdminApi.Localizer;
@@ -21,11 +21,40 @@ public static class BlocksManageMenu
         menu.AddMenuOption(Main.GenerateOptionId("bm_add_offline_ban"), Localizer["MenuOption.AddBan"], (_, _) => {
             OpenAddOfflineBanMenu(caller);
         });
-        menu.AddMenuOption(Main.GenerateOptionId("bm_remove"), Localizer["MenuOption.AddBan"], (_, _) => {
-            // Some functions
+        menu.AddMenuOption(Main.GenerateOptionId("bm_unban"), Localizer["MenuOption.Unban"], (_, _) => {
+            Task.Run(async () => {
+                var bans = await BansControllFunctions.GetLastBans(AdminApi.Config.LastPunishmentTime);
+                Server.NextFrame(() => {
+                    OpenRemoveBansMenu(caller, bans, menu);
+                });
+            });
         });
         menu.Open(caller);
     }
+
+    private static void OpenRemoveBansMenu(CCSPlayerController caller, List<PlayerBan> bans, IDynamicMenu backMenu)
+    {
+        var menu = AdminApi.CreateMenu(Main.GenerateMenuId("bm_unban"), Localizer["MenuTitle.Unban"]);
+        var admin = caller.Admin()!;
+        foreach (var ban in bans)
+        {
+            bool isDisabled = false;
+            if (!BansControllFunctions.CanUnban(admin, ban))
+                isDisabled = true;
+
+            menu.AddMenuOption(Main.GenerateOptionId("bm_unban_" + ban.SteamId), ban.NameString, (_, _) => {
+                AdminApi.HookNextPlayerMessage(caller, r => {
+                    Task.Run(async () => {
+                        if (ban.BanIp == 0)
+                            await BansFunctions.Unban(admin, ban.SteamId!, r);
+                        else await BansFunctions.UnbanIp(admin, ban.Ip!, r);
+                    });
+                });
+            }, disabled: isDisabled);
+            
+        }
+    }
+
     public static void OpenAddOfflineBanMenu(CCSPlayerController caller)
     {
         var menu = AdminApi.CreateMenu(Main.GenerateMenuId("bm_offline_ban_add"), Localizer["MenuTitle.AddOfflineBan"]);
@@ -70,15 +99,12 @@ public static class BlocksManageMenu
         var reasons = config.Reasons;
         var admin = caller.Admin()!;
 
-        if (admin.HasPermissions("blocks_manage.own_ban_reason"))
-        {
-            menu.AddMenuOption(Main.GenerateOptionId("own_ban_reason") ,Localizer["MenuOption.Other.OwnReason"], (_, _) => {
-                Helper.Print(caller, Localizer["Message.PrintOwnReason"]);
-                AdminApi.HookNextPlayerMessage(caller, reason => {
-                    OpenTimeSelectMenu(caller, target, reason, menu);
-                });
+        menu.AddMenuOption(Main.GenerateOptionId("own_ban_reason") ,Localizer["MenuOption.Other.OwnReason"], (_, _) => {
+            Helper.Print(caller, Localizer["Message.PrintOwnReason"]);
+            AdminApi.HookNextPlayerMessage(caller, reason => {
+                OpenTimeSelectMenu(caller, target, reason, menu);
             });
-        }
+        }, viewFlags: AdminUtils.GetCurrentPermissionFlags("blocks_manage.own_ban_reason"));
 
         foreach (var reason in reasons)
         {
@@ -116,22 +142,19 @@ public static class BlocksManageMenu
 
         var ban = new PlayerBan(target, reason, 0, serverId: AdminApi.ThisServer.Id);
         ban.AdminId = admin.Id;
-        if (admin.HasPermissions("blocks_manage.own_ban_time"))
-        {
-            menu.AddMenuOption(Main.GenerateOptionId("own_ban_time") ,Localizer["MenuOption.Other.OwnTime"], (_, _) => {
-                Helper.Print(caller, Localizer["Message.PrintOwnTime"]);
-                AdminApi.HookNextPlayerMessage(caller, time => {
-                    if (!int.TryParse(time, out var timeInt))
-                    {
-                        Helper.Print(caller, Localizer["Error.MustBeANumber"]);
-                        return;
-                    }
-                    ban.Duration = timeInt;
-                    Helper.Print(caller, Localizer["ActionSuccess.TimeSetted"]);
-                    OpenBanTypeSelectMenu(caller, ban);
-                });
+        menu.AddMenuOption(Main.GenerateOptionId("own_ban_time") ,Localizer["MenuOption.Other.OwnTime"], (_, _) => {
+            Helper.Print(caller, Localizer["Message.PrintOwnTime"]);
+            AdminApi.HookNextPlayerMessage(caller, time => {
+                if (!int.TryParse(time, out var timeInt))
+                {
+                    Helper.Print(caller, Localizer["Error.MustBeANumber"]);
+                    return;
+                }
+                ban.Duration = timeInt;
+                Helper.Print(caller, Localizer["ActionSuccess.TimeSetted"]);
+                OpenBanTypeSelectMenu(caller, ban);
             });
-        }
+        }, viewFlags: AdminUtils.GetCurrentPermissionFlags("blocks_manage.own_ban_time"));
 
         foreach (var time in times)
         {
@@ -166,16 +189,15 @@ public static class BlocksManageMenu
                 await BansFunctions.Ban(ban);
             });
         });
-        if (caller.HasPermissions("blocks_manage.ban_ip"))
-        {
+            
+        menu.AddMenuOption(Main.GenerateOptionId("bm_ban_ip"), Localizer["MenuOption.BanIp"], (_, _) => {
             AdminApi.CloseMenu(caller);
-            menu.AddMenuOption(Main.GenerateOptionId("bm_ban_ip"), Localizer["MenuOption.BanIp"], (_, _) => {
             ban.BanIp = 1;
             Task.Run(async () => {
                     await BansFunctions.Ban(ban);
                 });
-            });
-        }
+        }, viewFlags: AdminUtils.GetCurrentPermissionFlags("blocks_manage.ban_ip"));
+        
         menu.Open(caller);
     }
 }
