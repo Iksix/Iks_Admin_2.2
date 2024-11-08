@@ -1,7 +1,7 @@
 namespace IksAdminApi;
 public interface IAdminConfig 
 {
-    public string ServerKey { get; set; }
+    public int ServerId { get; set; }
     public string ServerIp { get; set; }
     public string ServerName { get; set; }
     public string RconPassword {get; set;}

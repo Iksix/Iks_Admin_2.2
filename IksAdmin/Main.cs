@@ -456,6 +456,7 @@ public class AdminApi : IIksAdminApi
     public MutesConfig MutesConfig {get; set;} = new ();
     public GagsConfig GagsConfig {get; set;} = new ();
     public List<PlayerInfo> DisconnectedPlayers {get; set;} = new();
+    public List<AdminToServer> AdminsToServer {get; set;} = new();
 
     public AdminApi(BasePlugin plugin, IAdminConfig config, IStringLocalizer localizer, string moduleDirectory, string dbConnectionString)
     {

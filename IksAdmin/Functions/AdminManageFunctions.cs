@@ -27,11 +27,11 @@ public static class AdminManageFunctions
                 flags,
                 immunity,
                 Main.AdminApi.Groups.FirstOrDefault(x => x.Name == groupName)?.Id,
-                serverKey,
                 discord,
                 vk,
                 endAt: time == 0 ? null : AdminUtils.CurrentTimestamp() + time
             );
+            var server = AdminUtils.AdminApi.AllServers.FirstOrDefault(x => x.ServerKey == serverKey);
             await AdminsControllFunctions.AddAdminToBase(admin);
             Helper.Reply(info, "Admin added ✔");
             await Main.AdminApi.RefreshAdmins();

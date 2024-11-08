@@ -14,7 +14,6 @@ public class Admin
     public string? Flags {get; set;}
     public int? Immunity {get; set;}
     public int? GroupId {get; set;} = null;
-    public string? ServerKey {get; set;}
     public string? Discord {get; set;}
     public string? Vk {get; set;}
     public int Disabled {get; set;}
@@ -37,20 +36,17 @@ public class Admin
     public bool IsDisabled {get {
         return Disabled == 1;
     }}
-    public List<string> ServerKeys { get  {
-        var keys = new List<string>();
-        if (ServerKey != null && ServerKey.Length > 0)
+    public int[] Servers { get  {
+        var a = AdminUtils.AdminApi.AdminsToServer.Where(x => x.AdminId == Id).ToArray();
+        List<int> serverIds = new();
+        foreach (var b in a)
         {
-            foreach (var key in ServerKey.Split(";"))
-            {
-                keys.Add(key);
-            }
+            serverIds.Add(b.ServerId);
         }
-        return keys;
+        return serverIds.ToArray();
     } }
     public CCSPlayerController? Controller { get => AdminUtils.GetControllerBySteamId(SteamId); } 
     public bool isConsole { get => Id == 1;}
-
 
     // Limitations ===
     public int MinBanTime {get {
@@ -128,7 +124,7 @@ public class Admin
     /// <summary>
     /// For getting from db
     /// </summary>
-    public Admin(int id, string steamId, string name, string? flags, int? immunity, int? groupId, string? serverKey, string? discord, string? vk, int isDisabled, int? endAt, int createdAt, int updatedAt, int? deletedAt)
+    public Admin(int id, string steamId, string name, string? flags, int? immunity, int? groupId, string? discord, string? vk, int isDisabled, int? endAt, int createdAt, int updatedAt, int? deletedAt)
     {
         Id = id;
         SteamId = steamId;
@@ -137,7 +133,6 @@ public class Admin
         Immunity = immunity;
         GroupId = groupId;
         Disabled = isDisabled;
-        ServerKey = serverKey;  
         Discord = discord;
         Vk = vk;
         EndAt = endAt;
@@ -148,14 +143,13 @@ public class Admin
     /// <summary>
     /// For creating new admin
     /// </summary>
-    public Admin(string steamId, string name, string? flags = null, int? immunity = null, int? groupId = null, string? serverKey = null, string? discord = null, string? vk = null, int? endAt = null)
+    public Admin(string steamId, string name, string? flags = null, int? immunity = null, int? groupId = null, string? discord = null, string? vk = null, int? endAt = null)
     {
         SteamId = steamId;
         Name = name;
         Flags = flags;
         Immunity = immunity;
         GroupId = groupId;
-        ServerKey = serverKey;
         Discord = discord;
         Vk = vk;
         EndAt = endAt;

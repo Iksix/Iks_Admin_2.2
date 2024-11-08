@@ -21,6 +21,7 @@ public interface IIksAdminApi
     public List<Admin> ServerAdmins { get; set; }
     public List<Admin> AllAdmins { get; set; }
     public List<ServerModel> AllServers { get; set; }
+    public List<AdminToServer> AdminsToServer {get; set;}
     public ServerModel ThisServer { get; set; }
     public List<Group> Groups {get; set;}
     public List<GroupLimitation> GroupLimitations {get; set;}

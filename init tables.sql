@@ -1,6 +1,5 @@
 create table if not exists iks_servers(
     id int not null auto_increment primary key,
-    server_key varchar(32) not null,
     ip varchar(32) not null comment 'ip:port',
     name varchar(64) not null,
     rcon varchar(128) default null,
@@ -25,7 +24,6 @@ create table if not exists iks_admins(
     flags varchar(32) default null,
     immunity int default null,
     group_id int default null,
-    server_key varchar(255),
     discord varchar(64) default null,
     vk varchar(64) default null,
     is_disabled int(1) not null default 0,
@@ -38,7 +36,13 @@ create table if not exists iks_admins(
 insert into iks_admins(steam_id, name, flags, immunity, created_at, updated_at)
 select 'CONSOLE', 'CONSOLE', null, 0, unix_timestamp(), unix_timestamp()
 where not exists (select 1 from iks_admins where steam_id = 'CONSOLE');
-
+create table if not exists iks_admin_to_server
+{
+    admin_id int,
+    server_id int,
+    foreign key (admin_id) references iks_admins(id),
+    foreign key (server_id) references iks_servers(id)
+}
 create table if not exists iks_gags(
     id int not null auto_increment primary key,
     steam_id varchar(17) not null,

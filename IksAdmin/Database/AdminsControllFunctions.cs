@@ -14,7 +14,6 @@ public static class AdminsControllFunctions
         flags as flags,
         immunity as immunity,
         group_id as groupId,
-        server_key as serverKey,
         discord as discord,
         vk as vk,
         is_disabled as isDisabled,
@@ -24,6 +23,29 @@ public static class AdminsControllFunctions
         deleted_at as deletedAt
         from iks_admins
     ";
+
+    public static async Task SetAdminsToServer()
+    {
+        try
+        {
+            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await conn.OpenAsync();
+            var adminsToServer = (await conn.QueryAsync<AdminToServer>(@"
+            select
+            admin_id as adminId,
+            server_id as serverId
+            from iks_admin_to_server
+            ")).ToList();
+
+            Main.AdminApi.AdminsToServer = adminsToServer;
+
+        }
+        catch (MySqlException e)
+        {
+            Main.AdminApi.LogError(e.ToString());
+            throw;
+        }
+    }
     public static async Task<Admin> AddAdmin(Admin admin)
     {
         try
@@ -48,7 +70,7 @@ public static class AdminsControllFunctions
             throw;
         }
     }
-public static async Task AddServerKeyToAdmin(string steamId, string serverKey)
+public static async Task AddServerIdToAdmin(string steamId, int serverId)
 {
     try
     {
@@ -62,16 +84,15 @@ public static async Task AddServerKeyToAdmin(string steamId, string serverKey)
         }
         Main.AdminApi.Debug($"Admin {steamId} finded ✔");
         Main.AdminApi.Debug($"Adding server key...");
-        var serverKeys = existingAdmin.ServerKeys.ToList();
-        if (!serverKeys.Contains(serverKey))
+        var serverIds = existingAdmin.Servers.ToList();
+        if (!serverIds.Contains(serverId))
         {
-            serverKeys.Add(serverKey);
+            serverIds.Add(serverId);
             Main.AdminApi.Debug($"Server key added ✔");
         } else {
             Main.AdminApi.Debug($"Server key already exists ✖");
             return;
         }
-        existingAdmin.ServerKey = string.Join(";", serverKeys);
         await UpdateAdminInBase(existingAdmin);
     }
     catch (MySqlException e)
@@ -80,13 +101,13 @@ public static async Task AddServerKeyToAdmin(string steamId, string serverKey)
         throw;
     }
 }
-    public static async Task<Admin?> GetAdmin(string steamId, string? serverKey = null, bool ignoreDeleted = true)
+    public static async Task<Admin?> GetAdmin(string steamId, int? serverId = null, bool ignoreDeleted = true)
     {
         try
         {
-            if (serverKey == null) 
+            if (serverId == null) 
             {
-                serverKey = Main.AdminApi.Config.ServerKey;
+                serverId = Main.AdminApi.ThisServer.Id;
             }
             await using var conn = new MySqlConnection(Database.ConnectionString);
             await conn.OpenAsync();
@@ -97,7 +118,7 @@ public static async Task AddServerKeyToAdmin(string steamId, string serverKey)
                 {ignoreDeletedString}
             ", new { steamId })).ToList();
 
-            return admins.FirstOrDefault(x => x.ServerKey == null || x.ServerKeys.Contains(serverKey));
+            return admins.FirstOrDefault(x => x.Servers.Contains((int)serverId));
         }
         catch (MySqlException e)
         {
@@ -106,13 +127,13 @@ public static async Task AddServerKeyToAdmin(string steamId, string serverKey)
         }
     }
 
-    public static async Task<List<Admin>> GetAllAdmins(string? serverKey = null, bool ignoreDeleted = true)
+    public static async Task<List<Admin>> GetAllAdmins(int? serverKey = null, bool ignoreDeleted = true)
     {
         try
         {
             if (serverKey == null) 
             {
-                serverKey = Main.AdminApi.Config.ServerKey;
+                serverKey = Main.AdminApi.Config.ServerId;
             }
             await using var conn = new MySqlConnection(Database.ConnectionString);
             await conn.OpenAsync();
@@ -148,7 +169,6 @@ public static async Task AddServerKeyToAdmin(string steamId, string serverKey)
                 flags = admin.Flags,
                 immunity = admin.Immunity,
                 groupId = admin.GroupId,
-                serverKey = admin.ServerKey,
                 discord = admin.Discord,
                 vk = admin.Vk,
                 endAt = admin.EndAt
@@ -176,7 +196,6 @@ public static async Task AddServerKeyToAdmin(string steamId, string serverKey)
                 flags = @flags,
                 immunity = @immunity,
                 group_id = @groupId,
-                server_key = @serverKey,
                 discord = @discord,
                 vk = @vk,
                 is_disabled = @disabled,
@@ -191,7 +210,6 @@ public static async Task AddServerKeyToAdmin(string steamId, string serverKey)
                 flags = admin.Flags,
                 immunity = admin.Immunity,
                 groupId = admin.GroupId,
-                serverKey = admin.ServerKey,
                 disabled = admin.Disabled,
                 discord = admin.Discord,
                 vk = admin.Vk,
@@ -235,6 +253,8 @@ public static async Task AddServerKeyToAdmin(string steamId, string serverKey)
         try
         {
             await GroupsControllFunctions.RefreshGroups();
+            Main.AdminApi.Debug("Refreshing admins to server...");
+            await SetAdminsToServer();
             Main.AdminApi.Debug("Refreshing admins...");
             var admins = await GetAllAdmins();
             Main.AdminApi.Debug("1/4 Admins getted ✔");
@@ -243,7 +263,7 @@ public static async Task AddServerKeyToAdmin(string steamId, string serverKey)
             admins = admins.Where(x => x.SteamId.ToLower() != "console").ToList();
             Main.AdminApi.AllAdmins = await GetAllAdmins(ignoreDeleted: false);
             Main.AdminApi.Debug("3/4 All admins setted ✔");
-            var serverAdmins = admins.Where(x => x.ServerKey == null || x.ServerKeys.Contains(Main.AdminApi.Config.ServerKey)).ToList();
+            var serverAdmins = admins.Where(x => x.Servers.Contains(AdminUtils.AdminApi.ThisServer.Id)).ToList();
             Main.AdminApi.ServerAdmins = serverAdmins;
             Main.AdminApi.Debug("4/4 Server admins setted ✔");
             Main.AdminApi.Debug("Admins refreshed ✔");
@@ -252,7 +272,7 @@ public static async Task AddServerKeyToAdmin(string steamId, string serverKey)
             Main.AdminApi.Debug($"id | name | steamId | flags | immunity | groupId | serverKey | discord | vk | isDisabled");
             foreach (var admin in serverAdmins)
             {
-                Main.AdminApi.Debug($"{admin.Id} | {admin.Name} | {admin.SteamId} | {admin.Flags} | {admin.Immunity} | {admin.GroupId} | {admin.ServerKey} | {admin.Discord} | {admin.Vk} | {admin.IsDisabled}");
+                Main.AdminApi.Debug($"{admin.Id} | {admin.Name} | {admin.SteamId} | {admin.Flags} | {admin.Immunity} | {admin.GroupId} | {admin.Servers} | {admin.Discord} | {admin.Vk} | {admin.IsDisabled}");
             }
             await Main.AdminApi.SendRconToAllServers("css_am_reload_admins", true);
         }
