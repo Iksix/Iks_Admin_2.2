@@ -30,7 +30,7 @@ public interface IIksAdminApi
     public Dictionary<CCSPlayerController, Action<string>> NextPlayerMessage {get;}
     public Task SendRconToAllServers(string command, bool ignoreSelf = false);
     public Task SendRconToServer(ServerModel server, string command);
-    public ServerModel? GetServerByKey(string serverKey);
+    public ServerModel? GetServerById(int serverId);
     public ServerModel? GetServerByIp(string ip);
     public Dictionary<string, List<CommandModel>> RegistredCommands {get; set;}
     public List<AdminModule> LoadedModules {get; set;}
@@ -53,6 +53,7 @@ public interface IIksAdminApi
     public string GetCurrentPermissionFlags(string key);
     public string GetCurrentPermissionFlags(string[] keys);
     public Task RefreshAdmins();
+    public Task RefreshAdminsOnAllServers();
     public void HookNextPlayerMessage(CCSPlayerController player, Action<string> action);
     public void RemoveNextPlayerMessageHook(CCSPlayerController player);
     public void AddNewCommand(

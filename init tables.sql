@@ -33,16 +33,19 @@ create table if not exists iks_admins(
     deleted_at int default null,
     foreign key (group_id) references iks_groups(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 insert into iks_admins(steam_id, name, flags, immunity, created_at, updated_at)
 select 'CONSOLE', 'CONSOLE', null, 0, unix_timestamp(), unix_timestamp()
 where not exists (select 1 from iks_admins where steam_id = 'CONSOLE');
-create table if not exists iks_admin_to_server
-{
-    admin_id int,
-    server_id int,
-    foreign key (admin_id) references iks_admins(id),
+
+create table if not exists iks_admin_to_server(
+    id int not null auto_increment primary key,
+    admin_id int not null,
+    server_id int not null,
+    foreign key (admin_id) references iks_admins(id)
     foreign key (server_id) references iks_servers(id)
-}
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 create table if not exists iks_gags(
     id int not null auto_increment primary key,
     steam_id varchar(17) not null,
@@ -126,3 +129,4 @@ create table if not exists iks_groups_limitations(
     deleted_at int default null,
     foreign key (group_id) references iks_groups(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
+

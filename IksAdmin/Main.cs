@@ -219,10 +219,18 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             "am_add",
             "Создать админа",
             "admins_manage.add",
-            "css_am_add <steamId> <name> <time> <serverKey> <groupName>\n" +
-            "css_am_add <steamId> <name> <time> <serverKey> <flags> <immunity>",
+            "css_am_add <steamId> <name> <time/0> <server_id/this> <groupName>\n" +
+            "css_am_add <steamId> <name> <time/0> <server_id/this> <flags> <immunity>",
             AdminsManageCommands.Add,
             minArgs: 5 
+        );
+        AdminApi.AddNewCommand(
+            "am_add_server_id",
+            "Добавить Server Id админу",
+            "admins_manage.add",
+            "css_am_add_server_id <steamId> <server_id/this>",
+            AdminsManageCommands.AddServerId,
+            minArgs: 2 
         );
         AdminApi.AddNewCommand(
             "am_addflag",
@@ -236,7 +244,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             "am_addflag_or_admin",
             "Добавить флаг админу или создать админа(В случае если такого админа нет)",
             "admins_manage.edit,admins_manage.add",
-            "am_addflag_or_admin <steamId> <name> <time> <serverKey> <flags> <immunity>",
+            "am_addflag_or_admin <steamId> <name> <time/0> <server_id/this> <flags> <immunity>",
             AdminsManageCommands.AddFlagOrAdmin,
             minArgs: 6
         );
@@ -480,7 +488,7 @@ public class AdminApi : IIksAdminApi
     public async Task ReloadDataFromDb()
     {
         var serverModel = new ServerModel(
-                Config.ServerKey,
+                Config.ServerId,
                 Config.ServerIp,
                 Config.ServerName,
                 Config.RconPassword
@@ -493,7 +501,7 @@ public class AdminApi : IIksAdminApi
             await RefreshAdmins();
             await ServersControllFunctions.Add(serverModel);
             AllServers = await ServersControllFunctions.GetAll();
-            ThisServer = AllServers.First(x => x.ServerKey == serverModel.ServerKey);
+            ThisServer = AllServers.First(x => x.Id == serverModel.Id);
             await SendRconToAllServers("css_am_reload_servers", true);
             await SendRconToAllServers("css_am_reload_admins", true);
             Server.NextFrame(() => {
@@ -634,6 +642,10 @@ public class AdminApi : IIksAdminApi
     {
         await AdminsControllFunctions.RefreshAdmins();
     }
+    public async Task RefreshAdminsOnAllServers()
+    {
+        await Main.AdminApi.SendRconToAllServers("css_am_reload_admins", false);
+    }
     
 
     public void HookNextPlayerMessage(CCSPlayerController player, Action<string> action)
@@ -672,9 +684,9 @@ public class AdminApi : IIksAdminApi
         Debug($"Response from {server.Name} [{server.Ip}]: {result}");
     }
 
-    public ServerModel? GetServerByKey(string serverKey)
+    public ServerModel? GetServerById(int id)
     {
-        return AllServers.FirstOrDefault(x => x.ServerKey == serverKey);
+        return AllServers.FirstOrDefault(x => x.Id == id);
     }
 
     public ServerModel? GetServerByIp(string ip)

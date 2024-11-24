@@ -3,7 +3,7 @@ using IksAdminApi;
 namespace IksAdmin;
 public class PluginConfig : BasePluginConfig, IAdminConfig
 {
-    public string ServerKey { get; set; } = "1";
+    public int ServerId { get; set; } = 1;
     public string ServerIp {get; set;} = "0.0.0.0:27015"; // Указываете IP сервера
     public string ServerName {get; set;} = "Server name"; // Название сервера, если пусто то АВТО
     public string RconPassword {get; set;} = "12345";
@@ -25,7 +25,6 @@ public class PluginConfig : BasePluginConfig, IAdminConfig
     };
     public string[] IgnoreCommandsRegistering {get; set;} = ["example_command"]; // Эти команды не будут инициализированны при добавлении через метод админки (пишем без префикса css_)
     public string[] MirrorsIp {get; set;} = ["0.0.0.0"]; // Эти айпи не возможно будет добавить в наказания (будет null) (рассчитано что тут будут айпи зеркал)
-
     public int LastPunishmentTime {get; set;} = 24*60*60*2; // Последние наказания за это время буду отображаться в снятии бана и оффлайн наказаний в ообщем (в секундах)
     
 }

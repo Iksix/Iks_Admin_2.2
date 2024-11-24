@@ -5,7 +5,6 @@ namespace IksAdminApi;
 public class ServerModel
 {
     public int Id { get; set; }
-    public string ServerKey { get; set; }
     public string Ip { get; set; }
     public string Name { get; set; }
     public string? Rcon { get; set; }
@@ -13,10 +12,10 @@ public class ServerModel
     public int UpdatedAt { get; set; } = AdminUtils.CurrentTimestamp();
     public int? DeletedAt { get; set; }
 
-    public ServerModel(int id, string serverKey, string ip, string name, int createdAt, int updatedAt, int? deletedAt, string? rcon = null)
+    public ServerModel(int id, int serverId, string ip, string name, int createdAt, int updatedAt, int? deletedAt, string? rcon = null)
     {
         Id = id;
-        ServerKey = serverKey;
+        Id = serverId;
         Ip = ip;
         Name = name;
         Rcon = rcon;
@@ -24,9 +23,9 @@ public class ServerModel
         UpdatedAt = updatedAt;
         DeletedAt = deletedAt;
     }
-    public ServerModel(string serverKey, string ip, string name, string? rcon = null)
+    public ServerModel(int serverId, string ip, string name, string? rcon = null)
     {
-        ServerKey = serverKey;
+        Id = serverId;
         Ip = ip;
         Name = name;
         Rcon = rcon;

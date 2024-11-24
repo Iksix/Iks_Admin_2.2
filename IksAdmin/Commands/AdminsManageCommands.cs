@@ -21,14 +21,14 @@ public static class AdminsManageCommands
         {
             throw new ArgumentException("Time must be a number");
         }
-        var serverKey = args[3] == "-" ? null : args[3];
+        int? serverId = args[3] == "this" ? null : int.Parse(args[3]);
         switch (args.Count)
         {
             case 5:
-                AdminManageFunctions.Add(caller, info, steamId, name, timeInt, serverKey, groupName: args[4]);
+                AdminManageFunctions.Add(caller, info, steamId, name, timeInt, serverId, groupName: args[4]);
                 break;
             case 6:
-                AdminManageFunctions.Add(caller, info, steamId, name, timeInt, serverKey, flags: args[4], immunity: int.Parse(args[5]));
+                AdminManageFunctions.Add(caller, info, steamId, name, timeInt, serverId, flags: args[4], immunity: int.Parse(args[5]));
                 break;
             default:
                 throw new ArgumentException("Wrong command usage...");
@@ -47,27 +47,27 @@ public static class AdminsManageCommands
     }
     public static void AddFlagOrAdmin(CCSPlayerController? caller, List<string> args, CommandInfo info)
     {
-        // am_addflag_or_admin <steamId> <name> <time> <serverKey> <flags> <immunity>
+        // am_addflag_or_admin <steamId> <name> <time/0> <server_id/this> <flags> <immunity>
         var admin = AdminUtils.Admin(args[0]);
         if (admin == null)
         {
-            var steamId = args[0];
-            var name = args[1];
-            var time = args[2];
-            if (!int.TryParse(time, out var timeInt))
-            {
-                throw new ArgumentException("Time must be a number");
-            }
-            var immunity = args[5];
-            if (!int.TryParse(immunity, out var immunityInt))
-            {
-                throw new ArgumentException("Immunity must be a number");
-            }
-            var serverKey = args[3] == "-" ? null : args[3];
-            AdminManageFunctions.Add(caller, info, steamId, name, timeInt, serverKey, immunity: immunityInt);
+            Add(caller, args, info);
             return;
         }
         var flags = args[1];
         AdminManageFunctions.AddFlag(caller, info, admin, flags);
+    }
+
+    public static void AddServerId(CCSPlayerController? caller, List<string> args, CommandInfo info)
+    {
+        // css_am_add_server_id <steamId> <server_id/this>
+        var admin = AdminUtils.Admin(args[0]);
+        if (admin == null)
+        {
+            Helper.Reply(info, "Admin not found ✖");
+            return;
+        }
+        int? serverId = args[1] == "this" ? null : int.Parse(args[1]);
+        AdminManageFunctions.AddServerId(caller, info, admin, serverId);
     }
 }

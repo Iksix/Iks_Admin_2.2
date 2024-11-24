@@ -36,9 +36,7 @@ public static class AdminsControllFunctions
             server_id as serverId
             from iks_admin_to_server
             ")).ToList();
-
             Main.AdminApi.AdminsToServer = adminsToServer;
-
         }
         catch (MySqlException e)
         {
@@ -69,38 +67,38 @@ public static class AdminsControllFunctions
             Main.AdminApi.LogError(e.ToString());
             throw;
         }
-    }
-public static async Task AddServerIdToAdmin(string steamId, int serverId)
-{
-    try
-    {
-        await using var conn = new MySqlConnection(Database.ConnectionString);
-        await conn.OpenAsync();
-        var existingAdmin = await GetAdmin(steamId);
-        if (existingAdmin == null)
-        {
-            Main.AdminApi.LogError($"Admin {steamId} not finded ✖");
-            return;
         }
-        Main.AdminApi.Debug($"Admin {steamId} finded ✔");
-        Main.AdminApi.Debug($"Adding server key...");
-        var serverIds = existingAdmin.Servers.ToList();
-        if (!serverIds.Contains(serverId))
-        {
-            serverIds.Add(serverId);
-            Main.AdminApi.Debug($"Server key added ✔");
-        } else {
-            Main.AdminApi.Debug($"Server key already exists ✖");
-            return;
-        }
-        await UpdateAdminInBase(existingAdmin);
-    }
-    catch (MySqlException e)
+    public static async Task AddServerIdToAdmin(int adminId, int serverId)
     {
-        Main.AdminApi.LogError(e.ToString());
-        throw;
+        try
+        {
+            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await conn.OpenAsync();
+            var existingAdmin = await GetAdminById(adminId);
+            if (existingAdmin == null)
+            {
+                Main.AdminApi.LogError($"Admin {adminId} not finded ✖");
+                return;
+            }
+            Main.AdminApi.Debug($"Admin {existingAdmin.Name} finded ✔");
+            Main.AdminApi.Debug($"Adding server id...");
+            if (Main.AdminApi.AdminsToServer.Any(x => x.AdminId == adminId && x.ServerId == serverId))
+            {
+                Main.AdminApi.LogError($"Server ID already added");
+                return;
+            }
+            await conn.QueryAsync(@"
+            insert into iks_admin_to_server(admin_id, server_id)
+            values
+            (@adminId, @serverId)
+            ", new {adminId, serverId});
+        }
+        catch (MySqlException e)
+        {
+            Main.AdminApi.LogError(e.ToString());
+            throw;
+        }
     }
-}
     public static async Task<Admin?> GetAdmin(string steamId, int? serverId = null, bool ignoreDeleted = true)
     {
         try
@@ -117,6 +115,31 @@ public static async Task AddServerIdToAdmin(string steamId, int serverId)
                 where steam_id = @steamId
                 {ignoreDeletedString}
             ", new { steamId })).ToList();
+
+            return admins.FirstOrDefault(x => x.Servers.Contains((int)serverId));
+        }
+        catch (MySqlException e)
+        {
+            Main.AdminApi.LogError(e.ToString());
+            throw;
+        }
+    }
+    public static async Task<Admin?> GetAdminById(int id, int? serverId = null, bool ignoreDeleted = true)
+    {
+        try
+        {
+            if (serverId == null) 
+            {
+                serverId = Main.AdminApi.ThisServer.Id;
+            }
+            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await conn.OpenAsync();
+            var ignoreDeletedString = ignoreDeleted ? "and deleted_at is null" : "";
+            var admins = (await conn.QueryAsync<Admin>($@"
+                {AdminSelect}
+                where id = @id
+                {ignoreDeletedString}
+            ", new { id })).ToList();
 
             return admins.FirstOrDefault(x => x.Servers.Contains((int)serverId));
         }
@@ -162,7 +185,7 @@ public static async Task AddServerIdToAdmin(string steamId, int serverId)
                 insert into iks_admins
                 (steam_id, name, flags, immunity, group_id, server_key, discord, vk, end_at, created_at, updated_at)
                 values
-                (@steamId, @name, @flags, @immunity, @groupId, @serverKey, @discord, @vk, @endAt, unix_timestamp(), unix_timestamp())
+                (@steamId, @name, @flags, @immunity, @groupId, @serverKey, @discord, @vk, @endAt, unix_timestamp(), unix_timestamp());
             ", new {
                 steamId = admin.SteamId,
                 name = admin.Name,
@@ -255,17 +278,18 @@ public static async Task AddServerIdToAdmin(string steamId, int serverId)
             await GroupsControllFunctions.RefreshGroups();
             Main.AdminApi.Debug("Refreshing admins to server...");
             await SetAdminsToServer();
+            Main.AdminApi.Debug("1/5 Admin to server setted ✔");
             Main.AdminApi.Debug("Refreshing admins...");
             var admins = await GetAllAdmins();
-            Main.AdminApi.Debug("1/4 Admins getted ✔");
+            Main.AdminApi.Debug("2/5 Admins getted ✔");
             Main.AdminApi.ConsoleAdmin = admins.First(x => x.SteamId.ToLower() == "console");
-            Main.AdminApi.Debug("2/4 Console admin setted ✔");
+            Main.AdminApi.Debug("3/5 Console admin setted ✔");
             admins = admins.Where(x => x.SteamId.ToLower() != "console").ToList();
             Main.AdminApi.AllAdmins = await GetAllAdmins(ignoreDeleted: false);
-            Main.AdminApi.Debug("3/4 All admins setted ✔");
+            Main.AdminApi.Debug("4/5 All admins setted ✔");
             var serverAdmins = admins.Where(x => x.Servers.Contains(AdminUtils.AdminApi.ThisServer.Id)).ToList();
             Main.AdminApi.ServerAdmins = serverAdmins;
-            Main.AdminApi.Debug("4/4 Server admins setted ✔");
+            Main.AdminApi.Debug("5/5 Server admins setted ✔");
             Main.AdminApi.Debug("Admins refreshed ✔");
             Main.AdminApi.Debug("---------------");
             Main.AdminApi.Debug("Server admins:");

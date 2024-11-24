@@ -2,7 +2,7 @@ namespace IksAdminApi;
 public interface IAdminConfig 
 {
     public int ServerId { get; set; }
-    public string ServerIp { get; set; }
+    public string ServerIp { get; set; } // ip:port
     public string ServerName { get; set; }
     public string RconPassword {get; set;}
     // DATABASE ===

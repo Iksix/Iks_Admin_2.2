@@ -13,7 +13,7 @@ public static class ServersControllFunctions
             Main.AdminApi.Debug("Add server to base...");
             await using var conn = new MySqlConnection(Database.ConnectionString);
             await conn.OpenAsync();
-            var existingServer = await Get(server.ServerKey);
+            var existingServer = await Get(server.Id);
             if (existingServer != null)
             {
                 Main.AdminApi.Debug("Server exists with id " + existingServer.Id);
@@ -22,10 +22,10 @@ public static class ServersControllFunctions
                 return;
             }
             await conn.QueryAsync(@"
-                insert into iks_servers(server_key, ip, name, rcon, created_at, updated_at)
-                values(@serverKey, @ip, @name, @rcon, current_timestamp(), current_timestamp())
+                insert into iks_servers(id, ip, name, rcon, created_at, updated_at)
+                values(@serverId, @ip, @name, @rcon, current_timestamp(), current_timestamp())
             ", new {
-                serverKey = server.ServerKey,
+                serverId = server.Id,
                 ip = server.Ip,
                 name = server.Name,
                 rcon = server.Rcon
@@ -48,7 +48,6 @@ public static class ServersControllFunctions
             await conn.OpenAsync();
             await conn.QueryAsync(@"
                 update iks_servers set
-                server_key = @serverKey,
                 ip = @ip,
                 name = @name,
                 rcon = @rcon,
@@ -57,7 +56,6 @@ public static class ServersControllFunctions
                 where id = @id
             ", 
             new {
-                serverKey = server.ServerKey,
                 ip = server.Ip,
                 name = server.Name,
                 rcon = server.Rcon,
@@ -73,7 +71,7 @@ public static class ServersControllFunctions
         }
     }
 
-    public static async Task<ServerModel?> Get(string serverKey)
+    public static async Task<ServerModel?> Get(int id)
     {
         try
         {
@@ -83,7 +81,6 @@ public static class ServersControllFunctions
             var server = await conn.QueryFirstOrDefaultAsync<ServerModel>(@"
                 select
                 id as id,
-                server_key as serverKey,
                 ip as ip,
                 name as name,
                 created_at as createdAt,
@@ -91,10 +88,10 @@ public static class ServersControllFunctions
                 deleted_at as deletedAt,
                 rcon as rcon
                 from iks_servers
-                where server_key = @serverKey
+                where id = @id
                 and deleted_at is null
             ", new {
-                serverKey
+                id
             });
             return server;
         }
