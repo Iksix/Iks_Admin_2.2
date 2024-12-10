@@ -1,22 +1,47 @@
 {
     "Tag" : "[{red}ADMIN{white}]",
-    "MenuTitle.AdminsManage" : "Управление админами",
-    "MenuTitle.GroupsManage" : "Управление группами",
+
+    "MenuTitle.AdminMain" : "Админ меню",
     "MenuTitle.GroupAdding" : "Добавление группы",
 
+    "MenuTitle.Other.SelectReason" : "Выберите причину",
+    "MenuTitle.Other.SelectTime" : "Выберите время",
     "MenuOption.Other.OwnReason" : "Своя причина",
+    "MenuOption.Other.Back" : "← Назад",
 
+    "MenuTitle.AdminsManage" : "Управление админами",
+    "MenuOption.AdminsManage" : "Управление админами",
     "MenuOption.AdminAdd" : "Добавить админа",
     "MenuOption.AdminDelete" : "Удалить админа",
     "MenuOption.AdminEdit" : "Редактировать админа",
     "MenuOption.AdminRefresh" : "Обновить админов",
 
+    "MenuTitle.GroupsManage" : "Управление группами",
     "MenuOption.GroupsManage" : "Управление группами",
     "MenuOption.GroupAdd" : "Добавить группу",
     "MenuOption.GroupName" : "Название: {value}",
     "MenuOption.GroupFlags" : "Флаги: {value}",
     "MenuOption.GroupImmunity" : "Иммунитет: {value}",
     "MenuOption.SaveGroup" : "Сохранить группу",
+
+    "MenuTitle.BlocksManage" : "Управление блокировками",
+    "MenuOption.BlocksManage" : "Управление блокировками",
+    
+    "MenuTitle.BansManage" : "Управление банами",
+    "MenuOption.BansManage" : "Управление банами",
+
+    "MenuTitle.AddBan" : "Добавить бан",
+    "MenuOption.AddBan" : "Добавить бан",
+
+    "MenuTitle.BanType" : "Выберите тип бана",
+    "MenuOption.BanSteamId" : "Steam ID",
+    "MenuOption.BanIp" : "IP",
+
+    "MenuTitle.AddOfflineBan" : "Добавить бан (offline)",
+    "MenuOption.AddOfflineBan" : "Добавить бан (offline)",
+
+    "MenuTitle.Unban" : "Снять бан",
+    "MenuOption.Unban" : "Снять бан",
 
     "Error.OnlyServerCommand" : "{red}Команду может выполнить только сервер ✖",
     "Error.MustBeANumber" : "{red}Параметр должен быть числом!!! ✖",
@@ -38,6 +63,8 @@
     "ActionSuccess.UnbanSuccess" : "{green}Цель успешно разбанена!",
     
     "Message.WhenGag" : "{red}У вас есть активный гаг!\nЗавершится: {red}{date} ",
+    "Message.WhenGagEnd" : "{green}Гаг снят! Вы снова можете писать!",
+    "Message.WhenMuteEnd" : "{green}Мут снят! Вы снова можете говорить!",
     "Message.PrintOwnReason" : "Введите свою причину в чат: {red}!причина",
     
     "Announce.BanAdded" : "Админ {red}{admin}{white} заблокировал игрока {red}{name}\nПричина: {red}{reason}\nСрок: {red}{duration}",

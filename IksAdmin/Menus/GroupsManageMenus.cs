@@ -25,7 +25,7 @@ public static class GroupsManageMenus
         
         menu.AddMenuOption(Main.GenerateOptionId("gm_add"), Localizer["MenuOption.GroupAdd"], (_, _) => {
             OpenGroupAddMenu(caller, menu);
-        }, viewFlags: AdminApi.GetCurrentPermissionFlags("groups_manage_add"));
+        }, viewFlags: AdminApi.GetCurrentPermissionFlags("groups_manage.add"));
 
         menu.Open(caller);
     }

@@ -34,7 +34,7 @@ public static class GagsControllFunctions
                 where deleted_at is null
                 and steam_id = @steamId
                 and unbanned_by is null
-                and end_at > unix_timestamp()
+                and (end_at > unix_timestamp() or end_at = 0)
                 and (server_id is null or server_id = @serverId)
             ", new {steamId, serverId = Main.AdminApi.ThisServer.Id, timestamp = AdminUtils.CurrentTimestamp()});
             return gags;

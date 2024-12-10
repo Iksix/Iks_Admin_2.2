@@ -65,8 +65,8 @@ public class PlayerBan
         Ip = ip;
         Name = name;
         Duration = duration*60;
-        Reason = reason; 
         EndAt = Duration == 0 ? 0 : AdminUtils.CurrentTimestamp() + Duration;
+        Reason = reason; 
         ServerId = serverId;
         if (banIp) BanIp = 1;
         if (AdminUtils.Config().MirrorsIp.Contains(Ip)) Ip = null;

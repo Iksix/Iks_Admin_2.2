@@ -114,7 +114,8 @@ public static class AdminUtils
         if (message.Trim() == "") return;
         if (player == null)
         {
-            Server.PrintToChatAll(message);
+            Console.WriteLine(message);
+            return;
         }
         foreach (var str in message.Split("\n"))
         {
@@ -159,16 +160,20 @@ public static class AdminUtils
     /// <returns>Возвращает строку из текущих флагов по праву(ex: "admin_manage.add") (учитывая замену в кфг)</returns>
     public static string GetCurrentPermissionFlags(string key)
     {
+        Debug("GetCurrentPermissionFlags for key: `" + key + "`");
+        if (key == ">*") {
+            return GetAllPermissionFlags();
+        }
         var permissions = GetPremissions();
         var firstKey = key.Split(".")[0];
         var lastKey = string.Join(".", key.Split(".").Skip(1));
         if (!permissions.TryGetValue(firstKey, out var permission))
         {
-            throw new Exception("Trying to get permissions group that doesn't registred (HasPermissions method)");
+            throw new Exception("Trying to get permissions group that doesn't registred (HasPermissions method) | " + key);
         }
         if (!permission.TryGetValue(lastKey, out var flags))
         {
-            throw new Exception("Trying to get permissions that doesn't registred (HasPermissions method)");
+            throw new Exception("Trying to get permissions that doesn't registred (HasPermissions method) | " + key);
         }
         if (Config().PermissionReplacement.ContainsKey(key))
         {
@@ -193,6 +198,21 @@ public static class AdminUtils
         }
         return flags;
     }
+    /// <returns>Возвращает строку из всех флагов которые используются(учитывая замену в кфг)</returns>
+    public static string GetAllPermissionFlags() // ex: admin_manage
+    {
+        var registredPermissions = GetPremissions();
+        var flags = "";
+        foreach (var permission in registredPermissions)
+        {
+            var group = permission.Key;
+            foreach (var right in permission.Value)
+            {
+                flags += GetCurrentPermissionFlags($"{group}.{right.Key}");
+            }
+        }
+        return flags;
+    }
     /// <summary>
     /// Проверяет есть ли у админа доступ к любому из прав группы(ex: "admin_manage")
     /// </summary>
@@ -205,6 +225,7 @@ public static class AdminUtils
         var allGroupFlags = GetAllPermissionGroupFlags(key);
         if (allGroupFlags.Contains("*")) return true;
         if (admin == null) return false;
+        if (admin.IsDisabled) return false;
         if (admin.CurrentFlags.ToCharArray().Any(allGroupFlags.Contains)) return true;
         return false;
     }
@@ -230,6 +251,10 @@ public static class AdminUtils
         }
         if (admin == null) {
             Debug($"Admin is null | No Access ✖");
+            return false;
+        }
+        if (admin.IsDisabled) {
+            Debug($"Admin is disabled | No Access ✖");
             return false;
         }
         if (admin.CurrentFlags.Contains(flags) || admin.CurrentFlags.Contains("z") || admin.SteamId == "CONSOLE")

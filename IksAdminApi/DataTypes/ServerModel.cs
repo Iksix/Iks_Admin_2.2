@@ -12,10 +12,9 @@ public class ServerModel
     public int UpdatedAt { get; set; } = AdminUtils.CurrentTimestamp();
     public int? DeletedAt { get; set; }
 
-    public ServerModel(int id, int serverId, string ip, string name, int createdAt, int updatedAt, int? deletedAt, string? rcon = null)
+    public ServerModel(int id, string ip, string name, int createdAt, int updatedAt, int? deletedAt, string? rcon = null)
     {
         Id = id;
-        Id = serverId;
         Ip = ip;
         Name = name;
         Rcon = rcon;
@@ -23,9 +22,9 @@ public class ServerModel
         UpdatedAt = updatedAt;
         DeletedAt = deletedAt;
     }
-    public ServerModel(int serverId, string ip, string name, string? rcon = null)
+    public ServerModel(int id, string ip, string name, string? rcon = null)
     {
-        Id = serverId;
+        Id = id;
         Ip = ip;
         Name = name;
         Rcon = rcon;

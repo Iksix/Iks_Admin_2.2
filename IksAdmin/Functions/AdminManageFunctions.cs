@@ -42,13 +42,23 @@ public static class AdminManageFunctions
             );
             var newAdmin = await AdminsControllFunctions.AddAdminToBase(admin);
             Helper.Reply(info, "Admin added ✔");
-            if (serverId != null)
+            
+            try
             {
-                await AdminsControllFunctions.AddServerIdToAdmin(newAdmin.Id, (int)serverId);
-            } else {
-                await AdminsControllFunctions.AddServerIdToAdmin(newAdmin.Id, Main.AdminApi.ThisServer.Id);
+                if (serverId != null)
+                {
+                    await AdminsControllFunctions.AddServerIdToAdmin(newAdmin.Id, (int)serverId);
+                } else {
+                    await AdminsControllFunctions.AddServerIdToAdmin(newAdmin.Id, Main.AdminApi.ThisServer.Id);
+                }
+                await Main.AdminApi.RefreshAdmins();
             }
-            await Main.AdminApi.RefreshAdmins();
+            catch (System.Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+            
         });
     }
 

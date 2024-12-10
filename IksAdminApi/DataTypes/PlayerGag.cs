@@ -57,7 +57,8 @@ public class PlayerGag
         SteamId = steamId;
         Ip = ip;
         Name = name;
-        Duration = duration;
+        Duration = duration * 60;
+        EndAt = Duration == 0 ? 0 : AdminUtils.CurrentTimestamp() + Duration;
         Reason = reason; 
         ServerId = serverId;
         if (AdminUtils.Config().MirrorsIp.Contains(Ip)) Ip = null;
@@ -65,10 +66,11 @@ public class PlayerGag
 
     public PlayerGag(PlayerInfo player, string reason, int duration, int? serverId = null)
     {
-        SteamId = player.SteamId;
+        SteamId = player.SteamId!;
         Ip = player.Ip;
         Name = player.PlayerName;
-        Duration = duration;
+        Duration = duration * 60;
+        EndAt = Duration == 0 ? 0 : AdminUtils.CurrentTimestamp() + Duration;
         Reason = reason; 
         ServerId = serverId;
         if (AdminUtils.Config().MirrorsIp.Contains(Ip)) Ip = null;

@@ -619,7 +619,10 @@
           "CounterStrikeSharp.API": "1.0.276"
         },
         "runtime": {
-          "IksAdminApi.dll": {}
+          "IksAdminApi.dll": {
+            "assemblyVersion": "1.0.0",
+            "fileVersion": "1.0.0.0"
+          }
         }
       },
       "MenuManagerApi/1.0.0.0": {

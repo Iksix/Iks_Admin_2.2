@@ -36,24 +36,24 @@ public static class AdminManageMenus
         menu.Open(caller);
     }
 
-    public static void OpenPlayersManageMenu(CCSPlayerController caller, IDynamicMenu? backMenu = null)
-    {
-        var menu = AdminApi.CreateMenu(
-            Main.GenerateMenuId("pm"), // айди (должно быть уникальным), в этом случае pm = players manage (управление игроками)
-            Localizer["MenuTitle.PlayersManage"] // название из переводов
-        );
-        menu.BackAction = (p) => {
-            // тут тоже реализация которую сделаю я
-        };
+    // public static void OpenPlayersManageMenu(CCSPlayerController caller, IDynamicMenu? backMenu = null)
+    // {
+    //     var menu = AdminApi.CreateMenu(
+    //         Main.GenerateMenuId("pm"), // айди (должно быть уникальным), в этом случае pm = players manage (управление игроками)
+    //         Localizer["MenuTitle.PlayersManage"] // название из переводов
+    //     );
+    //     menu.BackAction = (p) => {
+    //         // тут тоже реализация которую сделаю я
+    //     };
 
-        menu.AddMenuOption(Main.GenerateOptionId("pm_slay"), Localizer["MenuOption.Slay"], (_, _) => { // Пункт отвечающий за !slay к примеру
-            // Какая то реализация которую я сделаю сам
-        });
-        menu.AddMenuOption(Main.GenerateOptionId("pm_kick"), Localizer["MenuOption.Kick"], (_, _) => { // Пункт отвечающий за !kick к примеру
-            // Какая то реализация которую я сделаю сам
-        });
+    //     menu.AddMenuOption(Main.GenerateOptionId("pm_slay"), Localizer["MenuOption.Slay"], (_, _) => { // Пункт отвечающий за !slay к примеру
+    //         // Какая то реализация которую я сделаю сам
+    //     });
+    //     menu.AddMenuOption(Main.GenerateOptionId("pm_kick"), Localizer["MenuOption.Kick"], (_, _) => { // Пункт отвечающий за !kick к примеру
+    //         // Какая то реализация которую я сделаю сам
+    //     });
         
-        menu.Open(caller); // открытие меню
-    }
+    //     menu.Open(caller); // открытие меню
+    // }
 
 }

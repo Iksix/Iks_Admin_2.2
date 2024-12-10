@@ -42,7 +42,7 @@ create table if not exists iks_admin_to_server(
     id int not null auto_increment primary key,
     admin_id int not null,
     server_id int not null,
-    foreign key (admin_id) references iks_admins(id)
+    foreign key (admin_id) references iks_admins(id),
     foreign key (server_id) references iks_servers(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
 

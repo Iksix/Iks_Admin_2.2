@@ -115,7 +115,6 @@ public static class AdminsControllFunctions
                 where steam_id = @steamId
                 {ignoreDeletedString}
             ", new { steamId })).ToList();
-
             return admins.FirstOrDefault(x => x.Servers.Contains((int)serverId));
         }
         catch (MySqlException e)
@@ -135,13 +134,13 @@ public static class AdminsControllFunctions
             await using var conn = new MySqlConnection(Database.ConnectionString);
             await conn.OpenAsync();
             var ignoreDeletedString = ignoreDeleted ? "and deleted_at is null" : "";
-            var admins = (await conn.QueryAsync<Admin>($@"
+            var admin = await conn.QueryFirstOrDefaultAsync<Admin>($@"
                 {AdminSelect}
                 where id = @id
                 {ignoreDeletedString}
-            ", new { id })).ToList();
+            ", new { id });
 
-            return admins.FirstOrDefault(x => x.Servers.Contains((int)serverId));
+            return admin;
         }
         catch (MySqlException e)
         {
@@ -150,13 +149,14 @@ public static class AdminsControllFunctions
         }
     }
 
-    public static async Task<List<Admin>> GetAllAdmins(int? serverKey = null, bool ignoreDeleted = true)
+
+    public static async Task<List<Admin>> GetAllAdmins(int? serverId = null, bool ignoreDeleted = true)
     {
         try
         {
-            if (serverKey == null) 
+            if (serverId == null) 
             {
-                serverKey = Main.AdminApi.Config.ServerId;
+                serverId = Main.AdminApi.Config.ServerId;
             }
             await using var conn = new MySqlConnection(Database.ConnectionString);
             await conn.OpenAsync();
@@ -181,11 +181,12 @@ public static class AdminsControllFunctions
         {
             await using var conn = new MySqlConnection(Database.ConnectionString);
             await conn.OpenAsync();
-            await conn.QueryAsync(@"
+            int id = await conn.QuerySingleAsync<int>(@"
                 insert into iks_admins
-                (steam_id, name, flags, immunity, group_id, server_key, discord, vk, end_at, created_at, updated_at)
+                (steam_id, name, flags, immunity, group_id, discord, vk, end_at, created_at, updated_at)
                 values
-                (@steamId, @name, @flags, @immunity, @groupId, @serverKey, @discord, @vk, @endAt, unix_timestamp(), unix_timestamp());
+                (@steamId, @name, @flags, @immunity, @groupId, @discord, @vk, @endAt, unix_timestamp(), unix_timestamp());
+                select last_insert_id();
             ", new {
                 steamId = admin.SteamId,
                 name = admin.Name,
@@ -197,10 +198,10 @@ public static class AdminsControllFunctions
                 endAt = admin.EndAt
             });
             Main.AdminApi.Debug($"Admin added to base ✔");
-            var newAdmin = await GetAdmin(admin.SteamId);
-            return newAdmin!;
+            admin.Id = id;
+            return admin;
         }
-        catch (MySqlException e)
+        catch (Exception e)
         {
             Main.AdminApi.LogError(e.ToString());
             throw;
@@ -293,10 +294,10 @@ public static class AdminsControllFunctions
             Main.AdminApi.Debug("Admins refreshed ✔");
             Main.AdminApi.Debug("---------------");
             Main.AdminApi.Debug("Server admins:");
-            Main.AdminApi.Debug($"id | name | steamId | flags | immunity | groupId | serverKey | discord | vk | isDisabled");
+            Main.AdminApi.Debug($"id | name | steamId | flags | immunity | groupId | serverIds | discord | vk | isDisabled");
             foreach (var admin in serverAdmins)
             {
-                Main.AdminApi.Debug($"{admin.Id} | {admin.Name} | {admin.SteamId} | {admin.Flags} | {admin.Immunity} | {admin.GroupId} | {admin.Servers} | {admin.Discord} | {admin.Vk} | {admin.IsDisabled}");
+                Main.AdminApi.Debug($"{admin.Id} | {admin.Name} | {admin.SteamId} | {admin.Flags} | {admin.Immunity} | {admin.GroupId} | {admin.Servers.ToString()} | {admin.Discord} | {admin.Vk} | {admin.IsDisabled}");
             }
             await Main.AdminApi.SendRconToAllServers("css_am_reload_admins", true);
         }

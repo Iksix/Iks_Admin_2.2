@@ -111,7 +111,6 @@ public static class ServersControllFunctions
             var servers = (await conn.QueryAsync<ServerModel>(@"
                 select
                 id as id,
-                server_key as serverKey,
                 ip as ip,
                 name as name,
                 created_at as createdAt,

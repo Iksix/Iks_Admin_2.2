@@ -4,6 +4,7 @@ using MenuManager;
 using IksAdminApi;
 using CounterStrikeSharp.API.Modules.Utils;
 using MenuType = IksAdminApi.MenuType;
+using CounterStrikeSharp.API.Core.Translations;
 
 namespace IksAdmin.Menu;
 
@@ -75,6 +76,11 @@ public class DynamicMenu : IDynamicMenu
         if (!onMenuOpenPreResult)
         {
             return;
+        }
+        if (BackAction != null) { // Отрисовка пункта 'Назад'
+            Options.Insert(0, new DynamicMenuOption("back_btn", Main.AdminApi.Localizer["MenuOption.Other.Back"], (p, _) => {
+                BackAction.Invoke(p);
+            }, null, false));
         }
         if (useSortMenu)
         {
