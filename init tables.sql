@@ -114,10 +114,10 @@ create table if not exists iks_admins_warns(
     end_at int not null,
     updated_at int not null,
     deleted_at int default null,
-    removed_by int default null,
+    deleted_by int default null,
     foreign key (admin_id) references iks_admins(id),
     foreign key (target_id) references iks_servers(id),
-    foreign key (removed_by) references iks_admins(id)
+    foreign key (deleted_by) references iks_admins(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
 create table if not exists iks_groups_limitations( 
     id int not null auto_increment primary key,

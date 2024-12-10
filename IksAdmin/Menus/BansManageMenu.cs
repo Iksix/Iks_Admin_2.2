@@ -14,14 +14,14 @@ public static class BansManageMenu
 
     public static void OpenBansMenu(CCSPlayerController caller, IDynamicMenu? backMenu = null)
     {
-        var menu = AdminApi.CreateMenu(Main.GenerateMenuId("bm_ban"), Localizer["MenuTitle.BansManage"], backMenu: backMenu);
-        menu.AddMenuOption(Main.GenerateOptionId("bm_add_ban"), Localizer["MenuOption.AddBan"], (_, _) => {
+        var menu = AdminApi.CreateMenu(Main.GenerateMenuId("bm.ban"), Localizer["MenuTitle.BansManage"], backMenu: backMenu);
+        menu.AddMenuOption(Main.GenerateOptionId("bm_add.ban"), Localizer["MenuOption.AddBan"], (_, _) => {
             OpenAddBanMenu(caller);
         });
-        menu.AddMenuOption(Main.GenerateOptionId("bm_add_offline_ban"), Localizer["MenuOption.AddOfflineBan"], (_, _) => {
+        menu.AddMenuOption(Main.GenerateOptionId("bm_add.offline_ban"), Localizer["MenuOption.AddOfflineBan"], (_, _) => {
             OpenAddOfflineBanMenu(caller);
         });
-        menu.AddMenuOption(Main.GenerateOptionId("bm_unban"), Localizer["MenuOption.Unban"], (_, _) => {
+        menu.AddMenuOption(Main.GenerateOptionId("bm.unban"), Localizer["MenuOption.Unban"], (_, _) => {
             Task.Run(async () => {
                 var bans = await BansControllFunctions.GetLastBans(AdminApi.Config.LastPunishmentTime);
                 Server.NextFrame(() => {

@@ -67,7 +67,7 @@ public static class AdminsControllFunctions
             Main.AdminApi.LogError(e.ToString());
             throw;
         }
-        }
+    }
     public static async Task AddServerIdToAdmin(int adminId, int serverId)
     {
         try
@@ -175,7 +175,7 @@ public static class AdminsControllFunctions
         }
     }
 
-    public static async Task<Admin> AddAdminToBase(Admin admin)
+    public static async Task<Admin> AddAdminToBase(Admin admin, int serverId)
     {
         try
         {
@@ -263,7 +263,7 @@ public static class AdminsControllFunctions
             ", new {
                 id
             });
-            Main.AdminApi.Debug($"Group deleted ✔");
+            Main.AdminApi.Debug($"Admin deleted ✔");
         }
         catch (MySqlException e)
         {

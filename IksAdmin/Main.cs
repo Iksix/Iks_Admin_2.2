@@ -27,6 +27,7 @@ using System.Security.Cryptography.X509Certificates;
 using CounterStrikeSharp.API.Modules.Entities;
 using AutoMapper.Internal;
 using CounterStrikeSharp.API.Modules.Timers;
+using Microsoft.Extensions.Logging;
 namespace IksAdmin;
 
 public class Main : BasePlugin, IPluginConfig<PluginConfig>
@@ -284,6 +285,14 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             AdminsManageCommands.AddFlagOrAdmin,
             minArgs: 6
         );
+        AdminApi.AddNewCommand(
+            "am_remove",
+            "Удалить админа",
+            "admins_manage.edit,admins_manage.add",
+            "am_remove <steamId> <server_id/this>",
+            AdminsManageCommands.AddFlagOrAdmin,
+            minArgs: 6
+        );
 
         // BLOCKS MANAGE ====
         // BANS ===
@@ -500,6 +509,7 @@ public class AdminApi : IIksAdminApi
     public Dictionary<string, List<CommandModel>> RegistredCommands {get; set;} = new Dictionary<string, List<CommandModel>>();
     public List<PlayerMute> Mutes {get; set; } = new();
     public List<PlayerGag> Gags {get; set; } = new();
+    public List<Warn> Warns {get; set;} = new();
 
     // CONFIGS ===
     public BansConfig BansConfig {get; set;} = new ();
@@ -545,13 +555,14 @@ public class AdminApi : IIksAdminApi
             ThisServer = AllServers.First(x => x.Id == serverModel.Id);
             Debug("Refresh Admins");
             await RefreshAdmins();
+            Warns = await WarnsControllFunctions.GetAllActive();
             await SendRconToAllServers("css_am_reload_servers", true);
             await SendRconToAllServers("css_am_reload_admins", true);
             Server.NextFrame(() => {
                 OnReady?.Invoke();
             });
         }
-        catch (System.Exception e)
+        catch (Exception e)
         {
             LogError(e.ToString());
             throw;

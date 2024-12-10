@@ -46,7 +46,11 @@ public class Admin
         return serverIds.ToArray();
     } }
     public CCSPlayerController? Controller { get => AdminUtils.GetControllerBySteamId(SteamId); } 
-    public bool isConsole { get => Id == 1;}
+    public bool IsConsole { get => Id == 1;}
+
+    public List<Warn> Warns {get {
+        return AdminUtils.AdminApi.Warns.Where(x => x.TargetId == Id).ToList();
+    }}
 
     // Limitations ===
     public int MinBanTime {get {

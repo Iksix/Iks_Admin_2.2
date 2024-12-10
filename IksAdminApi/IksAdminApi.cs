@@ -11,6 +11,7 @@ public interface IIksAdminApi
     public List<PlayerInfo> DisconnectedPlayers {get; set;}
     public List<PlayerMute> Mutes {get; set;}
     public List<PlayerGag> Gags {get; set;}
+    public List<Warn> Warns {get; set;}
 
     public IAdminConfig Config { get; set; }
     public IStringLocalizer Localizer { get; set; }
