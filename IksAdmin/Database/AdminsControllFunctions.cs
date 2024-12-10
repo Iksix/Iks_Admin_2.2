@@ -175,7 +175,7 @@ public static class AdminsControllFunctions
         }
     }
 
-    public static async Task<Admin> AddAdminToBase(Admin admin, int serverId)
+    public static async Task<Admin> AddAdminToBase(Admin admin)
     {
         try
         {

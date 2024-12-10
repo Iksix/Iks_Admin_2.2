@@ -24,12 +24,6 @@ public static class AdminManageFunctions
         }
         Helper.Reply(info, "Adding admin...");
         Task.Run(async () => {
-            var existingAdmin = await AdminsControllFunctions.GetAdmin(steamId);
-            if (existingAdmin != null)
-            {
-                Helper.Reply(info, "Admin already exists ✖");
-                return;
-            }
             var admin = new Admin(
                 steamId,
                 name,
@@ -40,6 +34,18 @@ public static class AdminManageFunctions
                 vk,
                 endAt: time == 0 ? null : AdminUtils.CurrentTimestamp() + time
             );
+            var existingAdmin = await AdminsControllFunctions.GetAdmin(steamId, ignoreDeleted: false);
+            if (existingAdmin != null)
+            {
+                if (existingAdmin.DeletedAt != null) {
+                    Helper.Reply(info, "Admin already exists ✖");
+                    return;
+                }
+                admin.Id = existingAdmin.Id;
+                await AdminsControllFunctions.UpdateAdminInBase(admin);
+                Helper.Reply(info, $"Finded DELETED admin with id: {admin.Id} | Admin updated with new stats ✔");
+            }
+            
             var newAdmin = await AdminsControllFunctions.AddAdminToBase(admin);
             Helper.Reply(info, "Admin added ✔");
             

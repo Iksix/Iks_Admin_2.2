@@ -46,11 +46,12 @@ create table if not exists iks_admin_to_server(
     foreign key (server_id) references iks_servers(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-create table if not exists iks_gags(
+create table if not exists iks_comms(
     id int not null auto_increment primary key,
     steam_id varchar(17) not null,
     ip varchar(32),
     name varchar(64),
+    type int not null comment '0 - mute, 1 - gag, 2 - silence(both)', 
     duration int not null,
     reason varchar(128) not null,
     server_id int default null,
@@ -65,25 +66,7 @@ create table if not exists iks_gags(
     foreign key (unbanned_by) references iks_admins(id),
     foreign key (server_id) references iks_servers(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
-create table if not exists iks_mutes(
-    id int not null auto_increment primary key,
-    steam_id varchar(17) not null,
-    ip varchar(32),
-    name varchar(64),
-    duration int not null,
-    reason varchar(128) not null,
-    server_id int default null,
-    admin_id int not null,
-    unbanned_by int default null,
-    unban_reason varchar(128) default null,
-    created_at int not null,
-    end_at int not null,
-    updated_at int not null,
-    deleted_at int default null,
-    foreign key (admin_id) references iks_admins(id),
-    foreign key (unbanned_by) references iks_admins(id),
-    foreign key (server_id) references iks_servers(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 create table if not exists iks_bans(
     id int not null auto_increment primary key,
     steam_id varchar(17),
