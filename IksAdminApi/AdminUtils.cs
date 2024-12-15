@@ -2,6 +2,7 @@ using System.Text.RegularExpressions;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Commands;
+using CounterStrikeSharp.API.Modules.Entities;
 
 namespace IksAdminApi;
 
@@ -31,55 +32,38 @@ public static class AdminUtils
         return (int)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
     }
 
-    public static PlayerGag? GetGag(this CCSPlayerController player)
+    public static PlayerComm? GetComm(this CCSPlayerController player)
     {
-        return AdminApi.Gags.FirstOrDefault(x => x.SteamId == player.AuthorizedSteamID!.SteamId64.ToString());
+        return AdminApi.Comms.FirstOrDefault(x => x.SteamId == player.AuthorizedSteamID!.SteamId64.ToString());
     }
-    public static PlayerMute? GetMute(this CCSPlayerController player)
-    {
-        return AdminApi.Mutes.FirstOrDefault(x => x.SteamId == player.AuthorizedSteamID!.SteamId64.ToString());
-    }
-
-    public static DateTime UnixTimeStampToDateTime( int unixTimeStamp )
-    {
-        // Unix timestamp is seconds past epoch
-        DateTime dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-        dateTime = dateTime.AddSeconds( unixTimeStamp ).ToLocalTime();
-        return dateTime;
-    }
-
-    public static string GetDateString( int unixTimeStamp )
-    {
-        var dateTime = UnixTimeStampToDateTime( unixTimeStamp );
-        return dateTime.ToString( "dd.MM.yyyy HH:mm:ss" );
-    }
-
     public static string GetDurationString( int seconds )
     {
         return $"{seconds} сек.";
     }
 
-    public static CCSPlayerController? GetControllerBySteamId(string steamId)
+    public static bool HasMute(this List<PlayerComm> comms)
     {
-        return Utilities.GetPlayers().FirstOrDefault(x => x != null && x.IsValid && x.AuthorizedSteamID != null && x.AuthorizedSteamID.SteamId64.ToString() == steamId);
+        return comms.Any(x => x.MuteType is 0);
     }
-    public static CCSPlayerController? GetControllerByUid(uint userId)
+    public static bool HasGag(this List<PlayerComm> comms)
     {
-        return Utilities.GetPlayers().FirstOrDefault(x => x != null && x.IsValid && x.Connected == PlayerConnectedState.PlayerConnected && x.UserId == userId);
+        return comms.Any(x => x.MuteType is 1);
     }
-    public static CCSPlayerController? GetControllerByName(string name, bool ignoreRegistry = false)
+    public static bool HasSilence(this List<PlayerComm> comms)
     {
-        return Utilities.GetPlayers().FirstOrDefault(x => x != null && x.IsValid && x.Connected == PlayerConnectedState.PlayerConnected && (ignoreRegistry ? x.PlayerName.ToLower().Contains(name) : x.PlayerName.Contains(name)));
+        return comms.Any(x => x.MuteType is 2);
     }
-    public static CCSPlayerController? GetControllerByIp(string ip)
+    public static PlayerComm? GetGag(this List<PlayerComm> comms)
     {
-        return Utilities.GetPlayers().FirstOrDefault(x => x != null && x.IsValid && x.AuthorizedSteamID != null && x.Connected == PlayerConnectedState.PlayerConnected && x.GetIp() == ip);
+        return comms.FirstOrDefault(x => x.MuteType is 1);
     }
-    public static List<CCSPlayerController> GetOnlinePlayers(bool includeBots = false)
+    public static PlayerComm? GetMute(this List<PlayerComm> comms)
     {
-        if (includeBots)
-            return Utilities.GetPlayers().Where(x => x != null && x.IsValid && x.Connected == PlayerConnectedState.PlayerConnected).ToList();
-        return Utilities.GetPlayers().Where(x => x != null && x.IsValid && !x.IsBot && x.AuthorizedSteamID != null && x.Connected == PlayerConnectedState.PlayerConnected).ToList();
+        return comms.FirstOrDefault(x => x.MuteType is 0);
+    }
+    public static PlayerComm? GetSilence(this List<PlayerComm> comms)
+    {
+        return comms.FirstOrDefault(x => x.MuteType is 2);
     }
     public static Admin? Admin(this CCSPlayerController? player)
     {

@@ -38,7 +38,7 @@ public static class BansManageCommands
         var reason = string.Join(" ", args.Skip(2));
         string? name = null;
         string? ip = null;
-        var target = AdminUtils.GetControllerBySteamId(steamId);
+        var target = PlayersUtils.GetControllerBySteamId(steamId);
         if (target != null)
         {
             ip = target.GetIp();
@@ -112,7 +112,7 @@ public static class BansManageCommands
         if (!int.TryParse(time, out int timeInt)) throw new ArgumentException("Time is not a number");
         var reason = string.Join(" ", args.Skip(2));
         string? name = null;
-        var target = AdminUtils.GetControllerByIp(ip);
+        var target = PlayersUtils.GetControllerByIp(ip);
         var adminId = caller.Admin()!.Id;
         string? steamId = null;
         if (target != null)

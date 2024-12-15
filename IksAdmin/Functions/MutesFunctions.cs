@@ -7,7 +7,7 @@ public static class MutesFunctions
 {
     public static AdminApi AdminApi = Main.AdminApi!;
 
-    public static async Task Mute(PlayerMute mute)
+    public static async Task Mute(PlayerComm mute)
     {
         AdminApi.Debug("Add mute... " + mute.SteamId);
         var result = await AdminApi.AddMute(mute);

@@ -27,7 +27,7 @@ public static class Announces
         );
     }
 
-    public static void GagAdded(PlayerGag gag)
+    public static void GagAdded(PlayerComm gag)
     {
         AdminUtils.PrintToServer(Localizer["Announce.GagAdded"].Value
             .Replace("{admin}", gag.Admin!.Name)
@@ -36,7 +36,7 @@ public static class Announces
             .Replace("{duration}", AdminUtils.GetDurationString(gag.Duration)), tag: Localizer["Tag"]
         );
     }
-    public static void Ungagged(PlayerGag gag)
+    public static void Ungagged(PlayerComm gag)
     {
         AdminUtils.PrintToServer(Localizer["Announce.Ungagged"].Value
             .Replace("{admin}", gag.UnbannedByAdmin!.Name)
@@ -46,7 +46,7 @@ public static class Announces
         );
     }
 
-    public static void MuteAdded(PlayerMute mute)
+    public static void MuteAdded(PlayerComm mute)
     {
         AdminUtils.PrintToServer(Localizer["Announce.MuteAdded"].Value
             .Replace("{admin}", mute.Admin!.Name)
@@ -55,7 +55,7 @@ public static class Announces
             .Replace("{duration}", AdminUtils.GetDurationString(mute.Duration)), tag: Localizer["Tag"]
         );
     }
-     public static void Unmuted(PlayerMute gag)
+     public static void Unmuted(PlayerComm gag)
     {
         AdminUtils.PrintToServer(Localizer["Announce.Unmuted"].Value
             .Replace("{admin}", gag.UnbannedByAdmin!.Name)

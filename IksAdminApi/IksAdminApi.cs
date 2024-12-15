@@ -9,8 +9,7 @@ public interface IIksAdminApi
 {
     // GLOBALS ===
     public List<PlayerInfo> DisconnectedPlayers {get; set;}
-    public List<PlayerMute> Mutes {get; set;}
-    public List<PlayerGag> Gags {get; set;}
+    public List<PlayerComm> Comms {get; set;}
     public List<Warn> Warns {get; set;}
 
     public IAdminConfig Config { get; set; }
@@ -39,12 +38,14 @@ public interface IIksAdminApi
     public IDynamicMenu CreateMenu(string id, string title, MenuType? type = null, MenuColors titleColor = MenuColors.Default, PostSelectAction postSelectAction = PostSelectAction.Nothing, Action<CCSPlayerController>? backAction = null, IDynamicMenu? backMenu = null);
     public void CloseMenu(CCSPlayerController player);
     // FUNC ===
-    public void GagPlayerInGame(PlayerGag gag);
+    public void ApplyCommForPlayer(PlayerComm comm);
+    public void RemoveCommFromPlayer(PlayerComm comm);
     public bool IsPlayerGagged(string steamId);
+    public bool IsPlayerMuted(string steamId);
     public Task ReloadInfractions(string steamId, string? ip = null, bool instantlyKick = false);
     public Task<PlayerSummaries?> GetPlayerSummaries(ulong steamId);
     public void DoActionWithIdentity(CCSPlayerController? actioneer, string identity, Action<CCSPlayerController> action, string[]? blockedArgs = null);
-    public void DisconnectPlayer(CCSPlayerController player, string reason, bool instantly = false);
+    public void DisconnectPlayer(CCSPlayerController player, string reason, bool instantly = false, string? customMessageTemplate = null);
     public bool CanDoActionWithPlayer(string callerId, string targetId);
     public void SetCommandInititalizer(string moduleName);
     public void ClearCommandInitializer();
@@ -89,23 +90,13 @@ public interface IIksAdminApi
     /// <summary>
     /// return statuses: 0 - gaged, 1 - already banned, 2 - stopped by limitations, -1 - other
     /// </summary>
-    public Task<int> AddGag(PlayerGag ban, bool announce = true);
+    public Task<int> AddComm(PlayerComm ban, bool announce = true);
     /// <summary>
-    /// return statuses: 0 - ungaged, 1 - ban not finded, 2 - admin haven't permission, -1 - other
+    /// return statuses: 0 - unmuted, 1 - ban not finded, 2 - admin haven't permission, -1 - other
     /// </summary>
-    public Task<int> Ungag(Admin admin, string steamId, string? reason, bool announce = true);
-    /// <summary>
-    /// return statuses: 0 - gaged, 1 - already banned, 2 - stopped by limitations, -1 - other
-    /// </summary>
-    public Task<int> AddMute(PlayerMute ban, bool announce = true);
-    /// <summary>
-    /// return statuses: 0 - ungaged, 1 - ban not finded, 2 - admin haven't permission, -1 - other
-    /// </summary>
-    public Task<int> Unmute(Admin admin, string steamId, string? reason, bool announce = true);
-    public Task<PlayerMute?> GetActiveMute(string steamId);
-    public Task<List<PlayerMute>> GetAllMutes(string steamId);
-    public Task<PlayerGag?> GetActiveGag(string steamId);
-    public Task<List<PlayerGag>> GetAllGags(string steamId);
+    public Task<int> UnComm(Admin admin, string steamId, string? reason, bool announce = true);
+    public Task<List<PlayerComm>> GetActiveComms(string steamId);
+    public Task<List<PlayerComm>> GetAllComms(string steamId);
     // EVENTS ===
     public delegate HookResult MenuOpenHandler(CCSPlayerController player, IDynamicMenu menu, IMenu gameMenu);
     public event MenuOpenHandler MenuOpenPre;

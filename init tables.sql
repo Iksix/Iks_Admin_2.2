@@ -51,7 +51,7 @@ create table if not exists iks_comms(
     steam_id varchar(17) not null,
     ip varchar(32),
     name varchar(64),
-    type int not null comment '0 - mute, 1 - gag, 2 - silence(both)', 
+    mute_type int not null comment '0 - voice(mute), 1 - chat(gag), 2 - both(silence)', 
     duration int not null,
     reason varchar(128) not null,
     server_id int default null,

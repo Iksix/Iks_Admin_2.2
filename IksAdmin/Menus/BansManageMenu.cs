@@ -78,7 +78,7 @@ public static class BansManageMenu
         menu.BackAction = p => {
             OpenBansMenu(caller);
         };
-        var players = AdminUtils.GetOnlinePlayers();
+        var players = PlayersUtils.GetOnlinePlayers();
         foreach (var player in players)
         {
             var admin = caller.Admin();

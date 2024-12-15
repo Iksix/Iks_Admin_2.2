@@ -5,12 +5,19 @@ using System.Threading.Tasks;
 
 namespace IksAdminApi;
 
-public class PlayerGag
+public class PlayerComm
 {
+    public enum MuteTypes
+    {
+        Mute = 0,
+        Gag = 1,
+        Silence = 2
+    }
     public int Id {get; set;}
     public string SteamId {get; set;}
     public string? Ip {get; set;}
     public string? Name {get; set;}
+    public int MuteType {get; set;}
     public string Reason {get; set;}
     public int Duration {get; set;}
     public int? ServerId {get; set;} = null;
@@ -34,12 +41,13 @@ public class PlayerGag
         return AdminUtils.AdminApi.AllServers.FirstOrDefault(x => x.Id == ServerId);
     }}
     // used for getting from db
-    public PlayerGag(int id, string steamId, string? ip, string? name, int duration, string reason, int? serverId, int adminId, int? unbannedBy, string? unbanReason, int createdAt, int endAt, int updatedAt, int? deletedAt)
+    public PlayerComm(int id, string steamId, string? ip, string? name, int muteType, int duration, string reason, int? serverId, int adminId, int? unbannedBy, string? unbanReason, int createdAt, int endAt, int updatedAt, int? deletedAt)
     {
         Id = id;
         SteamId = steamId;
         Ip = ip;
         Name = name;
+        MuteType = muteType;
         Duration = duration;
         Reason = reason; 
         ServerId = serverId;
@@ -52,23 +60,25 @@ public class PlayerGag
         UnbanReason = unbanReason;
     }
     // creating ===
-    public PlayerGag(string steamId, string? ip, string? name, string reason, int duration, int? serverId = null)
+    public PlayerComm(string steamId, string? ip, string? name, MuteTypes type, string reason, int duration, int? serverId = null)
     {
         SteamId = steamId;
         Ip = ip;
         Name = name;
         Duration = duration * 60;
+        MuteType = (int)type; 
         EndAt = Duration == 0 ? 0 : AdminUtils.CurrentTimestamp() + Duration;
         Reason = reason; 
         ServerId = serverId;
         if (AdminUtils.Config().MirrorsIp.Contains(Ip)) Ip = null;
     }
 
-    public PlayerGag(PlayerInfo player, string reason, int duration, int? serverId = null)
+    public PlayerComm(PlayerInfo player, MuteTypes type, string reason, int duration, int? serverId = null)
     {
         SteamId = player.SteamId!;
         Ip = player.Ip;
         Name = player.PlayerName;
+        MuteType = (int)type; 
         Duration = duration * 60;
         EndAt = Duration == 0 ? 0 : AdminUtils.CurrentTimestamp() + Duration;
         Reason = reason; 

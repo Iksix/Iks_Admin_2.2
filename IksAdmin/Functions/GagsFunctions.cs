@@ -7,7 +7,7 @@ public static class GagsFunctions
 {
     public static AdminApi AdminApi = Main.AdminApi!;
 
-    public static async Task Gag(PlayerGag gag)
+    public static async Task Gag(PlayerComm gag)
     {
         AdminApi.Debug("Add gag... " + gag.SteamId);
         var result = await AdminApi.AddGag(gag);

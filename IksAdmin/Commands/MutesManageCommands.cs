@@ -42,7 +42,7 @@ public class MutesManageCommands
         var reason = string.Join(" ", args.Skip(2));
         string? name = null;
         string? ip = null;
-        var target = AdminUtils.GetControllerBySteamId(steamId);
+        var target = PlayersUtils.GetControllerBySteamId(steamId);
         if (target != null)
         {
             ip = target.GetIp();

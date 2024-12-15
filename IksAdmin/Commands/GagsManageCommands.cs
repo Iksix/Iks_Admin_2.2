@@ -18,8 +18,9 @@ public class GagsManageCommands
         var reason = string.Join(" ", args.Skip(2));
         Main.AdminApi.DoActionWithIdentity(caller, identity, target => 
         {
-            var gag = new PlayerGag(
+            var gag = new PlayerComm(
                 new PlayerInfo(target),
+                PlayerComm.MuteTypes.Gag,
                 reason,
                 timeInt,
                 serverId: Main.AdminApi.ThisServer.Id
@@ -40,7 +41,7 @@ public class GagsManageCommands
         var reason = string.Join(" ", args.Skip(2));
         string? name = null;
         string? ip = null;
-        var target = AdminUtils.GetControllerBySteamId(steamId);
+        var target = PlayersUtils.GetControllerBySteamId(steamId);
         if (target != null)
         {
             ip = target.GetIp();
@@ -53,10 +54,11 @@ public class GagsManageCommands
                 if (playerSummaryResponse != null)
                     name = playerSummaryResponse!.PersonaName;
             }
-            var ban = new PlayerGag(
+            var ban = new PlayerComm(
                 steamId,
                 ip,
                 name,
+                PlayerComm.MuteTypes.Gag,
                 reason,
                 timeInt,
                 serverId: Main.AdminApi.ThisServer.Id

@@ -22,7 +22,7 @@ public class Admin
     public int? DeletedAt {get; set;} = null;
     public int? EndAt {get; set;}
     public bool Online {get {
-        return AdminUtils.GetControllerBySteamId(SteamId) != null;
+        return PlayersUtils.GetControllerBySteamId(SteamId) != null;
     }}
     public string CurrentFlags { get {
         return GetCurrentFlagsFunc(this);
@@ -45,7 +45,7 @@ public class Admin
         }
         return serverIds.ToArray();
     } }
-    public CCSPlayerController? Controller { get => AdminUtils.GetControllerBySteamId(SteamId); } 
+    public CCSPlayerController? Controller { get => PlayersUtils.GetControllerBySteamId(SteamId); } 
     public bool IsConsole { get => Id == 1;}
 
     public List<Warn> Warns {get {

@@ -11,11 +11,11 @@ public class PlayerInfo
     public string PlayerName {get; set;}
     public CCSPlayerController? Controller {get {
         if (SteamId == null) return null;
-        return AdminUtils.GetControllerBySteamId(SteamId);
+        return PlayersUtils.GetControllerBySteamId(SteamId);
     }}
     public bool IsOnline {get {
         if (SteamId == null) return false;
-        return AdminUtils.GetControllerBySteamId(SteamId) != null;
+        return PlayersUtils.GetControllerBySteamId(SteamId) != null;
     }}
 
     public PlayerInfo(CCSPlayerController player)

@@ -42,7 +42,7 @@ public static class Helper
             return;
         }
         Server.NextFrame(() => {
-            var controller = AdminUtils.GetControllerBySteamId(steamId);
+            var controller = PlayersUtils.GetControllerBySteamId(steamId);
             controller.Print(message, Main.AdminApi.Localizer["Tag"]);
         });
     }
@@ -55,7 +55,7 @@ public static class Helper
             return;
         }
         Server.NextFrame(() => {
-            var controller = AdminUtils.GetControllerBySteamId(admin.SteamId);
+            var controller = PlayersUtils.GetControllerBySteamId(admin.SteamId);
             controller.Print(message, Main.AdminApi.Localizer["Tag"]);
         });
     }
