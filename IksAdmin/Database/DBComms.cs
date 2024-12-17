@@ -4,7 +4,7 @@ using MySqlConnector;
 
 namespace IksAdmin;
 
-public static class CommsControllFunctions
+public static class DBComms
 {
     private static readonly string SelectComm = @"
     select
@@ -29,7 +29,7 @@ public static class CommsControllFunctions
     {
         try
         {
-            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
             var comms = await conn.QueryAsync<PlayerComm>(SelectComm + @"
                 where deleted_at is null
@@ -51,12 +51,12 @@ public static class CommsControllFunctions
     {
         try
         {
-            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
             var comms = (await conn.QueryAsync<PlayerComm>($@"
                 {SelectComm}
                 where deleted_at is null
-                and admin_id = @steamId
+                and admin_id = @admin_id
                 and (server_id is null or server_id = @serverId)
                 and created_at > unix_timestamp() - @time
             ", new {time, admin_id = admin.Id, serverId = Main.AdminApi.ThisServer.Id})).ToList();
@@ -72,7 +72,7 @@ public static class CommsControllFunctions
     {
         try
         {
-            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
             var comms = (await conn.QueryAsync<PlayerComm>($@"
                 {SelectComm}
@@ -92,7 +92,7 @@ public static class CommsControllFunctions
     {
         try
         {
-            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
             var comms = (await conn.QueryAsync<PlayerComm>($@"
                 {SelectComm}
@@ -111,20 +111,21 @@ public static class CommsControllFunctions
     /// <summary>
     /// return statuses: 0 - banned, 1 - already banned, -1 - other
     /// </summary>
-    public static async Task<int> Add(PlayerComm punishment)
+    public static async Task<DBResult> Add(PlayerComm punishment)
     {
         try
         {
-            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
             var comm = await GetActiveComms(punishment.SteamId);
             if (comm != null && comm.Any(x => x.MuteType == punishment.MuteType || x.MuteType == 2))
-                return 1;
-            await conn.QueryAsync(@"
+                return new DBResult(null, 1, "Already banned");
+            var id = await conn.QuerySingleAsync<int>(@"
                 insert into iks_comms
                 (steam_id, ip, name, mute_type, duration, reason, server_id, admin_id, unbanned_by, unban_reason, created_at, end_at, updated_at, deleted_at)
                 values
-                (@steamId, @ip, @name, @muteType, @duration, @reason, @serverId, @adminId, @unbannedBy, @unbanReason, @createdAt, @endAt, @updatedAt, @deletedAt)
+                (@steamId, @ip, @name, @muteType, @duration, @reason, @serverId, @adminId, @unbannedBy, @unbanReason, @createdAt, @endAt, @updatedAt, @deletedAt);
+                select last_insert_id();
             ", new {
                 steamId = punishment.SteamId,
                 ip = punishment.Ip,
@@ -141,23 +142,23 @@ public static class CommsControllFunctions
                 updatedAt = punishment.UpdatedAt,
                 deletedAt = punishment.DeletedAt
             });
-            return 0;
+            return new DBResult(id, 0);
         }
         catch (Exception e)
         {
             Main.AdminApi.LogError(e.ToString());
-            return -1;
+            return new DBResult(null, -1, e.ToString());
         }
     }
     /// <summary>
     /// return statuses: 0 - unbanned, 1 - ban not finded, 2 - admin can't do this, -1 - other
     /// </summary>
-    public static async Task<int> UnComm(Admin admin, PlayerComm comm, string? reason)
+    public static async Task<DBResult> UnComm(Admin admin, PlayerComm comm, string? reason)
     {
         try
         {
-            if (!CanUncomm(admin, comm)) return 2;
-            await using var conn = new MySqlConnection(Database.ConnectionString);
+            if (!CanUncomm(admin, comm)) return new DBResult(comm.Id, 2, "admin can't do this");
+            await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
             await conn.QueryAsync(@"
                 update iks_comms set 
@@ -169,12 +170,12 @@ public static class CommsControllFunctions
                 id = comm.Id,
                 reason
             });
-            return 0;
+            return new DBResult(comm.Id, 0);
         }
         catch (Exception e)
         {
             Main.AdminApi.LogError(e.ToString());
-            return -1;
+            return new DBResult(comm.Id, -1, e.ToString());
         }
     }
 

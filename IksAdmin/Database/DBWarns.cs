@@ -4,27 +4,27 @@ using MySqlConnector;
 
 namespace IksAdmin;
 
-public static class WarnsControllFunctions
+public static class DBWarns
 {
     private static string WarnSelect = @"
     select 
-    id as Id,
-    admin_id as AdminId,
-    target_id as TargetId,
-    duration as Duration,
-    reason as Reason,
-    created_at as CreatedAt,
-    end_at as UpdatedAt,
-    updated_at as EndAt,
-    deleted_at as DeletedAt,
-    deleted_by as DeletedBy
+    id as id,
+    admin_id as adminId,
+    target_id as targetId,
+    duration as duration,
+    reason as reason,
+    created_at as createdAt,
+    updated_at as updatedAt,
+    end_at as endAt,
+    deleted_at as deletedAt,
+    deleted_by as deletedBy
     from iks_admins_warns
     ";
 
     public static async Task<List<Warn>> GetAllActive() {
         try
         {
-            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
 
             var warns = (await conn.QueryAsync<Warn>($@"
@@ -44,7 +44,7 @@ public static class WarnsControllFunctions
     public static async Task<Warn> InsertToBase(this Warn warn) {
         try
         {
-            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
 
             int id = await conn.QuerySingleAsync<int>(@"
@@ -76,7 +76,7 @@ public static class WarnsControllFunctions
     public static async Task Update(this Warn warn) {
         try
         {
-            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
             warn.UpdatedAt = AdminUtils.CurrentTimestamp();
             int id = await conn.QuerySingleAsync<int>(@"
@@ -112,7 +112,7 @@ public static class WarnsControllFunctions
     public static async Task<List<Warn>> GetAllActiveForAdmin(int id) {
         try
         {
-            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
 
             var warns = (await conn.QueryAsync<Warn>($@"
@@ -133,7 +133,7 @@ public static class WarnsControllFunctions
     public static async Task<List<Warn>> GetAllActiveByAdmin(int id) {
         try
         {
-            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
 
             var warns = (await conn.QueryAsync<Warn>($@"

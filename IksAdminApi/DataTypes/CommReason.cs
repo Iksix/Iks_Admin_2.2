@@ -1,8 +1,8 @@
 namespace IksAdminApi;
 
-public class MuteReason : Reason
+public class CommReason : Reason
 {
-    public MuteReason(string title, string? text = null, int minTime = 0, int maxTime = 0, int? duration = null, bool banOnAllServers = false)
+    public CommReason(string title, string? text = null, int minTime = 0, int maxTime = 0, int? duration = null, bool banOnAllServers = false)
     {
         Title = title;
         if (text == null)

@@ -12,7 +12,7 @@ public static class GagsFunctions
         AdminApi.Debug("Add gag... " + gag.SteamId);
         var result = await AdminApi.AddGag(gag);
         AdminApi.Debug("Gag result: " + result);
-        switch (result)
+        switch (result.QueryStatus)
         {
             case 0:
                 Helper.PrintToSteamId(gag.Admin!.SteamId, AdminApi.Localizer["ActionSuccess.GagSuccess"]);
@@ -31,12 +31,19 @@ public static class GagsFunctions
     public static async Task Ungag(Admin admin, string steamId, string reason)
     {
         AdminApi.Debug("Trying to ungag... " + steamId);
-        var result = await AdminApi.Ungag(admin, steamId, reason);
+        var existingComm = (await AdminApi.GetActiveComms(steamId)).GetGag();
+        if (existingComm == null)
+        {
+            Helper.PrintToSteamId(admin.SteamId, AdminApi.Localizer["ActionError.PunishmentNotFound"]);
+            return;
+        }
+        existingComm.UnbanReason = reason;
+        var result = await AdminApi.UnComm(admin, existingComm);
         AdminApi.Debug("Ungag result: " + result);
-        switch (result)
+        switch (result.QueryStatus)
         {
             case 0:
-                Helper.PrintToSteamId(admin.SteamId, AdminApi.Localizer["ActionSuccess.UngagSuccess"]);
+                Helper.PrintToSteamId(admin.SteamId, AdminApi.Localizer["ActionSuccess.UnGagSuccess"]);
                 break;
             case 1:
                 Helper.PrintToSteamId(admin.SteamId, AdminApi.Localizer["ActionError.PunishmentNotFound"]);

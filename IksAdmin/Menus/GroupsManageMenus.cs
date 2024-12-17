@@ -70,7 +70,7 @@ public static class GroupsManageMenus
             caller.PrintToChat("Группа сохраняется...");
             OpenGroupsManageMenu(caller);
             Task.Run(async () => {
-                await GroupsControllFunctions.AddGroup(group);
+                await DBGroups.AddGroup(group);
                 Server.NextFrame(() => {
                     caller.PrintToChat("Группа сохранена ✔");
                 });

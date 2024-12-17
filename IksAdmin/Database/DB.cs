@@ -3,7 +3,7 @@ using MySqlConnector;
 
 namespace IksAdmin;
 
-public static class Database
+public static class DB
 {
     public static string ConnectionString { get; set; } = string.Empty;
 
@@ -62,11 +62,12 @@ create table if not exists iks_admin_to_server(
     foreign key (server_id) references iks_servers(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-create table if not exists iks_gags(
+create table if not exists iks_comms(
     id int not null auto_increment primary key,
     steam_id varchar(17) not null,
     ip varchar(32),
     name varchar(64),
+    mute_type int not null comment '0 - voice(mute), 1 - chat(gag), 2 - both(silence)', 
     duration int not null,
     reason varchar(128) not null,
     server_id int default null,
@@ -81,25 +82,7 @@ create table if not exists iks_gags(
     foreign key (unbanned_by) references iks_admins(id),
     foreign key (server_id) references iks_servers(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
-create table if not exists iks_mutes(
-    id int not null auto_increment primary key,
-    steam_id varchar(17) not null,
-    ip varchar(32),
-    name varchar(64),
-    duration int not null,
-    reason varchar(128) not null,
-    server_id int default null,
-    admin_id int not null,
-    unbanned_by int default null,
-    unban_reason varchar(128) default null,
-    created_at int not null,
-    end_at int not null,
-    updated_at int not null,
-    deleted_at int default null,
-    foreign key (admin_id) references iks_admins(id),
-    foreign key (unbanned_by) references iks_admins(id),
-    foreign key (server_id) references iks_servers(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 create table if not exists iks_bans(
     id int not null auto_increment primary key,
     steam_id varchar(17),
@@ -130,10 +113,10 @@ create table if not exists iks_admins_warns(
     end_at int not null,
     updated_at int not null,
     deleted_at int default null,
-    removed_by int default null,
+    deleted_by int default null,
     foreign key (admin_id) references iks_admins(id),
     foreign key (target_id) references iks_servers(id),
-    foreign key (removed_by) references iks_admins(id)
+    foreign key (deleted_by) references iks_admins(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
 create table if not exists iks_groups_limitations( 
     id int not null auto_increment primary key,

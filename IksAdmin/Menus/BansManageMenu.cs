@@ -23,7 +23,7 @@ public static class BansManageMenu
         });
         menu.AddMenuOption(Main.GenerateOptionId("bm.unban"), Localizer["MenuOption.Unban"], (_, _) => {
             Task.Run(async () => {
-                var bans = await BansControllFunctions.GetLastBans(AdminApi.Config.LastPunishmentTime);
+                var bans = await DBBans.GetLastBans(AdminApi.Config.LastPunishmentTime);
                 Server.NextFrame(() => {
                     OpenRemoveBansMenu(caller, bans, menu);
                 });
@@ -39,7 +39,7 @@ public static class BansManageMenu
         foreach (var ban in bans)
         {
             bool isDisabled = false;
-            if (!BansControllFunctions.CanUnban(admin, ban))
+            if (!DBBans.CanUnban(admin, ban))
                 isDisabled = true;
 
             menu.AddMenuOption(Main.GenerateOptionId("bm_unban_" + ban.SteamId), ban.NameString, (_, _) => {

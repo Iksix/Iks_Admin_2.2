@@ -8,11 +8,11 @@ using IksAdminApi;
 namespace IksAdmin.Commands;
 
 
-public class MutesManageCommands
+public class CmdSilences
 {
-    public static void Mute(CCSPlayerController? caller, List<string> args, CommandInfo info)
+    public static void Silence(CCSPlayerController? caller, List<string> args, CommandInfo info)
     {
-        //css_mute <#uid/#sid/name/@...> <time> <reason>
+        //css_silence <#uid/#sid/name/@...> <time> <reason>
         var identity = args[0];
         var time = args[1];
         if (!int.TryParse(time, out int timeInt)) throw new ArgumentException("Time is not a number");
@@ -20,23 +20,24 @@ public class MutesManageCommands
         var reason = string.Join(" ", args.Skip(2));
         Main.AdminApi.DoActionWithIdentity(caller, identity, target => 
         {
-            var mute = new PlayerMute(
+            var mute = new PlayerComm(
                 new PlayerInfo(target),
+                PlayerComm.MuteTypes.Silence,
                 reason,
                 timeInt,
                 serverId: Main.AdminApi.ThisServer.Id
             );
             mute.AdminId = admin.Id;
             Task.Run(async () => {
-                await MutesFunctions.Mute(mute);
+                await SilenceFunctions.Silence(mute);
             });
-        }, blockedArgs: MutesConfig.Config.BlockedIdentifiers);
+        }, blockedArgs: SilenceConfig.Config.BlockedIdentifiers);
     }
-    public static void AddMute(CCSPlayerController? caller, List<string> args, CommandInfo info)
+    public static void AddSilence(CCSPlayerController? caller, List<string> args, CommandInfo info)
     {
         //css_addmute <steamId> <time> <reason> (для оффлайн бана, так же можно использовать для онлайн бана)
         var steamId = args[0];
-        if (!ulong.TryParse(steamId, out var uSteamID)) throw new ArgumentException("Steam id is not a number");
+        if (!ulong.TryParse(steamId, out _)) throw new ArgumentException("Steam id is not a number");
         var time = args[1];
         if (!int.TryParse(time, out int timeInt)) throw new ArgumentException("Time is not a number");
         var reason = string.Join(" ", args.Skip(2));
@@ -55,21 +56,22 @@ public class MutesManageCommands
                 if (playerSummaryResponse != null)
                     name = playerSummaryResponse!.PersonaName;
             }
-            var mute = new PlayerMute(
+            var comm = new PlayerComm(
                 steamId,
                 ip,
                 name,
+                PlayerComm.MuteTypes.Silence,
                 reason,
                 timeInt,
                 serverId: Main.AdminApi.ThisServer.Id
             );
-            mute.AdminId = adminId;
-            await MutesFunctions.Mute(mute);
+            comm.AdminId = adminId;
+            await SilenceFunctions.Silence(comm);
         });
     }
-    public static void Unmute(CCSPlayerController? caller, List<string> args, CommandInfo info)
+    public static void UnSilence(CCSPlayerController? caller, List<string> args, CommandInfo info)
     {
-        //css_unmute <#uid/#steamId/name/@...> <reason>
+        //css_unsilence <#uid/#steamId/name/@...> <reason>
         var identity = args[0];
         var reason = string.Join(" ", args.Skip(1));
         var admin = caller.Admin()!;
@@ -77,18 +79,18 @@ public class MutesManageCommands
         {
             var steamId = target.AuthorizedSteamID!.SteamId64.ToString();
             Task.Run(async () => {
-                await MutesFunctions.Unmute(admin, steamId, reason);
+                await SilenceFunctions.UnSilence(admin, steamId, reason);
             });
-        }, blockedArgs: MutesConfig.Config.UnblockBlockedIdentifiers);
+        }, blockedArgs: SilenceConfig.Config.UnblockBlockedIdentifiers);
     }
-    public static void RemoveMute(CCSPlayerController? caller, List<string> args, CommandInfo info)
+    public static void RemoveSilence(CCSPlayerController? caller, List<string> args, CommandInfo info)
     {
-        //css_removemute <steamId> <reason>
+        //css_removesilence <steamId> <reason>
         var steamId = args[0];
         var reason = string.Join(" ", args.Skip(1));
         var admin = caller.Admin()!;
         Task.Run(async () => {
-            await MutesFunctions.Unmute(admin, steamId, reason);
+            await SilenceFunctions.UnSilence(admin, steamId, reason);
         });
     }
 }

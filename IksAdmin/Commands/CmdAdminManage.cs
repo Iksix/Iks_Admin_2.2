@@ -9,7 +9,7 @@ using IksAdminApi;
 
 namespace IksAdmin.Commands;
 
-public static class AdminsManageCommands
+public static class CmdAdminManage
 {
     public static AdminApi AdminApi = Main.AdminApi!;
     public static void Add(CCSPlayerController? caller, List<string> args, CommandInfo info)

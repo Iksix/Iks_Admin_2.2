@@ -36,9 +36,9 @@ public static class Announces
             .Replace("{duration}", AdminUtils.GetDurationString(gag.Duration)), tag: Localizer["Tag"]
         );
     }
-    public static void Ungagged(PlayerComm gag)
+    public static void UnGagged(PlayerComm gag)
     {
-        AdminUtils.PrintToServer(Localizer["Announce.Ungagged"].Value
+        AdminUtils.PrintToServer(Localizer["Announce.UnGagged"].Value
             .Replace("{admin}", gag.UnbannedByAdmin!.Name)
             .Replace("{name}", gag.Name)
             .Replace("{reason}", gag.UnbanReason)
@@ -55,13 +55,31 @@ public static class Announces
             .Replace("{duration}", AdminUtils.GetDurationString(mute.Duration)), tag: Localizer["Tag"]
         );
     }
-     public static void Unmuted(PlayerComm gag)
+     public static void UnMuted(PlayerComm gag)
     {
-        AdminUtils.PrintToServer(Localizer["Announce.Unmuted"].Value
+        AdminUtils.PrintToServer(Localizer["Announce.UnMuted"].Value
             .Replace("{admin}", gag.UnbannedByAdmin!.Name)
             .Replace("{name}", gag.Name)
             .Replace("{reason}", gag.UnbanReason)
             .Replace("{duration}", AdminUtils.GetDurationString(gag.Duration)), tag: Localizer["Tag"]
+        );
+    }
+    public static void SilenceAdded(PlayerComm comm)
+    {
+        AdminUtils.PrintToServer(Localizer["Announce.SilenceAdded"].Value
+                .Replace("{admin}", comm.Admin!.Name)
+                .Replace("{name}", comm.Name)
+                .Replace("{reason}", comm.Reason)
+                .Replace("{duration}", AdminUtils.GetDurationString(comm.Duration)), tag: Localizer["Tag"]
+        );
+    }
+    public static void UnSilenced(PlayerComm comm)
+    {
+        AdminUtils.PrintToServer(Localizer["Announce.UnSilenced"].Value
+                .Replace("{admin}", comm.UnbannedByAdmin!.Name)
+                .Replace("{name}", comm.Name)
+                .Replace("{reason}", comm.UnbanReason)
+                .Replace("{duration}", AdminUtils.GetDurationString(comm.Duration)), tag: Localizer["Tag"]
         );
     }
 }

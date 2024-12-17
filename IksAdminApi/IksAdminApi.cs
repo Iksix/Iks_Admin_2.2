@@ -88,13 +88,13 @@ public interface IIksAdminApi
     public Task<List<PlayerBan>> GetAllIpBans(string ip);
 
     /// <summary>
-    /// return statuses: 0 - gaged, 1 - already banned, 2 - stopped by limitations, -1 - other
+    /// return statuses: 0 - OK!, 1 - already banned, 2 - stopped by limitations, -1 - other
     /// </summary>
-    public Task<int> AddComm(PlayerComm ban, bool announce = true);
+    public Task<DBResult> AddComm(PlayerComm ban, bool announce = true);
     /// <summary>
-    /// return statuses: 0 - unmuted, 1 - ban not finded, 2 - admin haven't permission, -1 - other
+    /// return statuses: 0 - OK!, 1 - ban not finded, 2 - admin haven't permission, -1 - other
     /// </summary>
-    public Task<int> UnComm(Admin admin, string steamId, string? reason, bool announce = true);
+    public Task<DBResult> UnComm(Admin admin, PlayerComm comm, bool announce = true);
     public Task<List<PlayerComm>> GetActiveComms(string steamId);
     public Task<List<PlayerComm>> GetAllComms(string steamId);
     // EVENTS ===

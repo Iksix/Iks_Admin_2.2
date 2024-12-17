@@ -4,7 +4,7 @@ using MySqlConnector;
 
 namespace IksAdmin;
 
-public static class BansControllFunctions
+public static class DBBans
 {
     private static readonly string SelectBans = @"
     select
@@ -29,7 +29,7 @@ public static class BansControllFunctions
     {
         try
         {
-            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
             var ban = await conn.QueryFirstOrDefaultAsync<PlayerBan>(SelectBans + @"
                 where deleted_at is null
@@ -51,7 +51,7 @@ public static class BansControllFunctions
     {
         try
         {
-            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
             var bans = (await conn.QueryAsync<PlayerBan>($@"
                 {SelectBans}
@@ -72,7 +72,7 @@ public static class BansControllFunctions
     {
         try
         {
-            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
             var bans = (await conn.QueryAsync<PlayerBan>($@"
                 {SelectBans}
@@ -92,7 +92,7 @@ public static class BansControllFunctions
     {
         try
         {
-            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
             var ban = await conn.QueryFirstOrDefaultAsync<PlayerBan>($@"
                 {SelectBans}
@@ -114,7 +114,7 @@ public static class BansControllFunctions
     {
         try
         {
-            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
             var bans = (await conn.QueryAsync<PlayerBan>($@"
                 {SelectBans}
@@ -134,7 +134,7 @@ public static class BansControllFunctions
     {
         try
         {
-            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
             var bans = (await conn.QueryAsync<PlayerBan>($@"
                 {SelectBans}
@@ -154,7 +154,7 @@ public static class BansControllFunctions
     {
         try
         {
-            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
             var bans = (await conn.QueryAsync<PlayerBan>($@"
                 {SelectBans}
@@ -176,7 +176,7 @@ public static class BansControllFunctions
     {
         try
         {
-            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
             PlayerBan? existingBan = null;
             if (punishment.BanIp == 1 && punishment.Ip != null)
@@ -218,7 +218,7 @@ public static class BansControllFunctions
     {
         try
         {
-            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
 
             if (!CanUnban(admin, ban)) return 2;
@@ -245,7 +245,7 @@ public static class BansControllFunctions
     {
         try
         {
-            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
             PlayerBan? existingBan = await GetActiveBanIp(ban.Ip!);
 

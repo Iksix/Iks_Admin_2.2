@@ -4,7 +4,7 @@ using MySqlConnector;
 
 namespace IksAdmin;
 
-public static class AdminsControllFunctions
+public static class DBAdmins
 {
     private static string AdminSelect = @"
         select
@@ -28,7 +28,7 @@ public static class AdminsControllFunctions
     {
         try
         {
-            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
             var adminsToServer = (await conn.QueryAsync<AdminToServer>(@"
             select
@@ -48,7 +48,7 @@ public static class AdminsControllFunctions
     {
         try
         {
-            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
             var existingAdmin = await GetAdmin(admin.SteamId, ignoreDeleted: false);
             if (existingAdmin != null)
@@ -72,7 +72,7 @@ public static class AdminsControllFunctions
     {
         try
         {
-            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
             var existingAdmin = await GetAdminById(adminId);
             if (existingAdmin == null)
@@ -107,7 +107,7 @@ public static class AdminsControllFunctions
             {
                 serverId = Main.AdminApi.ThisServer.Id;
             }
-            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
             var ignoreDeletedString = ignoreDeleted ? "and deleted_at is null" : "";
             var admins = (await conn.QueryAsync<Admin>($@"
@@ -131,7 +131,7 @@ public static class AdminsControllFunctions
             {
                 serverId = Main.AdminApi.ThisServer.Id;
             }
-            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
             var ignoreDeletedString = ignoreDeleted ? "and deleted_at is null" : "";
             var admin = await conn.QueryFirstOrDefaultAsync<Admin>($@"
@@ -158,7 +158,7 @@ public static class AdminsControllFunctions
             {
                 serverId = Main.AdminApi.Config.ServerId;
             }
-            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
             var ignoreDeletedString = ignoreDeleted ? "where deleted_at is null" : "";
             var admins = (await conn.QueryAsync<Admin>($@"
@@ -179,7 +179,7 @@ public static class AdminsControllFunctions
     {
         try
         {
-            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
             int id = await conn.QuerySingleAsync<int>(@"
                 insert into iks_admins
@@ -211,7 +211,7 @@ public static class AdminsControllFunctions
     {
         try
         {
-            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
             await conn.QueryAsync(@"
                 update iks_admins set 
@@ -254,7 +254,7 @@ public static class AdminsControllFunctions
     {
         try
         {
-            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
             await conn.QueryAsync(@"
                 update iks_admins set 
@@ -276,7 +276,7 @@ public static class AdminsControllFunctions
     {
         try
         {
-            await GroupsControllFunctions.RefreshGroups();
+            await DBGroups.RefreshGroups();
             Main.AdminApi.Debug("Refreshing admins to server...");
             await SetAdminsToServer();
             Main.AdminApi.Debug("1/5 Admin to server setted ✔");
@@ -299,7 +299,7 @@ public static class AdminsControllFunctions
             {
                 Main.AdminApi.Debug($"{admin.Id} | {admin.Name} | {admin.SteamId} | {admin.Flags} | {admin.Immunity} | {admin.GroupId} | {admin.Servers.ToString()} | {admin.Discord} | {admin.Vk} | {admin.IsDisabled}");
             }
-            await Main.AdminApi.SendRconToAllServers("css_am_reload_admins", true);
+            await Main.AdminApi.SendRconToAllServers("css_am_reload", true);
         }
         catch (Exception e)
         {

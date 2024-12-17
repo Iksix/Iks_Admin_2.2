@@ -5,7 +5,7 @@ using IksAdminApi;
 
 namespace IksAdmin.Commands;
 
-public static class BansManageCommands
+public static class CmdBans
 {
     public static void Ban(CCSPlayerController? caller, List<string> args, CommandInfo info)
     {

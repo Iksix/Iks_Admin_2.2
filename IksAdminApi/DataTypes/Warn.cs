@@ -24,27 +24,28 @@ public class Warn
     }}
 
     public Warn(
-        int Id,
-        int AdminId,
-        int TargetId,
-        int Duration,
-        string Reason,
-        int CreatedAt,
-        int EndAt,
-        int UpdatedAt,
-        int? DeletedAt,
-        int? DeletedBy
-    ) {
-        this.Id = Id;        
-        this.AdminId = AdminId;   
-        this.TargetId = TargetId;  
-        this.Duration = Duration;  
-        this.Reason = Reason; 
-        this.CreatedAt = CreatedAt; 
-        this.UpdatedAt = UpdatedAt; 
-        this.EndAt = EndAt;
-        this.DeletedAt = DeletedAt;
-        this.DeletedBy = DeletedBy;
+        int id,
+        int adminId,
+        int targetId,
+        int duration,
+        string reason,
+        int createdAt,
+        int updatedAt,
+        int endAt,
+        int? deletedAt,
+        int? deletedBy
+    )
+    {
+        Id = id;
+        AdminId = adminId;
+        TargetId = targetId;
+        Duration = duration;
+        Reason = reason;
+        CreatedAt = createdAt;
+        UpdatedAt = updatedAt;
+        EndAt = endAt;
+        DeletedAt = deletedAt;
+        DeletedBy = deletedBy;
     }
     public Warn(
         int AdminId,

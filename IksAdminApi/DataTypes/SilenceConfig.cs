@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 namespace IksAdminApi;
 
 
-public class GagsConfig : PluginCFG<GagsConfig>, IPluginCFG
+public class SilenceConfig : PluginCFG<SilenceConfig>, IPluginCFG
 {
-    public static GagsConfig Config = new GagsConfig();
+    public static SilenceConfig Config = new SilenceConfig();
     public bool TitleToTextInReasons {get; set;} = true; // При прописывании команды например: 'css_gag iks 0 читы', конечная причина будет заменена на Text причины с соотвествующим Title
     public string[] BlockedIdentifiers {get; set;} = ["@all", "@ct", "@t", "@players", "@spec", "@bot"];
     public string[] UnblockBlockedIdentifiers {get; set;} = ["@all", "@ct", "@t", "@players", "@spec", "@bot"];
@@ -31,8 +31,8 @@ public class GagsConfig : PluginCFG<GagsConfig>, IPluginCFG
 
     public void Set()
     {
-        Config = ReadOrCreate<GagsConfig>("gags_cfg", Config);
-        AdminUtils.Debug("Gags config loaded ✔");
+        Config = ReadOrCreate<SilenceConfig>("silence_cfg", Config);
+        AdminUtils.Debug("Silence config loaded ✔");
         AdminUtils.Debug("Reasons count " + Config.Reasons.Count);
     }
 }

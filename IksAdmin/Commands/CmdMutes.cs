@@ -1,5 +1,6 @@
 
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Core.Translations;
 using CounterStrikeSharp.API.Modules.Commands;
 using IksAdmin.Functions;
 using IksAdminApi;
@@ -7,33 +8,34 @@ using IksAdminApi;
 namespace IksAdmin.Commands;
 
 
-public class GagsManageCommands
+public class CmdMutes
 {
-    public static void Gag(CCSPlayerController? caller, List<string> args, CommandInfo info)
+    public static void Mute(CCSPlayerController? caller, List<string> args, CommandInfo info)
     {
-        //css_gag <#uid/#sid/name/@...> <time> <reason>
+        //css_mute <#uid/#sid/name/@...> <time> <reason>
         var identity = args[0];
         var time = args[1];
         if (!int.TryParse(time, out int timeInt)) throw new ArgumentException("Time is not a number");
+        var admin = caller.Admin()!;
         var reason = string.Join(" ", args.Skip(2));
         Main.AdminApi.DoActionWithIdentity(caller, identity, target => 
         {
-            var gag = new PlayerComm(
+            var mute = new PlayerComm(
                 new PlayerInfo(target),
-                PlayerComm.MuteTypes.Gag,
+                PlayerComm.MuteTypes.Mute,
                 reason,
                 timeInt,
                 serverId: Main.AdminApi.ThisServer.Id
             );
-            gag.AdminId = caller.Admin()!.Id;
+            mute.AdminId = admin.Id;
             Task.Run(async () => {
-                await GagsFunctions.Gag(gag);
+                await MutesFunctions.Mute(mute);
             });
-        }, blockedArgs: GagsConfig.Config.BlockedIdentifiers);
+        }, blockedArgs: MutesConfig.Config.BlockedIdentifiers);
     }
-    public static void AddGag(CCSPlayerController? caller, List<string> args, CommandInfo info)
+    public static void AddMute(CCSPlayerController? caller, List<string> args, CommandInfo info)
     {
-        //css_addgag <steamId> <time> <reason> (для оффлайн бана, так же можно использовать для онлайн бана)
+        //css_addmute <steamId> <time> <reason> (для оффлайн бана, так же можно использовать для онлайн бана)
         var steamId = args[0];
         if (!ulong.TryParse(steamId, out var uSteamID)) throw new ArgumentException("Steam id is not a number");
         var time = args[1];
@@ -54,22 +56,22 @@ public class GagsManageCommands
                 if (playerSummaryResponse != null)
                     name = playerSummaryResponse!.PersonaName;
             }
-            var ban = new PlayerComm(
+            var mute = new PlayerComm(
                 steamId,
                 ip,
                 name,
-                PlayerComm.MuteTypes.Gag,
+                PlayerComm.MuteTypes.Mute,
                 reason,
                 timeInt,
                 serverId: Main.AdminApi.ThisServer.Id
             );
-            ban.AdminId = adminId;
-            await GagsFunctions.Gag(ban);
+            mute.AdminId = adminId;
+            await MutesFunctions.Mute(mute);
         });
     }
-    public static void Ungag(CCSPlayerController? caller, List<string> args, CommandInfo info)
+    public static void Unmute(CCSPlayerController? caller, List<string> args, CommandInfo info)
     {
-        //css_ungag <#uid/#steamId/name/@...> <reason>
+        //css_unmute <#uid/#steamId/name/@...> <reason>
         var identity = args[0];
         var reason = string.Join(" ", args.Skip(1));
         var admin = caller.Admin()!;
@@ -77,18 +79,18 @@ public class GagsManageCommands
         {
             var steamId = target.AuthorizedSteamID!.SteamId64.ToString();
             Task.Run(async () => {
-                await GagsFunctions.Ungag(admin, steamId, reason);
+                await MutesFunctions.Unmute(admin, steamId, reason);
             });
-        }, blockedArgs: GagsConfig.Config.UnblockBlockedIdentifiers);
+        }, blockedArgs: MutesConfig.Config.UnblockBlockedIdentifiers);
     }
-    public static void RemoveGag(CCSPlayerController? caller, List<string> args, CommandInfo info)
+    public static void RemoveMute(CCSPlayerController? caller, List<string> args, CommandInfo info)
     {
-        //css_removegag <steamId> <reason>
+        //css_removemute <steamId> <reason>
         var steamId = args[0];
         var reason = string.Join(" ", args.Skip(1));
         var admin = caller.Admin()!;
         Task.Run(async () => {
-            await GagsFunctions.Ungag(admin, steamId, reason);
+            await MutesFunctions.Unmute(admin, steamId, reason);
         });
     }
 }

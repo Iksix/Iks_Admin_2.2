@@ -4,7 +4,7 @@ using MySqlConnector;
 
 namespace IksAdmin;
 
-public static class GroupsControllFunctions
+public static class DBGroups
 {
     private static string GroupSelect = @"
         select
@@ -22,7 +22,7 @@ public static class GroupsControllFunctions
     {
         try
         {
-            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
             var existingGroup = await GetGroup(group.Name, ignoreDeleted: false);
             if (existingGroup != null)
@@ -47,7 +47,7 @@ public static class GroupsControllFunctions
     {
         try
         {
-            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
             var ignoreDeletedString = ignoreDeleted ? "and deleted_at is null" : "";
             var group = await conn.QueryFirstOrDefaultAsync<Group>($@"
@@ -69,7 +69,7 @@ public static class GroupsControllFunctions
     {
         try
         {
-            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
             var ignoreDeletedString = ignoreDeleted ? "where deleted_at is null" : "";
             var groups = (await conn.QueryAsync<Group>($@"
@@ -90,24 +90,25 @@ public static class GroupsControllFunctions
     {
         try
         {
-            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
-            await conn.QueryAsync<Group>(@"
+            var id = await conn.QuerySingleAsync<int>(@"
                 insert into iks_groups
                 ( name, flags, immunity, comment, created_at, updated_at)
                 values
-                (@name, @flags, @immunity, @comment, unix_timestamp(), unix_timestamp())
+                (@name, @flags, @immunity, @comment, unix_timestamp(), unix_timestamp());
+                select last_insert_id();
             ", new {
                 name = group.Name,
                 flags = group.Flags,
                 immunity = group.Immunity,
                 comment = group.Comment
             });
-            var newGroup = await GetGroup(group.Name);
+            group.Id = id;
             Main.AdminApi.Debug($"Group added to base ✔");
-            Main.AdminApi.Debug($"Group id = {newGroup!.Id} ✔");
-            Main.AdminApi.Groups.Add(newGroup);
-            return newGroup;
+            Main.AdminApi.Debug($"Group id = {group!.Id} ✔");
+            Main.AdminApi.Groups.Add(group);
+            return group;
         }
         catch (MySqlException e)
         {
@@ -119,7 +120,7 @@ public static class GroupsControllFunctions
     {
         try
         {
-            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
             await conn.QueryAsync(@"
                 update iks_groups set 
@@ -153,7 +154,7 @@ public static class GroupsControllFunctions
     {
         try
         {
-            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
             await conn.QueryAsync(@"
                 update iks_groups set 
@@ -219,7 +220,7 @@ public static class GroupsControllFunctions
     {
         try
         {
-            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
             var limitations = (await conn.QueryAsync<GroupLimitation>(@"
                 select

@@ -4,14 +4,14 @@ using MySqlConnector;
 
 namespace IksAdmin;
 
-public static class ServersControllFunctions
+public static class DBServers
 {
     public static async Task Add(ServerModel server)
     {
         try
         {
             Main.AdminApi.Debug("Add server to base...");
-            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
             var existingServer = await Get(server.Id);
             if (existingServer != null)
@@ -44,7 +44,7 @@ public static class ServersControllFunctions
         try
         {
             Main.AdminApi.Debug("Server update...");
-            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
             await conn.QueryAsync(@"
                 update iks_servers set
@@ -75,7 +75,7 @@ public static class ServersControllFunctions
     {
         try
         {
-            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
 
             var server = await conn.QueryFirstOrDefaultAsync<ServerModel>(@"
@@ -105,7 +105,7 @@ public static class ServersControllFunctions
     {
         try
         {
-            await using var conn = new MySqlConnection(Database.ConnectionString);
+            await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
 
             var servers = (await conn.QueryAsync<ServerModel>(@"

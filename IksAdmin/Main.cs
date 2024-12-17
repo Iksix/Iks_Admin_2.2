@@ -74,13 +74,13 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
         builder.Database = config.Database;
         builder.UserID = config.User;
         builder.Port = uint.Parse(config.Port);
-        Database.ConnectionString = builder.ConnectionString;
+        DB.ConnectionString = builder.ConnectionString;
     }
     public override void Load(bool hotReload)
     {
         Instance = this;
         PlayersUtils.AdminPluginInstance = this;
-        AdminApi = new AdminApi(this, Config, Localizer, ModuleDirectory, Database.ConnectionString);
+        AdminApi = new AdminApi(this, Config, Localizer, ModuleDirectory, DB.ConnectionString);
         AdminModule.AdminApi = AdminApi;
         AdminUtils.AdminApi = AdminApi;
         AdminApi.OnModuleLoaded += OnModuleLoaded;
@@ -230,6 +230,11 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
         AdminApi.RegisterPermission("blocks_manage.unmute", "m"); 
         AdminApi.RegisterPermission("blocks_manage.own_mute_reason", "m"); // С этим флагом у админа появляется пункт в меню для выбора собственной причины
         AdminApi.RegisterPermission("blocks_manage.own_mute_time", "m"); 
+        // SILENCE
+        AdminApi.RegisterPermission("blocks_manage.silence", "mg"); 
+        AdminApi.RegisterPermission("blocks_manage.unsilence", "mg"); 
+        AdminApi.RegisterPermission("blocks_manage.own_silence_reason", "mg"); // С этим флагом у админа появляется пункт в меню для выбора собственной причины
+        AdminApi.RegisterPermission("blocks_manage.own_silence_time", "mg"); 
         // GAG
         AdminApi.RegisterPermission("blocks_manage.gag", "g"); 
         AdminApi.RegisterPermission("blocks_manage.ungag", "g"); 
@@ -250,9 +255,18 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             "Открыть админ меню",
             ">*",
             "css_admin",
-            BaseCommands.AdminMenu,
+            CmdBase.AdminMenu,
             minArgs: 0,
             commandUsage: CommandUsage.CLIENT_ONLY
+        );
+        AdminApi.AddNewCommand(
+            "am_reload",
+            "Перезагружает данные с БД",
+            "z",
+            "css_am_reload",
+            CmdBase.Reload,
+            minArgs: 0,
+            commandUsage: CommandUsage.CLIENT_AND_SERVER
         );
         AdminApi.AddNewCommand(
             "am_add",
@@ -260,7 +274,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             "admins_manage.add",
             "css_am_add <steamId> <name> <time/0> <server_id/this> <groupName>\n" +
             "css_am_add <steamId> <name> <time/0> <server_id/this> <flags> <immunity>",
-            AdminsManageCommands.Add,
+            CmdAdminManage.Add,
             minArgs: 5 
         );
         AdminApi.AddNewCommand(
@@ -268,7 +282,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             "Добавить Server Id админу",
             "admins_manage.add",
             "css_am_add_server_id <steamId> <server_id/this>",
-            AdminsManageCommands.AddServerId,
+            CmdAdminManage.AddServerId,
             minArgs: 2 
         );
         AdminApi.AddNewCommand(
@@ -276,7 +290,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             "Добавить флаг админу",
             "admins_manage.edit",
             "css_am_addflag <steamId> <flagsToAdd>",
-            AdminsManageCommands.AddFlag,
+            CmdAdminManage.AddFlag,
             minArgs: 2 
         );
         AdminApi.AddNewCommand(
@@ -284,7 +298,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             "Добавить флаг админу или создать админа(В случае если такого админа нет)",
             "admins_manage.edit,admins_manage.add",
             "am_addflag_or_admin <steamId> <name> <time/0> <server_id/this> <flags> <immunity>",
-            AdminsManageCommands.AddFlagOrAdmin,
+            CmdAdminManage.AddFlagOrAdmin,
             minArgs: 6
         );
         AdminApi.AddNewCommand(
@@ -292,7 +306,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             "Удалить админа",
             "admins_manage.edit,admins_manage.add",
             "am_remove <steamId> <server_id/this>",
-            AdminsManageCommands.AddFlagOrAdmin,
+            CmdAdminManage.AddFlagOrAdmin,
             minArgs: 6
         );
 
@@ -303,7 +317,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             "Забанить игрока",
             "blocks_manage.ban",
             "css_ban <#uid/#steamId/name/@...> <time> <reason>",
-            BansManageCommands.Ban,
+            CmdBans.Ban,
             minArgs: 3 
         );
         AdminApi.AddNewCommand(
@@ -311,7 +325,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             "Разбанить игрока",
             "blocks_manage.unban",
             "css_unban <steamId> <reason>",
-            BansManageCommands.Unban,
+            CmdBans.Unban,
             minArgs: 2 
         );
         AdminApi.AddNewCommand(
@@ -319,7 +333,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             "Разбанить игрока",
             "blocks_manage.unban_ip",
             "css_unbanip <ip> <reason>",
-            BansManageCommands.UnbanIp,
+            CmdBans.UnbanIp,
             minArgs: 2 
         );
         AdminApi.AddNewCommand(
@@ -327,7 +341,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             "Забанить игрока по стим айди (оффлайн)",
             "blocks_manage.ban",
             "css_addban <steamId> <time> <reason>",
-            BansManageCommands.AddBan,
+            CmdBans.AddBan,
             minArgs: 3 
         );
         AdminApi.AddNewCommand(
@@ -335,7 +349,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             "Забанить по айпи (онлайн)",
             "blocks_manage.ban_ip",
             "css_banip <#uid/#steamId/name/@...> <time> <reason>",
-            BansManageCommands.BanIp,
+            CmdBans.BanIp,
             minArgs: 3 
         );
         AdminApi.AddNewCommand(
@@ -343,7 +357,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             "Забанить игрока по айпи (оффлайн)",
             "blocks_manage.ban_ip",
             "css_addbanip <ip> <time> <reason>",
-            BansManageCommands.AddBanIp,
+            CmdBans.AddBanIp,
             minArgs: 3 
         );
         // GAG ===
@@ -352,7 +366,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             "Выдать гаг игроку (онлайн)",
             "blocks_manage.gag",
             "css_gag <#uid/#steamId/name/@...> <time> <reason>",
-            GagsManageCommands.Gag,
+            CmdGags.Gag,
             minArgs: 3 
         );
         AdminApi.AddNewCommand(
@@ -360,7 +374,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             "Снять гаг с игрока (онлайн)",
             "blocks_manage.ungag",
             "css_ungag <#uid/#steamId/name/@...> <reason>",
-            GagsManageCommands.Ungag,
+            CmdGags.Ungag,
             minArgs: 2 
         );
         AdminApi.AddNewCommand(
@@ -368,7 +382,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             "Выдать гаг игроку (оффлайн)",
             "blocks_manage.gag",
             "css_addgag <steamId> <time> <reason>",
-            GagsManageCommands.AddGag,
+            CmdGags.AddGag,
             minArgs: 3 
         );
         AdminApi.AddNewCommand(
@@ -376,40 +390,73 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             "Снять гаг с игрока (оффлайн)",
             "blocks_manage.ungag",
             "css_ungag <steamId> <reason>",
-            GagsManageCommands.RemoveGag,
+            CmdGags.RemoveGag,
             minArgs: 2 
         );
         // MUTE ===
         AdminApi.AddNewCommand(
             "mute",
-            "Выдать гаг игроку (онлайн)",
+            "Выдать мут игроку (онлайн)",
             "blocks_manage.mute",
             "css_mute <#uid/#steamId/name/@...> <time> <reason>",
-            MutesManageCommands.Mute,
+            CmdMutes.Mute,
             minArgs: 3 
         );
         AdminApi.AddNewCommand(
             "unmute",
-            "Снять гаг с игрока (онлайн)",
+            "Снять мут с игрока (онлайн)",
             "blocks_manage.unmute",
             "css_unmute <#uid/#steamId/name/@...> <reason>",
-            MutesManageCommands.Unmute,
+            CmdMutes.Unmute,
             minArgs: 2 
         );
         AdminApi.AddNewCommand(
             "addmute",
-            "Выдать гаг игроку (оффлайн)",
+            "Выдать мут игроку (оффлайн)",
             "blocks_manage.mute",
             "css_addmute <steamId> <time> <reason>",
-            MutesManageCommands.AddMute,
+            CmdMutes.AddMute,
             minArgs: 3 
         );
         AdminApi.AddNewCommand(
             "removemute",
-            "Снять гаг с игрока (оффлайн)",
+            "Снять мут с игрока (оффлайн)",
             "blocks_manage.unmute",
             "css_unmute <steamId> <reason>",
-            MutesManageCommands.RemoveMute,
+            CmdMutes.RemoveMute,
+            minArgs: 2 
+        );
+        // Silence ===
+        AdminApi.AddNewCommand(
+            "silence",
+            "Выдать silence игроку (онлайн)",
+            "blocks_manage.silence",
+            "css_mute <#uid/#steamId/name/@...> <time> <reason>",
+            CmdSilences.Silence,
+            minArgs: 3 
+        );
+        AdminApi.AddNewCommand(
+            "unsilence",
+            "Снять silence с игрока (онлайн)",
+            "blocks_manage.unsilence",
+            "css_unmute <#uid/#steamId/name/@...> <reason>",
+            CmdSilences.UnSilence,
+            minArgs: 2 
+        );
+        AdminApi.AddNewCommand(
+            "addsilence",
+            "Выдать silence игроку (оффлайн)",
+            "blocks_manage.silence",
+            "css_addmute <steamId> <time> <reason>",
+            CmdSilences.AddSilence,
+            minArgs: 3 
+        );
+        AdminApi.AddNewCommand(
+            "removesilence",
+            "Снять silence с игрока (оффлайн)",
+            "blocks_manage.unsilence",
+            "css_unmute <steamId> <reason>",
+            CmdSilences.RemoveSilence,
             minArgs: 2 
         );
 
@@ -510,6 +557,7 @@ public class AdminApi : IIksAdminApi
     // CONFIGS ===
     public BansConfig BansConfig {get; set;} = new ();
     public MutesConfig MutesConfig {get; set;} = new ();
+    public SilenceConfig SilenceConfig {get; set;} = new ();
     public GagsConfig GagsConfig {get; set;} = new ();
     public List<PlayerInfo> DisconnectedPlayers {get; set;} = new();
     public List<AdminToServer> AdminsToServer {get; set;} = new();
@@ -531,6 +579,7 @@ public class AdminApi : IIksAdminApi
         BansConfig.Set();
         MutesConfig.Set();
         GagsConfig.Set();
+        SilenceConfig.Set();
     }
 
     public async Task ReloadDataFromDb()
@@ -544,14 +593,14 @@ public class AdminApi : IIksAdminApi
         try
         {
             Debug("Init Database");
-            await Database.Init();
+            await DB.Init();
             Debug("Refresh Servers");
-            await ServersControllFunctions.Add(serverModel);
-            AllServers = await ServersControllFunctions.GetAll();
+            await DBServers.Add(serverModel);
+            AllServers = await DBServers.GetAll();
             ThisServer = AllServers.First(x => x.Id == serverModel.Id);
             Debug("Refresh Admins");
             await RefreshAdmins();
-            Warns = await WarnsControllFunctions.GetAllActive();
+            Warns = await DBWarns.GetAllActive();
             await SendRconToAllServers("css_am_reload_servers", true);
             await SendRconToAllServers("css_am_reload_admins", true);
             Server.NextFrame(() => {
@@ -585,15 +634,33 @@ public class AdminApi : IIksAdminApi
                 MutePlayerInGame(comm);
                 break;
             case 2:
-                GagPlayerInGame(comm);
-                MutePlayerInGame(comm);
+                SilencePlayerInGame(comm);
                 break;
         }
     }
 
+    private void SilencePlayerInGame(PlayerComm comm)
+    {
+        var player = PlayersUtils.GetControllerBySteamId(comm.SteamId);
+        if (player == null) return;
+        player.VoiceFlags = VoiceFlags.Muted;
+        Comms.Add(comm);
+    }
+
     public void RemoveCommFromPlayer(PlayerComm comm)
     {
-        throw new NotImplementedException();
+        switch (comm.MuteType)
+        {
+            case 0:
+                UnmutePlayerInGame(comm);
+                break;
+            case 1:
+                UnGagPlayerInGame(comm);
+                break;
+            case 2:
+                UnSilencePlayerInGame(comm);
+                break;
+        }
     }
 
     public IDynamicMenu CreateMenu(string id, string title, MenuType? type = null, MenuColors titleColor = MenuColors.Default, PostSelectAction postSelectAction = PostSelectAction.Nothing, Action<CCSPlayerController>? backAction = null, IDynamicMenu? backMenu = null)
@@ -713,7 +780,7 @@ public class AdminApi : IIksAdminApi
 
     public async Task RefreshAdmins()
     {
-        await AdminsControllFunctions.RefreshAdmins();
+        await DBAdmins.RefreshAdmins();
     }
     public async Task RefreshAdminsOnAllServers()
     {
@@ -878,11 +945,11 @@ public class AdminApi : IIksAdminApi
             if (group != null)
             {
                 var limitations = group.Limitations;
-                var maxTime = group.Limitations.FirstOrDefault(x => x.LimitationKey == "max_ban_time")?.LimitationKey;
-                var minTime = group.Limitations.FirstOrDefault(x => x.LimitationKey == "min_ban_time")?.LimitationKey;
+                var maxTime = limitations.FirstOrDefault(x => x.LimitationKey == "max_ban_time")?.LimitationValue;
+                var minTime = limitations.FirstOrDefault(x => x.LimitationKey == "min_ban_time")?.LimitationValue;
                 var minTimeInt = minTime == null ? 0 : int.Parse(minTime);
                 var maxTimeInt = maxTime == null ? int.MaxValue : int.Parse(maxTime);
-                var maxByDay = group.Limitations.FirstOrDefault(x => x.LimitationKey == "max_bans_in_day")?.LimitationKey;
+                var maxByDay = limitations.FirstOrDefault(x => x.LimitationKey == "max_bans_in_day")?.LimitationValue;
                 var maxByDayInt = maxByDay == null ? int.MaxValue : int.Parse(maxByDay);
                 if (ban.Duration > maxTimeInt || minTimeInt > ban.Duration)
                 {
@@ -894,7 +961,7 @@ public class AdminApi : IIksAdminApi
                 }
                 if (maxByDay != null)
                 {
-                    var lastPunishments = await BansControllFunctions.GetLastAdminBans(admin, 60*60*24);
+                    var lastPunishments = await DBBans.GetLastAdminBans(admin, 60*60*24);
                     if (lastPunishments.Count > maxByDayInt)
                     {
                         Helper.PrintToSteamId(admin.SteamId, AdminUtils.AdminApi.Localizer["Limitations.MaxByDayLimit"].Value
@@ -904,7 +971,7 @@ public class AdminApi : IIksAdminApi
                     }
                 }
             }
-            var result = await BansControllFunctions.Add(ban);
+            var result = await DBBans.Add(ban);
             switch (result)
             {
                 case 0:
@@ -918,7 +985,7 @@ public class AdminApi : IIksAdminApi
                             player = PlayersUtils.GetControllerByIp(ban.Ip!);
                         if (player != null)
                         {
-                            DisconnectPlayer(player, ban.Reason);
+                            DisconnectPlayer(player, ban.Reason, customMessageTemplate: Localizer["HTML.AdvancedBanMessage"]);
                         }
                     });
                     break;
@@ -947,7 +1014,7 @@ public class AdminApi : IIksAdminApi
             Debug("Ban not finded ✖!");
             return 1;
         }
-        var result = await BansControllFunctions.Unban(admin, ban, reason);
+        var result = await DBBans.Unban(admin, ban, reason);
         switch (result)
         {
             case 0:
@@ -973,7 +1040,7 @@ public class AdminApi : IIksAdminApi
             Debug("Ban not finded ✖!");
             return 1;
         }
-        var result = await BansControllFunctions.UnbanIp(admin, ban, reason);
+        var result = await DBBans.UnbanIp(admin, ban, reason);
         switch (result)
         {
             case 0:
@@ -993,25 +1060,25 @@ public class AdminApi : IIksAdminApi
 
     public async Task<PlayerBan?> GetActiveBan(string steamId)
     {
-        var ban = await BansControllFunctions.GetActiveBan(steamId);
+        var ban = await DBBans.GetActiveBan(steamId);
         return ban;
     }
 
     public async Task<List<PlayerBan>> GetAllBans(string steamId)
     {
-        var ban = await BansControllFunctions.GetAllBans(steamId);
+        var ban = await DBBans.GetAllBans(steamId);
         return ban;
     }
 
     public async Task<PlayerBan?> GetActiveBanIp(string ip)
     {
-        var ban = await BansControllFunctions.GetActiveBanIp(ip);
+        var ban = await DBBans.GetActiveBanIp(ip);
         return ban;
     }
 
     public async Task<List<PlayerBan>> GetAllIpBans(string ip)
     {
-        var ban = await BansControllFunctions.GetAllIpBans(ip);
+        var ban = await DBBans.GetAllIpBans(ip);
         return ban;
     }
 
@@ -1047,7 +1114,7 @@ public class AdminApi : IIksAdminApi
         }
         player.ChangeTeam(CsTeam.Spectator);
         Main.BlockTeamChange.Add(player);
-        player.HtmlMessage(messageTemplate.Replace("{reason}", reason));
+        player.HtmlMessage(messageTemplate.Replace("{reason}", reason), Config.AdvancedKickTime);
         Plugin.AddTimer(Config.AdvancedKickTime, () => {
             if (player != null)
             {
@@ -1182,14 +1249,16 @@ public class AdminApi : IIksAdminApi
                 return;
             }
         }
-        var comm = await GetActiveComms(steamId);
-        if (comm != null)
-        {
-            Server.NextFrame(() => {
-                RemoveCommFromPlayer(comm);
-            });
-        }
-        Debug("Has сomm: " + (mute != null));
+        var comms = await GetActiveComms(steamId);
+        Server.NextFrame(() => {
+            foreach (var comm in comms)
+            {
+                ApplyCommForPlayer(comm);
+            }
+        });
+        Debug("Has gag: " + comms.HasGag());
+        Debug("Has mute: " + comms.HasMute());
+        Debug("Has silence: " + comms.HasSilence());
     }
 
     public void MutePlayerInGame(PlayerComm mute)
@@ -1210,17 +1279,12 @@ public class AdminApi : IIksAdminApi
         if (player != null)
         {
             Helper.Print(player, Localizer["Message.WhenMuteEnd"]);
+            player.VoiceFlags = VoiceFlags.Normal;
         }
-        var exMute = Comms.FirstOrDefault(x => mute.SteamId == x.SteamId && mute.MuteType is 0 or 2);
-        if (exMute != null)
-        {
-            if (exMute.MuteType is 2)
-            {
-                exMute.MuteType = 1;
-            }
-        }
-        Comms.Remove(exMute!);
+        var exComm = Comms.GetMute();
+        Comms.Remove(exComm!);
     }
+    
     public void GagPlayerInGame(PlayerComm gag)
     {
         var player = PlayersUtils.GetControllerBySteamId(gag.SteamId);
@@ -1232,22 +1296,26 @@ public class AdminApi : IIksAdminApi
             Main.InstantComm.Add(gag.SteamId, gag);
         }
     }
-    public void UngagPlayerInGame(PlayerComm gag)
+    public void UnGagPlayerInGame(PlayerComm gag)
     {
         var player = PlayersUtils.GetControllerBySteamId(gag.SteamId);
         if (player != null)
         {
             Helper.Print(player, Localizer["Message.WhenGagEnd"]);
         }
-        var exGag = Comms.FirstOrDefault(x => gag.SteamId == x.SteamId && gag.MuteType is 1 or 2);
-        if (exGag != null)
-        {
-            if (exGag.MuteType is 2)
-            {
-                exGag.MuteType = 0;
-            }
-        }
+        var exGag = Comms.GetGag();
         Comms.Remove(exGag!);
+    }
+    private void UnSilencePlayerInGame(PlayerComm comm)
+    {
+        var player = PlayersUtils.GetControllerBySteamId(comm.SteamId);
+        if (player != null)
+        {
+            Helper.Print(player, Localizer["Message.WhenSilenceEnd"]);
+            player.VoiceFlags = VoiceFlags.Normal;
+        }
+        var exComm = Comms.GetSilence();
+        Comms.Remove(exComm!);
     }
     public bool IsPlayerGagged(string steamId)
     {
@@ -1255,34 +1323,84 @@ public class AdminApi : IIksAdminApi
         return gag != null;
     }
 
-    public async Task<int> UnComm(Admin admin, string steamId, string? reason, bool announce = true)
+    public async Task<DBResult> UnComm(Admin admin, PlayerComm comm, bool announce = true)
     {
-        
+        DBResult result = new DBResult(null, -1, "ERROR!");
+        switch (comm.MuteType)
+        {
+            case 0:
+                result = await UnMute(admin, comm.SteamId, comm.UnbanReason, announce);
+                break;
+            case 1:
+                result = await UnGag(admin, comm.SteamId, comm.UnbanReason, announce);
+                break;
+            case 2:
+                result = await UnSilence(admin, comm.SteamId, comm.UnbanReason, announce);
+                break;
+        }
+
+        return result;
     }
+
+    private async Task<DBResult> UnSilence(Admin admin, string steamId, string? reason, bool announce)
+    {
+        Debug($"Ungag player {steamId}!");
+        var comms = await GetActiveComms(steamId);
+        if (!comms.HasSilence())
+        {
+            Debug("Silence not finded ✖!");
+            return new DBResult(0, 1, "Silence not finded ✖!");
+        }
+
+        var silence = comms.GetSilence()!;
+        var result = await DBComms.UnComm(admin, silence, reason);
+        switch (result.QueryStatus)
+        {
+            case 0:
+                silence.UnbannedBy = admin.Id;
+                silence.UnbanReason = reason;
+                Server.NextFrame(() => {
+                    UnSilencePlayerInGame(silence);
+                    if (announce)
+                        Announces.UnSilenced(silence);
+                });
+                break;
+            case 2:
+                Debug("Not enough permissions for unSilence this player");
+                break;
+            case -1:
+                Debug("Some error while unSilence");
+                break;
+        }
+        return result;
+    }
+
+    
 
     public async Task<List<PlayerComm>> GetActiveComms(string steamId)
     {
-        return await CommsControllFunctions.GetActiveComms(steamId);
+        return await DBComms.GetActiveComms(steamId);
     }
 
     public async Task<List<PlayerComm>> GetAllComms(string steamId)
     {
-        return await CommsControllFunctions.GetAllComms(steamId);
+        return await DBComms.GetAllComms(steamId);
     }
-    public async Task<int> AddComm(PlayerComm comm, bool announce = true)
+    public async Task<DBResult> AddComm(PlayerComm comm, bool announce = true)
     {
+        DBResult result = new DBResult(-1, -1, "ERROR!");
         try
         {
             switch (comm.MuteType)
             {
                 case 0:
-                    await AddMute(comm, announce);
+                    result = await AddMute(comm, announce);
                     break;
                 case 1:
-                    await AddGag(comm, announce);
+                    result = await AddGag(comm, announce);
                     break;
                 case 2:
-                    await AddSilence(comm, announce);
+                    result = await AddSilence(comm, announce);
                     break;
             }
         }
@@ -1291,68 +1409,142 @@ public class AdminApi : IIksAdminApi
             Main.AdminApi.LogError(e.ToString());
             throw;
         }
+        return result;
     }
 
-    private async Task<int> AddSilence(PlayerComm comm, bool announce)
-    {
-        throw new NotImplementedException();
-    }
-
-    public async Task<int> AddGag(PlayerComm gag, bool announce = true)
+    private async Task<DBResult> AddSilence(PlayerComm comm, bool announce)
     {
         try
         {
-            Debug($"Gaging player {gag.SteamId}!");
-            var reservedReason = GagsConfig.Config.Reasons.FirstOrDefault(x => x.Title.ToLower() == gag.Reason.ToLower());
+            comm.MuteType = 2;
+            Debug($"Silence player {comm.SteamId}!");
+            var reservedReason = SilenceConfig.Config.Reasons.FirstOrDefault(x => x.Title.ToLower() == comm.Reason.ToLower());
             if (reservedReason != null)
             {
                 Debug($"Do reservedReason transformations...");
                 if (reservedReason.BanOnAllServers)
-                    gag.ServerId = null;
-                gag.Reason = reservedReason.Text;
+                    comm.ServerId = null;
+                comm.Reason = reservedReason.Text;
             }
 
-            var admin = gag.Admin!;
+            var admin = comm.Admin!;
             var group = admin.Group;
             if (group != null)
             {
                 var limitations = group.Limitations;
-                var maxTime = limitations.FirstOrDefault(x => x.LimitationKey == "max_gag_time")?.LimitationKey;
-                var minTime = limitations.FirstOrDefault(x => x.LimitationKey == "min_gag_time")?.LimitationKey;
+                var maxTime = limitations.FirstOrDefault(x => x.LimitationKey == "max_silence_time")?.LimitationValue;
+                var minTime = limitations.FirstOrDefault(x => x.LimitationKey == "min_silence_time")?.LimitationValue;
                 var minTimeInt = minTime == null ? 0 : int.Parse(minTime);
                 var maxTimeInt = maxTime == null ? int.MaxValue : int.Parse(maxTime);
-                var maxByDay = limitations.FirstOrDefault(x => x.LimitationKey == "max_gags_in_day")?.LimitationKey;
+                var maxByDay = limitations.FirstOrDefault(x => x.LimitationKey == "max_silences_in_day")?.LimitationValue;
                 var maxByDayInt = maxByDay == null ? int.MaxValue : int.Parse(maxByDay);
-                if (gag.Duration > maxTimeInt || minTimeInt > gag.Duration)
+                if (comm.Duration/60 > maxTimeInt || minTimeInt > comm.Duration/60)
                 {
                     Helper.PrintToSteamId(admin.SteamId, AdminUtils.AdminApi.Localizer["Limitations.TimeLimit"].Value
                         .Replace("{min}", minTimeInt.ToString())
                         .Replace("{max}", maxTimeInt.ToString())
                     );
-                    return 3;
+                    return new DBResult(null, 3, "limitations limit reached");;
                 }
                 if (maxByDay != null)
                 {
-                    var lastPunishments = (await CommsControllFunctions.GetLastAdminComms(admin, 60 * 60 * 24)).Where(x => x.MuteType == 1).ToList();
+                    var lastPunishments = (await DBComms.GetLastAdminComms(admin, 60 * 60 * 24)).Where(x => x.MuteType == 1).ToList();
                     if (lastPunishments.Count > maxByDayInt)
                     {
                         Helper.PrintToSteamId(admin.SteamId, AdminUtils.AdminApi.Localizer["Limitations.MaxByDayLimit"].Value
                             .Replace("{date}", Utils.GetDateString(lastPunishments[0].CreatedAt + 60*60*24))
                         );
-                        return 3;
+                        return new DBResult(null, 3, "limitations limit reached");;
                     }
                 }
             }
 
-            var result = await CommsControllFunctions.Add(gag);
-            switch (result)
+            var result = await DBComms.Add(comm);
+            switch (result.QueryStatus)
             {
                 case 0:
+                    comm.Id = result.ElementId ?? 0;
                     Server.NextFrame(() => {
                         if (announce)
-                            Announces.GagAdded(gag);
+                            Announces.SilenceAdded(comm);
                         Server.NextFrame(() => {
-                            GagPlayerInGame(gag);
+                            SilencePlayerInGame(comm);
+                        });
+                    });
+                    break;
+                case 1:
+                    Debug("Silence already exists!");
+                    break;
+                case -1:
+                    Debug("Some error while silence");
+                    break;
+            }
+            return result;
+        }
+        catch (Exception e)
+        {
+            Main.AdminApi.LogError(e.ToString());
+            throw;
+        }
+    }
+
+    public async Task<DBResult> AddGag(PlayerComm comm, bool announce = true)
+    {
+        try
+        {
+            comm.MuteType = 1;
+            Debug($"Gaging player {comm.SteamId}!");
+            var reservedReason = GagsConfig.Config.Reasons.FirstOrDefault(x => x.Title.ToLower() == comm.Reason.ToLower());
+            if (reservedReason != null)
+            {
+                Debug($"Do reservedReason transformations...");
+                if (reservedReason.BanOnAllServers)
+                    comm.ServerId = null;
+                comm.Reason = reservedReason.Text;
+            }
+
+            var admin = comm.Admin!;
+            var group = admin.Group;
+            if (group != null)
+            {
+                var limitations = group.Limitations;
+                var maxTime = limitations.FirstOrDefault(x => x.LimitationKey == "max_gag_time")?.LimitationValue;
+                var minTime = limitations.FirstOrDefault(x => x.LimitationKey == "min_gag_time")?.LimitationValue;
+                var minTimeInt = minTime == null ? 0 : int.Parse(minTime);
+                var maxTimeInt = maxTime == null ? int.MaxValue : int.Parse(maxTime);
+                var maxByDay = limitations.FirstOrDefault(x => x.LimitationKey == "max_gags_in_day")?.LimitationValue;
+                var maxByDayInt = maxByDay == null ? int.MaxValue : int.Parse(maxByDay);
+                if (comm.Duration/60 > maxTimeInt || minTimeInt > comm.Duration/60)
+                {
+                    Helper.PrintToSteamId(admin.SteamId, AdminUtils.AdminApi.Localizer["Limitations.TimeLimit"].Value
+                        .Replace("{min}", minTimeInt.ToString())
+                        .Replace("{max}", maxTimeInt.ToString())
+                    );
+                    return new DBResult(null, 3, "limitations limit reached");
+                }
+                if (maxByDay != null)
+                {
+                    var lastPunishments = (await DBComms.GetLastAdminComms(admin, 60 * 60 * 24)).Where(x => x.MuteType == 1).ToList();
+                    if (lastPunishments.Count > maxByDayInt)
+                    {
+                        Helper.PrintToSteamId(admin.SteamId, AdminUtils.AdminApi.Localizer["Limitations.MaxByDayLimit"].Value
+                            .Replace("{date}", Utils.GetDateString(lastPunishments[0].CreatedAt + 60*60*24))
+                        );
+                        return new DBResult(null, 3, "limitations limit reached");
+                    }
+                }
+            }
+
+            var result = await DBComms.Add(comm);
+            switch (result.QueryStatus)
+            {
+                case 0:
+                    comm.Id = result.ElementId ?? 0;
+                    Server.NextFrame(() => {
+                        if (announce)
+                            Announces.GagAdded(comm);
+                        Server.NextFrame(() => {
+                            GagPlayerInGame(comm);
                         });
                     });
                     break;
@@ -1372,27 +1564,27 @@ public class AdminApi : IIksAdminApi
         }
     }
 
-    public async Task<int> Ungag(Admin admin, string steamId, string? reason, bool announce = true)
+    public async Task<DBResult> UnGag(Admin admin, string steamId, string? reason, bool announce = true)
     {
         Debug($"Ungag player {steamId}!");
         var comms = await GetActiveComms(steamId);
         if (!comms.HasGag())
         {
             Debug("Gag not finded ✖!");
-            return 1;
+            return new DBResult(0, 1, "Gag not finded ✖!");
         }
 
         var gag = comms.GetGag()!;
-        var result = await CommsControllFunctions.UnComm(admin, comms.GetGag()!, reason);
-        switch (result)
+        var result = await DBComms.UnComm(admin, comms.GetGag()!, reason);
+        switch (result.QueryStatus)
         {
             case 0:
                 gag.UnbannedBy = admin.Id;
                 gag.UnbanReason = reason;
                 Server.NextFrame(() => {
-                    UngagPlayerInGame(gag);
+                    UnGagPlayerInGame(gag);
                     if (announce)
-                        Announces.Ungagged(gag);
+                        Announces.UnGagged(gag);
                 });
                 break;
             case 2:
@@ -1405,60 +1597,62 @@ public class AdminApi : IIksAdminApi
         return result;
     }
 
-    public async Task<int> AddMute(PlayerComm mute, bool announce = true)
+    public async Task<DBResult> AddMute(PlayerComm comm, bool announce = true)
     {
         try
         {
-            Debug($"Muting player {mute.SteamId}!");
-            var reservedReason = MutesConfig.Config.Reasons.FirstOrDefault(x => x.Title.ToLower() == mute.Reason.ToLower());
+            comm.MuteType = 0;
+            Debug($"Muting player {comm.SteamId}!");
+            var reservedReason = MutesConfig.Config.Reasons.FirstOrDefault(x => x.Title.ToLower() == comm.Reason.ToLower());
             if (reservedReason != null)
             {
                 Debug($"Do reservedReason transformations..." );
                 if (reservedReason.BanOnAllServers)
-                    mute.ServerId = null;
-                mute.Reason = reservedReason.Text;
+                    comm.ServerId = null;
+                comm.Reason = reservedReason.Text;
             }
 
-            var admin = mute.Admin!;
+            var admin = comm.Admin!;
             var group = admin.Group;
             if (group != null)
             {
                 var limitations = group.Limitations;
-                var maxTime = limitations.FirstOrDefault(x => x.LimitationKey == "max_mute_time")?.LimitationKey;
-                var minTime = limitations.FirstOrDefault(x => x.LimitationKey == "min_mute_time")?.LimitationKey;
+                var maxTime = limitations.FirstOrDefault(x => x.LimitationKey == "max_mute_time")?.LimitationValue;
+                var minTime = limitations.FirstOrDefault(x => x.LimitationKey == "min_mute_time")?.LimitationValue;
                 var minTimeInt = minTime == null ? 0 : int.Parse(minTime);
                 var maxTimeInt = maxTime == null ? int.MaxValue : int.Parse(maxTime);
-                var maxByDay = limitations.FirstOrDefault(x => x.LimitationKey == "max_mutes_in_day")?.LimitationKey;
+                var maxByDay = limitations.FirstOrDefault(x => x.LimitationKey == "max_mutes_in_day")?.LimitationValue;
                 var maxByDayInt = maxByDay == null ? int.MaxValue : int.Parse(maxByDay);
-                if (mute.Duration > maxTimeInt || minTimeInt > mute.Duration)
+                if (comm.Duration/60 > maxTimeInt || minTimeInt > comm.Duration/60)
                 {
                     Helper.PrintToSteamId(admin.SteamId, AdminUtils.AdminApi.Localizer["Limitations.TimeLimit"].Value
                         .Replace("{min}", minTimeInt.ToString())
                         .Replace("{max}", maxTimeInt.ToString())
                     );
-                    return 3;
+                    return new DBResult(null, 3, "limitations limit reached");
                 }
                 if (maxByDay != null)
                 {
-                    var lastPunishments = (await CommsControllFunctions.GetLastAdminComms(admin, 60 * 60 * 24)).Where(x => x.MuteType == 0).ToList();
+                    var lastPunishments = (await DBComms.GetLastAdminComms(admin, 60 * 60 * 24)).Where(x => x.MuteType == 0).ToList();
                     if (lastPunishments.Count > maxByDayInt)
                     {
                         Helper.PrintToSteamId(admin.SteamId, AdminUtils.AdminApi.Localizer["Limitations.MaxByDayLimit"].Value
                             .Replace("{date}", Utils.GetDateString(lastPunishments[0].CreatedAt + 60*60*24))
                         );
-                        return 3;
+                        return new DBResult(null, 3, "limitations limit reached");
                     }
                 }
             }
-            var result = await CommsControllFunctions.Add(mute);
-            switch (result)
+            var result = await DBComms.Add(comm);
+            switch (result.QueryStatus)
             {
                 case 0:
+                    comm.Id = result.ElementId ?? 0;
                     Server.NextFrame(() => {
                         if (announce)
-                            Announces.MuteAdded(mute);
+                            Announces.MuteAdded(comm);
                         Server.NextFrame(() => {
-                            MutePlayerInGame(mute);
+                            MutePlayerInGame(comm);
                         });
                     });
                     break;
@@ -1478,17 +1672,18 @@ public class AdminApi : IIksAdminApi
         }
     }
 
-    public async Task<int> Unmute(Admin admin, string steamId, string? reason, bool announce = true)
+    public async Task<DBResult> UnMute(Admin admin, string steamId, string? reason, bool announce = true)
     {
         Debug($"Unmute player {steamId}!");
-        var mute = await GetActiveMute(steamId);
-        if (mute == null)
+        var comms = await DBComms.GetActiveComms(steamId);
+        if (!comms.HasMute())
         {
             Debug("Mute not finded ✖!");
-            return 1;
+            return new DBResult(0, 1, "Mute not finded ✖!");
         }
-        var result = await MutesControllFunctions.Unmute(admin, mute, reason);
-        switch (result)
+        var mute = comms.GetMute()!;
+        var result = await DBComms.UnComm(admin, mute, reason);
+        switch (result.QueryStatus)
         {
             case 0:
                 mute.UnbannedBy = admin.Id;
@@ -1496,7 +1691,7 @@ public class AdminApi : IIksAdminApi
                 Server.NextFrame(() => {
                     UnmutePlayerInGame(mute);
                     if (announce)
-                        Announces.Unmuted(mute);
+                        Announces.UnMuted(mute);
                 });
                 break;
             case 2:

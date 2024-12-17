@@ -16,7 +16,7 @@ public static class AdminManageFunctions
         int? groupId = null;
         if (groupName != null) {
             var group = Main.AdminApi.Groups.FirstOrDefault(x => x.Name == groupName);
-            if (group != null) {
+            if (group == null) {
                 Helper.Reply(info, "Group not founded ✖");
                 return;
             }
@@ -34,7 +34,7 @@ public static class AdminManageFunctions
                 vk,
                 endAt: time == 0 ? null : AdminUtils.CurrentTimestamp() + time
             );
-            var existingAdmin = await AdminsControllFunctions.GetAdmin(steamId, ignoreDeleted: false);
+            var existingAdmin = await DBAdmins.GetAdmin(steamId, serverId, ignoreDeleted: false);
             if (existingAdmin != null)
             {
                 if (existingAdmin.DeletedAt != null) {
@@ -42,20 +42,21 @@ public static class AdminManageFunctions
                     return;
                 }
                 admin.Id = existingAdmin.Id;
-                await AdminsControllFunctions.UpdateAdminInBase(admin);
+                await DBAdmins.UpdateAdminInBase(admin);
                 Helper.Reply(info, $"Finded DELETED admin with id: {admin.Id} | Admin updated with new stats ✔");
+                return;
             }
             
-            var newAdmin = await AdminsControllFunctions.AddAdminToBase(admin);
+            var newAdmin = await DBAdmins.AddAdminToBase(admin);
             Helper.Reply(info, "Admin added ✔");
             
             try
             {
                 if (serverId != null)
                 {
-                    await AdminsControllFunctions.AddServerIdToAdmin(newAdmin.Id, (int)serverId);
+                    await DBAdmins.AddServerIdToAdmin(newAdmin.Id, (int)serverId);
                 } else {
-                    await AdminsControllFunctions.AddServerIdToAdmin(newAdmin.Id, Main.AdminApi.ThisServer.Id);
+                    await DBAdmins.AddServerIdToAdmin(newAdmin.Id, Main.AdminApi.ThisServer.Id);
                 }
                 await Main.AdminApi.RefreshAdmins();
             }
@@ -78,7 +79,7 @@ public static class AdminManageFunctions
         }
         Helper.Reply(info, "Flags setted to admin ✔");
         Task.Run(async () => {
-            await AdminsControllFunctions.UpdateAdminInBase(admin);
+            await DBAdmins.UpdateAdminInBase(admin);
             await Main.AdminApi!.SendRconToAllServers("css_am_reload_admins");
         });
     }
@@ -88,9 +89,9 @@ public static class AdminManageFunctions
         Task.Run(async () => {
             if (serverId != null)
             {
-                await AdminsControllFunctions.AddServerIdToAdmin(admin.Id, (int)serverId);
+                await DBAdmins.AddServerIdToAdmin(admin.Id, (int)serverId);
             } else {
-                await AdminsControllFunctions.AddServerIdToAdmin(admin.Id, Main.AdminApi.ThisServer.Id);
+                await DBAdmins.AddServerIdToAdmin(admin.Id, Main.AdminApi.ThisServer.Id);
             }
             Server.NextFrame(() => {
                 Helper.Reply(info, "Server Id added to admin ✔");

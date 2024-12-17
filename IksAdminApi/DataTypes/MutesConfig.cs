@@ -13,10 +13,10 @@ public class MutesConfig : PluginCFG<MutesConfig>, IPluginCFG
     public bool TitleToTextInReasons {get; set;} = true;
     public string[] BlockedIdentifiers {get; set;} = ["@all", "@ct", "@t", "@players", "@spec", "@bot"];
     public string[] UnblockBlockedIdentifiers {get; set;} = ["@all", "@ct", "@t", "@players", "@spec", "@bot"];
-    public List<MuteReason> Reasons { get; set; } = new ()
+    public List<CommReason> Reasons { get; set; } = new ()
     {
-        new MuteReason("Example reason title 1", "Another text for reason", 0, 30, null, false),
-        new MuteReason("Example reason title 2", banOnAllServers: true, duration: 0),
+        new CommReason("Example reason title 1", "Another text for reason", 0, 30, null, false),
+        new CommReason("Example reason title 2", banOnAllServers: true, duration: 0),
     };
 
     public Dictionary<int, string> Times {get; set;} = new()
