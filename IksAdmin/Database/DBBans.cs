@@ -172,7 +172,7 @@ public static class DBBans
     /// <summary>
     /// return statuses: 0 - banned, 1 - already banned, -1 - other
     /// </summary>
-    public static async Task<int> Add(PlayerBan punishment)
+    public static async Task<DBResult> Add(PlayerBan punishment)
     {
         try
         {
@@ -183,12 +183,13 @@ public static class DBBans
                 existingBan = await GetActiveBanIp(punishment.Ip);
             else if (punishment.BanIp == 0 && punishment.SteamId != null) existingBan = await GetActiveBan(punishment.SteamId);
             if (existingBan != null)
-                return 1;
-            await conn.QueryAsync(@"
+                return new DBResult(null, 1, "ban exists");
+            var id = await conn.QuerySingleAsync<int>(@"
                 insert into iks_bans
                 (steam_id, ip, name, duration, reason, ban_ip, server_id, admin_id, unbanned_by, unban_reason, created_at, end_at, updated_at, deleted_at)
                 values
-                (@steamId, @ip, @name, @duration, @reason, @banIp, @serverId, @adminId, @unbannedBy, @unbanReason, @createdAt, @endAt, @updatedAt, @deletedAt)
+                (@steamId, @ip, @name, @duration, @reason, @banIp, @serverId, @adminId, @unbannedBy, @unbanReason, @createdAt, @endAt, @updatedAt, @deletedAt);
+                select last_insert_id();
             ", new {
                 steamId = punishment.SteamId,
                 ip = punishment.Ip,
@@ -205,23 +206,24 @@ public static class DBBans
                 updatedAt = punishment.UpdatedAt,
                 deletedAt = punishment.DeletedAt
             });
-            return 0;
+            punishment.Id = id;
+            return new DBResult(id, 0, "ban added");
         }
         catch (Exception e)
         {
             Main.AdminApi.LogError(e.ToString());
-            return -1;
+            return new DBResult(null, -1, e.ToString());
         }
     }
 
-    public static async Task<int> Unban(Admin admin, PlayerBan ban, string? reason)
+    public static async Task<DBResult> Unban(Admin admin, PlayerBan ban, string? reason)
     {
         try
         {
             await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
 
-            if (!CanUnban(admin, ban)) return 2;
+            if (!CanUnban(admin, ban)) return new DBResult(null, 2, "admin can't unban");
 
             await conn.QueryAsync(@"
                 update iks_bans set 
@@ -233,12 +235,12 @@ public static class DBBans
                 banId = ban.Id,
                 reason
             });
-            return 0;
+            return new DBResult(ban.Id, 0);
         }
         catch (Exception e)
         {
             Main.AdminApi.LogError(e.ToString());
-            return -1;
+            return new DBResult(null, -1, e.ToString());
         }
     }
     public static async Task<int> UnbanIp(Admin admin, PlayerBan ban, string? reason)

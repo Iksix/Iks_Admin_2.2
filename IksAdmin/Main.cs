@@ -246,6 +246,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
         AdminApi.RegisterPermission("blocks_manage.remove_console", "c"); // Снять наказание выданное консолью
         AdminApi.RegisterPermission("other.equals_immunity_action", "e"); // Разрешить взаймодействие с админами равными по иммунитету (Включая снятие наказаний если есть флаг blocks_manage.remove_immunity)
         // Players manage ===
+        AdminApi.RegisterPermission("players_manage.kick", "k");
     }
     private void InitializeCommands()
     {
@@ -256,6 +257,15 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             ">*",
             "css_admin",
             CmdBase.AdminMenu,
+            minArgs: 0,
+            commandUsage: CommandUsage.CLIENT_ONLY
+        );
+        AdminApi.AddNewCommand(
+            "kick",
+            "Кикнуть игрока",
+            "players_manage.kick",
+            "css_kick <#uid/#steamId/name/@...> <reason>",
+            CmdPlayers.Kick,
             minArgs: 0,
             commandUsage: CommandUsage.CLIENT_ONLY
         );
@@ -791,10 +801,7 @@ public class AdminApi : IIksAdminApi
     public void HookNextPlayerMessage(CCSPlayerController player, Action<string> action)
     {
         Debug("Log next player message: " + player.PlayerName);
-        if (NextPlayerMessage.ContainsKey(player))
-        {
-            NextPlayerMessage[player] = action;
-        } else NextPlayerMessage.Add(player, action);
+        NextPlayerMessage[player] = action;
     }
 
     public void RemoveNextPlayerMessageHook(CCSPlayerController player)
@@ -927,7 +934,7 @@ public class AdminApi : IIksAdminApi
         OnModuleUnload?.Invoke(module);
     }
 
-    public async Task<int> AddBan(PlayerBan ban, bool announce = true)
+    public async Task<DBResult> AddBan(PlayerBan ban, bool announce = true)
     {
         try
         {
@@ -957,7 +964,7 @@ public class AdminApi : IIksAdminApi
                         .Replace("{min}", minTimeInt.ToString())
                         .Replace("{max}", maxTimeInt.ToString())
                     );
-                    return 3;
+                    return new DBResult(null, 3, "limitations limit reached");;
                 }
                 if (maxByDay != null)
                 {
@@ -967,12 +974,12 @@ public class AdminApi : IIksAdminApi
                         Helper.PrintToSteamId(admin.SteamId, AdminUtils.AdminApi.Localizer["Limitations.MaxByDayLimit"].Value
                             .Replace("{date}", Utils.GetDateString(lastPunishments[0].CreatedAt + 60*60*24))
                         );
-                        return 3;
+                        return new DBResult(null, 3, "limitations limit reached");;
                     }
                 }
             }
             var result = await DBBans.Add(ban);
-            switch (result)
+            switch (result.QueryStatus)
             {
                 case 0:
                     Server.NextFrame(() => {
@@ -985,7 +992,7 @@ public class AdminApi : IIksAdminApi
                             player = PlayersUtils.GetControllerByIp(ban.Ip!);
                         if (player != null)
                         {
-                            DisconnectPlayer(player, ban.Reason, customMessageTemplate: Localizer["HTML.AdvancedBanMessage"]);
+                            DisconnectPlayer(player, ban.Reason, customMessageTemplate: Localizer["HTML.AdvancedBanMessage"], admin: admin);
                         }
                     });
                     break;
@@ -1006,16 +1013,16 @@ public class AdminApi : IIksAdminApi
         
     }
 
-    public async Task<int> Unban(Admin admin, string steamId, string? reason, bool announce = true)
+    public async Task<DBResult> Unban(Admin admin, string steamId, string? reason, bool announce = true)
     {
         var ban = await GetActiveBan(steamId);
         if (ban == null)
         {
             Debug("Ban not finded ✖!");
-            return 1;
+            return new DBResult(null, 1, "Ban not finded ✖!");
         }
         var result = await DBBans.Unban(admin, ban, reason);
-        switch (result)
+        switch (result.QueryStatus)
         {
             case 0:
                 ban.UnbannedBy = admin.Id;
@@ -1103,7 +1110,7 @@ public class AdminApi : IIksAdminApi
         return false;
     }
 
-    public void DisconnectPlayer(CCSPlayerController player, string reason, bool instantly = false, string? customMessageTemplate = null)
+    public void DisconnectPlayer(CCSPlayerController player, string reason, bool instantly = false, string? customMessageTemplate = null, Admin? admin = null, string? customByAdminTemplate = null)
     {
         var messageTemplate = customMessageTemplate ?? Localizer["HTML.AdvancedKickMessage"];
         bool advanced = Config.AdvancedKick;
@@ -1114,7 +1121,21 @@ public class AdminApi : IIksAdminApi
         }
         player.ChangeTeam(CsTeam.Spectator);
         Main.BlockTeamChange.Add(player);
-        player.HtmlMessage(messageTemplate.Replace("{reason}", reason), Config.AdvancedKickTime);
+        var byAdminMessageTemplate = customByAdminTemplate ?? Localizer["HTML.ByAdminTemplate"];
+        var byAdminMessage = admin != null ? byAdminMessageTemplate.Replace("{admin}", admin.Name) : "";
+        for (int i = 0; i < Config.AdvancedKickTime; i++)
+        {
+            var sec = i;
+            Plugin.AddTimer(sec, () =>
+            {
+                if (player == null || !player.IsValid) return;
+                player.HtmlMessage(messageTemplate
+                        .Replace("{reason}", reason)
+                        .Replace("{time}", (Config.AdvancedKickTime - sec).ToString())
+                        .Replace("{byAdmin}", byAdminMessage)
+                    , Config.AdvancedKickTime);
+            });
+        }
         Plugin.AddTimer(Config.AdvancedKickTime, () => {
             if (player != null)
             {
@@ -1702,5 +1723,10 @@ public class AdminApi : IIksAdminApi
                 break;
         }
         return result;
+    }
+    
+    public void Kick(Admin admin, CCSPlayerController player, string reason) 
+    {
+        DisconnectPlayer(player, reason, admin: admin);
     }
 }

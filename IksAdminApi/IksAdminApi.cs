@@ -45,7 +45,8 @@ public interface IIksAdminApi
     public Task ReloadInfractions(string steamId, string? ip = null, bool instantlyKick = false);
     public Task<PlayerSummaries?> GetPlayerSummaries(ulong steamId);
     public void DoActionWithIdentity(CCSPlayerController? actioneer, string identity, Action<CCSPlayerController> action, string[]? blockedArgs = null);
-    public void DisconnectPlayer(CCSPlayerController player, string reason, bool instantly = false, string? customMessageTemplate = null);
+    public void DisconnectPlayer(CCSPlayerController player, string reason, bool instantly = false,
+        string? customMessageTemplate = null, Admin? admin = null, string? customByAdminTemplate = null);
     public bool CanDoActionWithPlayer(string callerId, string targetId);
     public void SetCommandInititalizer(string moduleName);
     public void ClearCommandInitializer();
@@ -73,11 +74,11 @@ public interface IIksAdminApi
     /// <summary>
     /// return statuses: 0 - banned, 1 - already banned, 2 - stopped by limitations, -1 - other
     /// </summary>
-    public Task<int> AddBan(PlayerBan ban, bool announce = true);
+    public Task<DBResult> AddBan(PlayerBan ban, bool announce = true);
     /// <summary>
     /// return statuses: 0 - unbanned, 1 - ban not finded, 2 - admin haven't permission, -1 - other
     /// </summary>
-    public Task<int> Unban(Admin admin, string steamId, string? reason, bool announce = true);
+    public Task<DBResult> Unban(Admin admin, string steamId, string? reason, bool announce = true);
     /// <summary>
     /// return statuses: 0 - unbanned, 1 - ban not finded, 2 - admin haven't permission, -1 - other
     /// </summary>

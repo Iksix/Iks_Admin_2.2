@@ -83,8 +83,9 @@
     "Limitations.TimeLimit" : "{red}Вы можете выдать это наказание только в промежутке от {min}мин. - {max}мин. ",
     "Limitations.MaxByDayLimit" : "{red}Вы привысили свой суточный лимит наказаний!\nСледующее наказание будет доступно: {date} ",
 
-    "HTML.AdvancedBanMessage" : "<font color='red'>ВАС ЗАБЛОКИРОВАЛИ</font> <br> <font color='white'>Причина: {reason}</font>",
-    "HTML.AdvancedKickMessage" : "<font color='red'>ВАС КИКНУЛИ</font> <br> <font color='white'>Причина: {reason}</font>",
+    "HTML.AdvancedBanMessage" : "<font color='red'>ВАС ЗАБЛОКИРОВАЛИ</font> <br>{byAdmin} <font color='white'>Причина: {reason}</font> <br>Секунд до кика: <font color='red'>{time}</font>",
+    "HTML.AdvancedKickMessage" : "<font color='red'>ВАС КИКНУЛИ</font> {byAdmin} <font color='white'>Причина: {reason}</font> <br>Секунд до кика: <font color='red'>{time}</font>",
+    "HTML.ByAdminTemplate" : "<br>Админ: <font color='red'>{admin}</font><br>", // {byAdmin} 
 
     "Prefix.Seconds" : "сек.",
     "Prefix.Minutes" : "мин.",

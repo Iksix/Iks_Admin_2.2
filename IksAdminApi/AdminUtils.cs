@@ -113,11 +113,15 @@ public static class AdminUtils
         return ip.Split(":")[0];
     }
 
-    public static string? GetSteamId(this CCSPlayerController? player)
+    public static string GetSteamId(this CCSPlayerController? player)
     {
         if (player == null) return "CONSOLE";
+        if (player.IsBot)
+        {
+            throw new Exception("Trying to get bot steam id");
+        }
         var steamId = player.AuthorizedSteamID;
-        return steamId == null ? null : steamId.SteamId64.ToString();
+        return steamId!.SteamId64.ToString();
     }
 
     public static bool IsConsoleId(string steamId)

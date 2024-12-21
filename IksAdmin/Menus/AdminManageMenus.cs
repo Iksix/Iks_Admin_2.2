@@ -21,6 +21,17 @@ public static class AdminManageMenus
         menu.BackAction = (p) => {
             OpenAdminManageMenu(caller);
         };
+        
+        menu.AddMenuOption(Main.GenerateOptionId("am"), Localizer["MenuOption.GroupsManage"], (_, _) => {
+            if (GroupsManageMenus.AddGroupBuffer.ContainsKey(caller.Admin()!))
+            {
+                GroupsManageMenus.AddGroupBuffer[caller.Admin()!] = new Group("ExampleGroup", "abc", 0);
+            } else {
+                GroupsManageMenus.AddGroupBuffer.Add(caller.Admin()!, new Group("ExampleGroup", "abc", 0));
+            }
+            GroupsManageMenus.OpenGroupsManageMenu(caller);
+        }, 
+        viewFlags: AdminUtils.GetAllPermissionGroupFlags("admins_manage"));
 
         menu.AddMenuOption(Main.GenerateOptionId("gm"), Localizer["MenuOption.GroupsManage"], (_, _) => {
             if (GroupsManageMenus.AddGroupBuffer.ContainsKey(caller.Admin()!))

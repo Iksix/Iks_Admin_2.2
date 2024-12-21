@@ -38,12 +38,11 @@ public static class AdminManageFunctions
             if (existingAdmin != null)
             {
                 if (existingAdmin.DeletedAt != null) {
-                    Helper.Reply(info, "Admin already exists ✖");
-                    return;
+                    Helper.Reply(info, $"Finded DELETED admin with id: {admin.Id} | Admin will be updated with new stats ✔");
                 }
                 admin.Id = existingAdmin.Id;
                 await DBAdmins.UpdateAdminInBase(admin);
-                Helper.Reply(info, $"Finded DELETED admin with id: {admin.Id} | Admin updated with new stats ✔");
+                
                 return;
             }
             
