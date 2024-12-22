@@ -12,6 +12,7 @@ public class DBResult
         ElementId = elementId;
         QueryStatus = queryStatus;
         QueryMessage = insertMessage.ToLower();
+        AdminUtils.AdminApi.Debug($"DB RESULT CREATED: \nelementId:{elementId}\nqueryStatus:{queryStatus}\ninsertMessage:{insertMessage}");
     }
     
 

@@ -1,4 +1,6 @@
-﻿namespace IksAdminApi;
+﻿using CounterStrikeSharp.API.ValveConstants.Protobuf;
+
+namespace IksAdminApi;
 
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Commands;
@@ -40,13 +42,12 @@ public interface IIksAdminApi
     // FUNC ===
     public void ApplyCommForPlayer(PlayerComm comm);
     public void RemoveCommFromPlayer(PlayerComm comm);
-    public bool IsPlayerGagged(string steamId);
-    public bool IsPlayerMuted(string steamId);
     public Task ReloadInfractions(string steamId, string? ip = null, bool instantlyKick = false);
     public Task<PlayerSummaries?> GetPlayerSummaries(ulong steamId);
     public void DoActionWithIdentity(CCSPlayerController? actioneer, string identity, Action<CCSPlayerController> action, string[]? blockedArgs = null);
     public void DisconnectPlayer(CCSPlayerController player, string reason, bool instantly = false,
-        string? customMessageTemplate = null, Admin? admin = null, string? customByAdminTemplate = null);
+        string? customMessageTemplate = null, Admin? admin = null, string? customByAdminTemplate = null,
+        NetworkDisconnectionReason? disconnectionReason = null);
     public bool CanDoActionWithPlayer(string callerId, string targetId);
     public void SetCommandInititalizer(string moduleName);
     public void ClearCommandInitializer();
@@ -82,7 +83,7 @@ public interface IIksAdminApi
     /// <summary>
     /// return statuses: 0 - unbanned, 1 - ban not finded, 2 - admin haven't permission, -1 - other
     /// </summary>
-    public Task<int> UnbanIp(Admin admin, string steamId, string? reason, bool announce = true);
+    public Task<DBResult> UnbanIp(Admin admin, string steamId, string? reason, bool announce = true);
     public Task<PlayerBan?> GetActiveBan(string steamId);
     public Task<List<PlayerBan>> GetAllBans(string steamId);
     public Task<PlayerBan?> GetActiveBanIp(string ip);
@@ -108,6 +109,28 @@ public interface IIksAdminApi
     public delegate HookResult OptionExecuted(CCSPlayerController player, IDynamicMenu menu, IMenu gameMenu, IDynamicMenuOption option);
     public event OptionExecuted OptionExecutedPre;
     public event OptionExecuted OptionExecutedPost;
+
+    #region Punishment handlers
+
+    public delegate HookResult BanHandler(PlayerBan ban, ref bool announce);
+    public event BanHandler OnBanPre;
+    public event BanHandler OnBanPost;
+    
+    /// <summary>
+    /// arg is SteamID or IP
+    /// </summary>
+    public delegate HookResult UnBanHandler(Admin admin, ref string arg, ref string? reason, ref bool announce); 
+    public event UnBanHandler OnUnBanPre;
+    public event UnBanHandler OnUnBanPost;
+    public event UnBanHandler OnUnBanIpPre;
+    public event UnBanHandler OnUnBanIpPost;
+    
+    public delegate HookResult CommHandler(PlayerComm comm, ref bool announce); 
+    public event CommHandler OnCommPre;
+    public event CommHandler OnCommPost;
+
+    #endregion
+    
     public event Action OnReady;
     public void EOnModuleLoaded(AdminModule module);
     public void EOnModuleUnload(AdminModule module);

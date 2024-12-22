@@ -572,6 +572,7 @@ public class AdminApi : IIksAdminApi
     public MutesConfig MutesConfig {get; set;} = new ();
     public SilenceConfig SilenceConfig {get; set;} = new ();
     public GagsConfig GagsConfig {get; set;} = new ();
+
     public List<PlayerInfo> DisconnectedPlayers {get; set;} = new();
     public List<AdminToServer> AdminsToServer {get; set;} = new();
 
@@ -778,6 +779,14 @@ public class AdminApi : IIksAdminApi
         return true;
     }
     public event IIksAdminApi.OptionExecuted? OptionExecutedPost;
+    public event IIksAdminApi.BanHandler? OnBanPre;
+    public event IIksAdminApi.BanHandler? OnBanPost;
+    public event IIksAdminApi.UnBanHandler? OnUnBanPre;
+    public event IIksAdminApi.UnBanHandler? OnUnBanPost;
+    public event IIksAdminApi.UnBanHandler? OnUnBanIpPre;
+    public event IIksAdminApi.UnBanHandler? OnUnBanIpPost;
+    public event IIksAdminApi.CommHandler? OnCommPre;
+    public event IIksAdminApi.CommHandler? OnCommPost;
     public event Action? OnReady;
     public event Action<AdminModule>? OnModuleUnload;
     public event Action<AdminModule>? OnModuleLoaded;
@@ -981,6 +990,22 @@ public class AdminApi : IIksAdminApi
                     }
                 }
             }
+            
+            // Проверка на существование бана
+            PlayerBan? existingBan = null;
+            if (ban.BanType is 1 or 2 && ban.Ip != null)
+                existingBan = await GetActiveBanIp(ban.Ip);
+            else if (ban.BanType is 0 or 2 && ban.SteamId != null) existingBan = await GetActiveBan(ban.SteamId);
+            if (existingBan != null)
+                return new DBResult(null, 1, "ban exists");
+            // ====
+            
+            var onBanPre = OnBanPre?.Invoke(ban, ref announce) ?? HookResult.Continue;
+            if (onBanPre != HookResult.Continue)
+            {
+                return new DBResult(null, -2, "stopped by event PRE");
+            }
+            
             var result = await DBBans.Add(ban);
             switch (result.QueryStatus)
             {
@@ -995,7 +1020,8 @@ public class AdminApi : IIksAdminApi
                             player = PlayersUtils.GetControllerByIp(ban.Ip!);
                         if (player != null)
                         {
-                            DisconnectPlayer(player, ban.Reason, customMessageTemplate: Localizer["HTML.AdvancedBanMessage"], admin: admin);
+                            DisconnectPlayer(player, ban.Reason, customMessageTemplate: Localizer["HTML.AdvancedBanMessage"], admin: admin,
+                                disconnectionReason: NetworkDisconnectionReason.NETWORK_DISCONNECT_STEAM_BANNED);
                         }
                     });
                     break;
@@ -1005,6 +1031,11 @@ public class AdminApi : IIksAdminApi
                 case -1:
                     Debug("Some error while ban");
                     break;
+            }
+            var onBanPost = OnBanPost?.Invoke(ban, ref announce) ?? HookResult.Continue;
+            if (onBanPost != HookResult.Continue)
+            {
+                return new DBResult(null, -2, "stopped by event POST");
             }
             return result;
         }
@@ -1024,6 +1055,14 @@ public class AdminApi : IIksAdminApi
             Debug("Ban not finded ✖!");
             return new DBResult(null, 1, "Ban not finded ✖!");
         }
+        if (!DBBans.CanUnban(admin, ban)) return new DBResult(null, 2, "admin can't unban");
+        
+        var onUnBanPre = OnUnBanPre?.Invoke(admin, ref steamId, ref reason, ref announce) ?? HookResult.Continue;
+        if (onUnBanPre != HookResult.Continue)
+        {
+            return new DBResult(null, -2, "stopped by event PRE");
+        }
+        
         var result = await DBBans.Unban(admin, ban, reason);
         switch (result.QueryStatus)
         {
@@ -1039,19 +1078,35 @@ public class AdminApi : IIksAdminApi
                 Debug("Some error while unban");
                 break;
         }
+        
+        var onUnBanPost = OnUnBanPost?.Invoke(admin, ref steamId, ref reason, ref announce) ?? HookResult.Continue;
+        if (onUnBanPost != HookResult.Continue)
+        {
+            return new DBResult(null, -2, "stopped by event PRE");
+        }
+        
         return result;
     }
 
-    public async Task<int> UnbanIp(Admin admin, string ip, string? reason, bool announce = true)
+    public async Task<DBResult> UnbanIp(Admin admin, string ip, string? reason, bool announce = true)
     {
         var ban = await GetActiveBanIp(ip);
         if (ban == null)
         {
             Debug("Ban not finded ✖!");
-            return 1;
+            return new DBResult(null, 1, "Ban not finded ✖!");
         }
-        var result = await DBBans.UnbanIp(admin, ban, reason);
-        switch (result)
+        
+        if (!DBBans.CanUnban(admin, ban)) return new DBResult(null, 2, "admin can't unban");
+        
+        var onUnBanIpPre = OnUnBanPre?.Invoke(admin, ref ip, ref reason, ref announce) ?? HookResult.Continue;
+        if (onUnBanIpPre != HookResult.Continue)
+        {
+            return new DBResult(null, -2, "stopped by event PRE");
+        }
+        
+        var result = await DBBans.Unban(admin, ban, reason);
+        switch (result.QueryStatus)
         {
             case 0:
                 ban.UnbannedBy = admin.Id;
@@ -1065,6 +1120,13 @@ public class AdminApi : IIksAdminApi
                 Debug("Some error while unban");
                 break;
         }
+        
+        var onUnBanIpPost = OnUnBanPost?.Invoke(admin, ref ip, ref reason, ref announce) ?? HookResult.Continue;
+        if (onUnBanIpPost != HookResult.Continue)
+        {
+            return new DBResult(null, -2, "stopped by event POST");
+        }
+
         return result;
     }
 
@@ -1113,13 +1175,20 @@ public class AdminApi : IIksAdminApi
         return false;
     }
 
-    public void DisconnectPlayer(CCSPlayerController player, string reason, bool instantly = false, string? customMessageTemplate = null, Admin? admin = null, string? customByAdminTemplate = null)
+    public void DisconnectPlayer(
+        CCSPlayerController player, 
+        string reason, bool instantly = false, 
+        string? customMessageTemplate = null, 
+        Admin? admin = null, 
+        string? customByAdminTemplate = null,
+        NetworkDisconnectionReason? disconnectionReason = null)
     {
         var messageTemplate = customMessageTemplate ?? Localizer["HTML.AdvancedKickMessage"];
         bool advanced = Config.AdvancedKick;
+        disconnectionReason = disconnectionReason ?? NetworkDisconnectionReason.NETWORK_DISCONNECT_KICKED;
         if (!advanced || instantly) 
         {
-            player.Disconnect(NetworkDisconnectionReason.NETWORK_DISCONNECT_BANADDED);
+            player.Disconnect((NetworkDisconnectionReason)disconnectionReason);
             return;
         }
         player.ChangeTeam(CsTeam.Spectator);
@@ -1143,7 +1212,7 @@ public class AdminApi : IIksAdminApi
             if (player != null)
             {
                 player.ClearHtmlMessage();
-                player.Disconnect(NetworkDisconnectionReason.NETWORK_DISCONNECT_KICKBANADDED);
+                player.Disconnect((NetworkDisconnectionReason)disconnectionReason);
             }
         });
     }
@@ -1240,12 +1309,6 @@ public class AdminApi : IIksAdminApi
         );
         return summaries;
     }
-
-    public bool IsPlayerMuted(string steamId)
-    {
-        throw new NotImplementedException();
-    }
-
     /// <summary>
     /// Перезагрузка/проверка и выдача/снятие наказаний игрока
     /// </summary>
@@ -1341,11 +1404,7 @@ public class AdminApi : IIksAdminApi
         var exComm = Comms.GetSilence();
         Comms.Remove(exComm!);
     }
-    public bool IsPlayerGagged(string steamId)
-    {
-        var gag = Comms.FirstOrDefault(x => x.SteamId == steamId && x.MuteType is 1 or 2);
-        return gag != null;
-    }
+
 
     public async Task<DBResult> UnComm(Admin admin, PlayerComm comm, bool announce = true)
     {
@@ -1482,6 +1541,16 @@ public class AdminApi : IIksAdminApi
                     }
                 }
             }
+            
+            var existingComm = await GetActiveComms(comm.SteamId);
+            if (existingComm != null && existingComm.Any(x => x.MuteType == comm.MuteType || x.MuteType == 2))
+                return new DBResult(null, 1, "Already banned");
+            
+            var onCommPre = OnCommPre?.Invoke(comm, ref announce) ?? HookResult.Continue;
+            if (onCommPre != HookResult.Continue)
+            {
+                return new DBResult(null, -2, "Stopped by event PRE");
+            }
 
             var result = await DBComms.Add(comm);
             switch (result.QueryStatus)
@@ -1503,6 +1572,13 @@ public class AdminApi : IIksAdminApi
                     Debug("Some error while silence");
                     break;
             }
+            
+            var onCommPost = OnCommPost?.Invoke(comm, ref announce) ?? HookResult.Continue;
+            if (onCommPost != HookResult.Continue)
+            {
+                return new DBResult(null, -2, "Stopped by event POST");
+            }
+            
             return result;
         }
         catch (Exception e)
@@ -1558,7 +1634,16 @@ public class AdminApi : IIksAdminApi
                     }
                 }
             }
-
+            
+            var existingComm = await GetActiveComms(comm.SteamId);
+            if (existingComm != null && existingComm.Any(x => x.MuteType == comm.MuteType || x.MuteType == 2))
+                return new DBResult(null, 1, "Already banned");
+            
+            var onCommPre = OnCommPre?.Invoke(comm, ref announce) ?? HookResult.Continue;
+            if (onCommPre != HookResult.Continue)
+            {
+                return new DBResult(null, -2, "Stopped by event PRE");
+            }
             var result = await DBComms.Add(comm);
             switch (result.QueryStatus)
             {
@@ -1579,6 +1664,13 @@ public class AdminApi : IIksAdminApi
                     Debug("Some error while gag");
                     break;
             }
+            
+            var onCommPost = OnCommPost?.Invoke(comm, ref announce) ?? HookResult.Continue;
+            if (onCommPost != HookResult.Continue)
+            {
+                return new DBResult(null, -2, "Stopped by event POST");
+            }
+            
             return result;
         }
         catch (Exception e)
@@ -1667,6 +1759,17 @@ public class AdminApi : IIksAdminApi
                     }
                 }
             }
+            
+            var existingComm = await GetActiveComms(comm.SteamId);
+            if (existingComm != null && existingComm.Any(x => x.MuteType == comm.MuteType || x.MuteType == 2))
+                return new DBResult(null, 1, "Already banned");
+            
+            var onCommPre = OnCommPre?.Invoke(comm, ref announce) ?? HookResult.Continue;
+            if (onCommPre != HookResult.Continue)
+            {
+                return new DBResult(null, -2, "Stopped by event PRE");
+            }
+            
             var result = await DBComms.Add(comm);
             switch (result.QueryStatus)
             {
@@ -1687,6 +1790,13 @@ public class AdminApi : IIksAdminApi
                     Debug("Some error while mute");
                     break;
             }
+            
+            var onCommPost = OnCommPost?.Invoke(comm, ref announce) ?? HookResult.Continue;
+            if (onCommPost != HookResult.Continue)
+            {
+                return new DBResult(null, -2, "Stopped by event POST");
+            }
+            
             return result;
         }
         catch (Exception e)

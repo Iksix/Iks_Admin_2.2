@@ -180,12 +180,7 @@ public static class DBBans
         {
             await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
-            PlayerBan? existingBan = null;
-            if (punishment.BanType == 1 && punishment.Ip != null)
-                existingBan = await GetActiveBanIp(punishment.Ip);
-            else if (punishment.BanType == 0 && punishment.SteamId != null) existingBan = await GetActiveBan(punishment.SteamId);
-            if (existingBan != null)
-                return new DBResult(null, 1, "ban exists");
+
             var id = await conn.QuerySingleAsync<int>(@"
                 insert into iks_bans
                 (steam_id, ip, name, duration, reason, ban_type, server_id, admin_id, unbanned_by, unban_reason, created_at, end_at, updated_at, deleted_at)
@@ -224,9 +219,6 @@ public static class DBBans
         {
             await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
-
-            if (!CanUnban(admin, ban)) return new DBResult(null, 2, "admin can't unban");
-
             await conn.QueryAsync(@"
                 update iks_bans set 
                 unbanned_by = @adminId, 
@@ -245,37 +237,6 @@ public static class DBBans
             return new DBResult(null, -1, e.ToString());
         }
     }
-    public static async Task<int> UnbanIp(Admin admin, PlayerBan ban, string? reason)
-    {
-        try
-        {
-            await using var conn = new MySqlConnection(DB.ConnectionString);
-            await conn.OpenAsync();
-            PlayerBan? existingBan = await GetActiveBanIp(ban.Ip!);
-
-            if (existingBan == null) return 1;
-
-            if (!CanUnban(admin, existingBan)) return 2;
-
-            await conn.QueryAsync(@"
-                update iks_bans set 
-                unbanned_by = @adminId, 
-                unban_reason = @reason
-                where id = @banId
-            ", new {
-                adminId = admin.Id,
-                banId = existingBan.Id,
-                reason
-            });
-            return 0;
-        }
-        catch (Exception e)
-        {
-            Main.AdminApi.LogError(e.ToString());
-            return -1;
-        }
-    }
-
     public static bool CanUnban(Admin admin, PlayerBan existingBan)
     {
         var bannedBy = existingBan.Admin;

@@ -117,9 +117,7 @@ public static class DBComms
         {
             await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
-            var comm = await GetActiveComms(punishment.SteamId);
-            if (comm != null && comm.Any(x => x.MuteType == punishment.MuteType || x.MuteType == 2))
-                return new DBResult(null, 1, "Already banned");
+            
             var id = await conn.QuerySingleAsync<int>(@"
                 insert into iks_comms
                 (steam_id, ip, name, mute_type, duration, reason, server_id, admin_id, unbanned_by, unban_reason, created_at, end_at, updated_at, deleted_at)
