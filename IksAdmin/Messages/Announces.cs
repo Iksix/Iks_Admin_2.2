@@ -8,7 +8,7 @@ public static class Announces
     private static IStringLocalizer Localizer = Main.AdminApi.Localizer;
     public static void BanAdded(PlayerBan ban)
     {
-        var str = ban.BanIp == 0 ? Localizer["Announce.BanAdded"] : Localizer["Announce.BanAddedIp"];
+        var str = ban.BanType == 0 ? Localizer["Announce.BanAdded"] : Localizer["Announce.BanAddedIp"];
         AdminUtils.PrintToServer(str.Value
             .Replace("{admin}", ban.Admin!.Name)
             .Replace("{name}", ban.NameString)

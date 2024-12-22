@@ -85,7 +85,7 @@ public static class CmdBans
 
     public static void BanIp(CCSPlayerController? caller, List<string> args, CommandInfo info)
     {
-        //css_ban <#uid/#steamId/name> <time> <reason>
+        // css_banip <#uid/#steamId/name/@...> <time> <reason>
         var identity = args[0];
         var time = args[1];
         if (!int.TryParse(time, out int timeInt)) throw new ArgumentException("Time is not a number");
@@ -96,7 +96,8 @@ public static class CmdBans
                 new PlayerInfo(target),
                 reason,
                 timeInt,
-                serverId: Main.AdminApi.ThisServer.Id
+                serverId: Main.AdminApi.ThisServer.Id,
+                banType: 2
             );
             ban.AdminId = caller.Admin()!.Id;
             Task.Run(async () => {
@@ -107,6 +108,7 @@ public static class CmdBans
 
     public static void AddBanIp(CCSPlayerController? caller, List<string> args, CommandInfo info)
     {
+        // css_addbanip <ip> <time> <reason>
         var ip = args[0];
         var time = args[1];
         if (!int.TryParse(time, out int timeInt)) throw new ArgumentException("Time is not a number");
@@ -119,6 +121,7 @@ public static class CmdBans
         {
             steamId = target.AuthorizedSteamID!.SteamId64.ToString();
         }
+        sbyte banType = steamId == null ? (sbyte)1 : (sbyte)2;
         Task.Run(async () => {
             if (Main.AdminApi.Config.WebApiKey != "") 
             {
@@ -132,7 +135,7 @@ public static class CmdBans
                 reason,
                 timeInt,
                 serverId: Main.AdminApi.ThisServer.Id,
-                banIp: true
+                banType: banType
             );
             ban.AdminId = adminId;
             await BansFunctions.Ban(ban);

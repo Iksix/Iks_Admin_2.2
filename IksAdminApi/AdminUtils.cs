@@ -245,7 +245,9 @@ public static class AdminUtils
             Debug($"Admin is disabled | No Access ✖");
             return false;
         }
-        if (admin.CurrentFlags.Contains(flags) || admin.CurrentFlags.Contains("z") || admin.SteamId == "CONSOLE")
+        if (admin.CurrentFlags.Contains(flags) || admin.CurrentFlags.Contains("z") || admin.SteamId == "CONSOLE"
+            || (key == ">*" && admin.CurrentFlags.ToCharArray().Any(x => flags.Contains(x)))
+            )
         {
             Debug($"Admin has access ✔");
             return true;

@@ -14,7 +14,7 @@ public static class DBBans
     name as name,
     duration as duration,
     reason as reason,
-    ban_ip as banIp,
+    ban_type as banType,
     server_id as serverId,
     admin_id as adminId,
     unbanned_by as unbannedBy,
@@ -37,6 +37,7 @@ public static class DBBans
                 and unbanned_by is null
                 and (end_at > unix_timestamp() or end_at = 0)
                 and (server_id is null or server_id = @serverId)
+                and (ban_type=0 or ban_type=2)
             ", new {steamId, serverId = Main.AdminApi.ThisServer.Id, timestamp = AdminUtils.CurrentTimestamp()});
             return ban;
         }
@@ -97,10 +98,11 @@ public static class DBBans
             var ban = await conn.QueryFirstOrDefaultAsync<PlayerBan>($@"
                 {SelectBans}
                 where deleted_at is null
-                and ip = @ip and ban_ip = 1
+                and ip = @ip
                 and unbanned_by is null
                 and end_at > unix_timestamp()
                 and (server_id is null or server_id = @serverId)
+                and (ban_type=1 or ban_type=2)
             ", new {ip, serverId = Main.AdminApi.ThisServer.Id});
             return ban;
         }
@@ -119,7 +121,7 @@ public static class DBBans
             var bans = (await conn.QueryAsync<PlayerBan>($@"
                 {SelectBans}
                 where deleted_at is null
-                and ip = @ip and ban_ip = 1
+                and ip = @ip and (ban_type = 1 or ban_type = 2)
                 and (server_id is null or server_id = @serverId)
             ", new {ip, serverId = Main.AdminApi.ThisServer.Id})).ToList();
             return bans;
@@ -179,16 +181,16 @@ public static class DBBans
             await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
             PlayerBan? existingBan = null;
-            if (punishment.BanIp == 1 && punishment.Ip != null)
+            if (punishment.BanType == 1 && punishment.Ip != null)
                 existingBan = await GetActiveBanIp(punishment.Ip);
-            else if (punishment.BanIp == 0 && punishment.SteamId != null) existingBan = await GetActiveBan(punishment.SteamId);
+            else if (punishment.BanType == 0 && punishment.SteamId != null) existingBan = await GetActiveBan(punishment.SteamId);
             if (existingBan != null)
                 return new DBResult(null, 1, "ban exists");
             var id = await conn.QuerySingleAsync<int>(@"
                 insert into iks_bans
-                (steam_id, ip, name, duration, reason, ban_ip, server_id, admin_id, unbanned_by, unban_reason, created_at, end_at, updated_at, deleted_at)
+                (steam_id, ip, name, duration, reason, ban_type, server_id, admin_id, unbanned_by, unban_reason, created_at, end_at, updated_at, deleted_at)
                 values
-                (@steamId, @ip, @name, @duration, @reason, @banIp, @serverId, @adminId, @unbannedBy, @unbanReason, @createdAt, @endAt, @updatedAt, @deletedAt);
+                (@steamId, @ip, @name, @duration, @reason, @banType, @serverId, @adminId, @unbannedBy, @unbanReason, @createdAt, @endAt, @updatedAt, @deletedAt);
                 select last_insert_id();
             ", new {
                 steamId = punishment.SteamId,
@@ -196,7 +198,7 @@ public static class DBBans
                 name = punishment.Name,
                 duration = punishment.Duration,
                 reason = punishment.Reason,
-                banIp = punishment.BanIp,
+                banType = punishment.BanType,
                 serverId = punishment.ServerId,
                 adminId = punishment.AdminId,
                 unbannedBy = punishment.UnbannedBy,

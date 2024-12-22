@@ -74,7 +74,7 @@ create table if not exists iks_bans(
     name varchar(64) null,
     duration int not null,
     reason varchar(128) not null,
-    ban_ip tinyint not null default 0,
+    ban_type tinyint not null default 0 comment '0 - SteamId, 1 - Ip, 2 - Both',
     server_id int default null,
     admin_id int not null,
     unbanned_by int default null,

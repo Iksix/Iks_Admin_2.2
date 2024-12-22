@@ -13,7 +13,7 @@ public class PlayerBan
     public string? Name {get; set;}
     public string Reason {get; set;}
     public int Duration {get; set;}
-    public sbyte BanIp {get; set;} = 0;
+    public sbyte BanType {get; set;} = 0;
     public int? ServerId {get; set;} = null;
     public int AdminId {get; set;}
     public int EndAt {get; set;}
@@ -38,7 +38,7 @@ public class PlayerBan
     public string IpString => Ip ?? "[NOT SETTED]";
     // used for getting from db
     public PlayerBan(int id, string? steamId, string? ip, string? name, 
-    int duration, string reason, sbyte banIp, int? serverId, int adminId, 
+    int duration, string reason, sbyte banType, int? serverId, int adminId, 
     int? unbannedBy, string? unbanReason, int createdAt, int endAt, int 
     updatedAt, int? deletedAt)
     {
@@ -47,7 +47,7 @@ public class PlayerBan
         Ip = ip;
         Name = name;
         Duration = duration;
-        BanIp = banIp;
+        BanType = banType;
         Reason = reason; 
         ServerId = serverId;
         AdminId = adminId;
@@ -59,7 +59,7 @@ public class PlayerBan
         UnbanReason = unbanReason;
     }
     // creating ===
-    public PlayerBan(string? steamId, string? ip, string? name, string reason, int duration, int? serverId = null, bool banIp = false)
+    public PlayerBan(string? steamId, string? ip, string? name, string reason, int duration, int? serverId = null, sbyte banType = 0)
     {
         SteamId = steamId;
         Ip = ip;
@@ -68,11 +68,11 @@ public class PlayerBan
         EndAt = Duration == 0 ? 0 : AdminUtils.CurrentTimestamp() + Duration;
         Reason = reason; 
         ServerId = serverId;
-        if (banIp) BanIp = 1;
+        BanType = banType;
         if (AdminUtils.Config().MirrorsIp.Contains(Ip)) Ip = null;
     }
 
-    public PlayerBan(PlayerInfo player, string reason, int duration, int? serverId = null, bool banIp = false)
+    public PlayerBan(PlayerInfo player, string reason, int duration, int? serverId = null, sbyte banType = 0)
     {
         SteamId = player.SteamId;
         Ip = player.Ip;
@@ -81,7 +81,7 @@ public class PlayerBan
         Reason = reason; 
         EndAt = Duration == 0 ? 0 : AdminUtils.CurrentTimestamp() + Duration;
         ServerId = serverId;
-        if (banIp) BanIp = 1;
+        BanType = banType;
         if (AdminUtils.Config().MirrorsIp.Contains(Ip)) Ip = null;
     }
 }

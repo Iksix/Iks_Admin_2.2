@@ -45,7 +45,7 @@ public static class BansManageMenu
             menu.AddMenuOption(Main.GenerateOptionId("bm_unban_" + ban.SteamId), ban.NameString, (_, _) => {
                 AdminApi.HookNextPlayerMessage(caller, r => {
                     Task.Run(async () => {
-                        if (ban.BanIp == 0)
+                        if (ban.BanType == 0)
                             await BansFunctions.Unban(admin, ban.SteamId!, r);
                         else await BansFunctions.UnbanIp(admin, ban.Ip!, r);
                     });
@@ -191,7 +191,7 @@ public static class BansManageMenu
             
         menu.AddMenuOption(Main.GenerateOptionId("bm_ban_ip"), Localizer["MenuOption.BanIp"], (_, _) => {
             AdminApi.CloseMenu(caller);
-            ban.BanIp = 1;
+            ban.BanType = 1;
             Task.Run(async () => {
                     await BansFunctions.Ban(ban);
                 });

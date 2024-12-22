@@ -244,9 +244,12 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
         AdminApi.RegisterPermission("blocks_manage.remove_immunity", "i"); // Снять наказание выданное админом ниже по иммунитету
         AdminApi.RegisterPermission("blocks_manage.remove_all", "u"); // Снять наказание выданное кем угодно (кроме консоли)
         AdminApi.RegisterPermission("blocks_manage.remove_console", "c"); // Снять наказание выданное консолью
-        AdminApi.RegisterPermission("other.equals_immunity_action", "e"); // Разрешить взаймодействие с админами равными по иммунитету (Включая снятие наказаний если есть флаг blocks_manage.remove_immunity)
         // Players manage ===
         AdminApi.RegisterPermission("players_manage.kick", "k");
+        AdminApi.RegisterPermission("players_manage.change_team", "k");
+        // Other ===
+        AdminApi.RegisterPermission("other.equals_immunity_action", "e"); // Разрешить взаймодействие с админами равными по иммунитету (Включая снятие наказаний если есть флаг blocks_manage.remove_immunity)
+        AdminApi.RegisterPermission("other.admin_chat", "b");
     }
     private void InitializeCommands()
     {
@@ -986,7 +989,7 @@ public class AdminApi : IIksAdminApi
                         if (announce)
                             Announces.BanAdded(ban);
                         CCSPlayerController? player = null;
-                        if (ban.BanIp == 0)
+                        if (ban.BanType == 0)
                             player = PlayersUtils.GetControllerBySteamId(ban.SteamId!);
                         else 
                             player = PlayersUtils.GetControllerByIp(ban.Ip!);
