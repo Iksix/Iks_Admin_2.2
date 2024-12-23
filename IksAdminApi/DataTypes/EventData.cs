@@ -1,10 +1,22 @@
-﻿namespace IksAdminApi;
+﻿using CounterStrikeSharp.API.Core;
+
+namespace IksAdminApi;
 
 
 
 public class EventData
 {
     public string EventKey { get; set;  }
+
+    public HookResult Invoke()
+    {
+        return AdminUtils.AdminApi.InvokeDynamicEvent(this);
+    }
+    public HookResult Invoke(string eventKey)
+    {
+        EventKey = eventKey;
+        return AdminUtils.AdminApi.InvokeDynamicEvent(this);
+    }
 
     public EventData(string eventKey)
     {

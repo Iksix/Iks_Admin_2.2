@@ -780,6 +780,11 @@ public class AdminApi : IIksAdminApi
     }
     public event IIksAdminApi.OptionExecuted? OptionExecutedPost;
     public event IIksAdminApi.DynamicEvent? OnDynamicEvent;
+    public HookResult InvokeDynamicEvent(EventData data)
+    {
+        return OnDynamicEvent?.Invoke(data) ?? HookResult.Continue;
+    }
+
     public event IIksAdminApi.BanHandler? OnBanPre;
     public event IIksAdminApi.BanHandler? OnBanPost;
     public event IIksAdminApi.UnBanHandler? OnUnBanPre;

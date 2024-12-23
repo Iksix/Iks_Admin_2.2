@@ -114,6 +114,7 @@ public interface IIksAdminApi
     
     public delegate HookResult DynamicEvent(EventData data);
     public event DynamicEvent OnDynamicEvent;
+    public HookResult InvokeDynamicEvent(EventData data);
 
     public delegate HookResult BanHandler(PlayerBan ban, ref bool announce);
     public event BanHandler OnBanPre;

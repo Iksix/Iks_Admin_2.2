@@ -96,6 +96,20 @@ public static class AdminUtils
     public static void Print(this CCSPlayerController? player, string message, string tag = "")
     {
         if (message.Trim() == "") return;
+        var eventData = new EventData("print_to_player");
+        eventData.Insert("player", player);
+        eventData.Insert("message", message);
+        eventData.Insert("tag", tag);
+        if (eventData.Invoke() != HookResult.Continue)
+        {
+            Debug("Print(...) stopped by event PRE ");
+            return;
+        }
+
+        player = eventData.Get<CCSPlayerController?>("player");
+        message = eventData.Get<string>("message");
+        tag = eventData.Get<string>("tag");
+        
         if (player == null)
         {
             Console.WriteLine(message);
@@ -105,6 +119,8 @@ public static class AdminUtils
         {
             player.PrintToChat($" {tag} {str}");
         }
+
+        eventData.Invoke("print_to_player_post");
     }
     public static string? GetIp(this CCSPlayerController player)
     {
