@@ -779,6 +779,7 @@ public class AdminApi : IIksAdminApi
         return true;
     }
     public event IIksAdminApi.OptionExecuted? OptionExecutedPost;
+    public event IIksAdminApi.DynamicEvent? OnDynamicEvent;
     public event IIksAdminApi.BanHandler? OnBanPre;
     public event IIksAdminApi.BanHandler? OnBanPost;
     public event IIksAdminApi.UnBanHandler? OnUnBanPre;
@@ -787,6 +788,8 @@ public class AdminApi : IIksAdminApi
     public event IIksAdminApi.UnBanHandler? OnUnBanIpPost;
     public event IIksAdminApi.CommHandler? OnCommPre;
     public event IIksAdminApi.CommHandler? OnCommPost;
+    public event IIksAdminApi.UnCommHandler? OnUnCommPre;
+    public event IIksAdminApi.UnCommHandler? OnUnCommPost;
     public event Action? OnReady;
     public event Action<AdminModule>? OnModuleUnload;
     public event Action<AdminModule>? OnModuleLoaded;
@@ -1434,7 +1437,13 @@ public class AdminApi : IIksAdminApi
             Debug("Silence not finded ✖!");
             return new DBResult(0, 1, "Silence not finded ✖!");
         }
-
+        
+        var onUnCommPre = OnUnCommPre?.Invoke(admin, ref steamId, ref reason, ref announce) ?? HookResult.Continue;
+        if (onUnCommPre != HookResult.Continue)
+        {
+            return new DBResult(null, -2, "Stopped by event PRE");
+        }
+        
         var silence = comms.GetSilence()!;
         var result = await DBComms.UnComm(admin, silence, reason);
         switch (result.QueryStatus)
@@ -1454,6 +1463,11 @@ public class AdminApi : IIksAdminApi
             case -1:
                 Debug("Some error while unSilence");
                 break;
+        }
+        var onUnCommPost = OnUnCommPost?.Invoke(admin, ref steamId, ref reason, ref announce) ?? HookResult.Continue;
+        if (onUnCommPost != HookResult.Continue)
+        {
+            return new DBResult(null, -2, "Stopped by event PRE");
         }
         return result;
     }
@@ -1689,6 +1703,12 @@ public class AdminApi : IIksAdminApi
             Debug("Gag not finded ✖!");
             return new DBResult(0, 1, "Gag not finded ✖!");
         }
+        
+        var onUnCommPre = OnUnCommPre?.Invoke(admin, ref steamId, ref reason, ref announce) ?? HookResult.Continue;
+        if (onUnCommPre != HookResult.Continue)
+        {
+            return new DBResult(null, -2, "Stopped by event PRE");
+        }
 
         var gag = comms.GetGag()!;
         var result = await DBComms.UnComm(admin, comms.GetGag()!, reason);
@@ -1710,6 +1730,13 @@ public class AdminApi : IIksAdminApi
                 Debug("Some error while ungag");
                 break;
         }
+        
+        var onUnCommPost = OnUnCommPost?.Invoke(admin, ref steamId, ref reason, ref announce) ?? HookResult.Continue;
+        if (onUnCommPost != HookResult.Continue)
+        {
+            return new DBResult(null, -2, "Stopped by event PRE");
+        }
+        
         return result;
     }
 
@@ -1815,6 +1842,13 @@ public class AdminApi : IIksAdminApi
             Debug("Mute not finded ✖!");
             return new DBResult(0, 1, "Mute not finded ✖!");
         }
+        
+        var onUnCommPre = OnUnCommPre?.Invoke(admin, ref steamId, ref reason, ref announce) ?? HookResult.Continue;
+        if (onUnCommPre != HookResult.Continue)
+        {
+            return new DBResult(null, -2, "Stopped by event PRE");
+        }
+        
         var mute = comms.GetMute()!;
         var result = await DBComms.UnComm(admin, mute, reason);
         switch (result.QueryStatus)
@@ -1835,11 +1869,37 @@ public class AdminApi : IIksAdminApi
                 Debug("Some error while unmute");
                 break;
         }
+        
+        var onUnCommPost = OnUnCommPost?.Invoke(admin, ref steamId, ref reason, ref announce) ?? HookResult.Continue;
+        if (onUnCommPost != HookResult.Continue)
+        {
+            return new DBResult(null, -2, "Stopped by event PRE");
+        }
+        
         return result;
     }
     
-    public void Kick(Admin admin, CCSPlayerController player, string reason) 
+    public void Kick(Admin admin, CCSPlayerController player, string reason)
     {
+        Debug($"Kicking player {player.PlayerName}...");
+        var eventData = new EventData("kick_player_pre");
+        eventData.Insert("admin", admin);
+        eventData.Insert("player", player);
+        eventData.Insert("reason", reason);
+
+        var onKickEventPre = OnDynamicEvent?.Invoke(eventData) ?? HookResult.Continue;
+        if (onKickEventPre != HookResult.Continue)
+        {
+            Debug("Stopped by event PRE");
+            return;
+        }
+
+        admin = eventData.Get<Admin>("admin");
+        player = eventData.Get<CCSPlayerController>("player");
+        reason = eventData.Get<string>("reason");
+        
         DisconnectPlayer(player, reason, admin: admin);
+        eventData.EventKey = "kick_player_post";
+        _ = OnDynamicEvent?.Invoke(eventData) ?? HookResult.Continue;
     }
 }

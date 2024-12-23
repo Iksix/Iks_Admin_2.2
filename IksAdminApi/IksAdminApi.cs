@@ -111,6 +111,9 @@ public interface IIksAdminApi
     public event OptionExecuted OptionExecutedPost;
 
     #region Punishment handlers
+    
+    public delegate HookResult DynamicEvent(EventData data);
+    public event DynamicEvent OnDynamicEvent;
 
     public delegate HookResult BanHandler(PlayerBan ban, ref bool announce);
     public event BanHandler OnBanPre;
@@ -128,6 +131,10 @@ public interface IIksAdminApi
     public delegate HookResult CommHandler(PlayerComm comm, ref bool announce); 
     public event CommHandler OnCommPre;
     public event CommHandler OnCommPost;
+    
+    public delegate HookResult UnCommHandler(Admin admin, ref string steamId, ref string? reason, ref bool announce); 
+    public event UnCommHandler OnUnCommPre;
+    public event UnCommHandler OnUnCommPost;
 
     #endregion
     
@@ -136,4 +143,6 @@ public interface IIksAdminApi
     public void EOnModuleUnload(AdminModule module);
     public event Action<AdminModule> OnModuleUnload;
     public event Action<AdminModule> OnModuleLoaded;
+
+    public void Kick(Admin admin, CCSPlayerController player, string reason);
 }
