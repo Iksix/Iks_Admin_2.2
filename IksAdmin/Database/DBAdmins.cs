@@ -174,6 +174,27 @@ public static class DBAdmins
             throw;
         }
     }
+    public static async Task<List<Admin>> GetAllAdminsBySteamId(string steamId, bool ignoreDeleted = true)
+    {
+        try
+        {
+            await using var conn = new MySqlConnection(DB.ConnectionString);
+            await conn.OpenAsync();
+            var ignoreDeletedString = ignoreDeleted ? "where deleted_at is null" : "";
+            var admins = (await conn.QueryAsync<Admin>($@"
+                {AdminSelect}
+                {ignoreDeletedString}
+                where steam_id = @steamId
+            ")).ToList();
+
+            return admins;
+        }
+        catch (MySqlException e)
+        {
+            Main.AdminApi.LogError(e.ToString());
+            throw;
+        }
+    }
 
     public static async Task<Admin> AddAdminToBase(Admin admin)
     {
@@ -294,10 +315,10 @@ public static class DBAdmins
             Main.AdminApi.Debug("Admins refreshed ✔");
             Main.AdminApi.Debug("---------------");
             Main.AdminApi.Debug("Server admins:");
-            Main.AdminApi.Debug($"id | name | steamId | flags | immunity | groupId | serverIds | discord | vk | isDisabled");
+            Main.AdminApi.Debug($"id | name | steamId | flags | immunity | group | serverIds | discord | vk | isDisabled");
             foreach (var admin in serverAdmins)
             {
-                Main.AdminApi.Debug($"{admin.Id} | {admin.Name} | {admin.SteamId} | {admin.Flags} | {admin.Immunity} | {admin.GroupId} | {admin.Servers.ToString()} | {admin.Discord} | {admin.Vk} | {admin.IsDisabled}");
+                Main.AdminApi.Debug($"{admin.Id} | {admin.Name} | {admin.SteamId} | {admin.CurrentFlags} | {admin.CurrentImmunity} | {admin.Group?.Name ?? "NONE"} | {string.Join(";", admin.Servers)} | {admin.Discord ?? "NONE"} | {admin.Vk ?? "NONE"} | {admin.IsDisabled}");
             }
             await Main.AdminApi.SendRconToAllServers("css_am_reload", true);
         }

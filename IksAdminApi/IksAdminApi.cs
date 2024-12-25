@@ -37,6 +37,14 @@ public interface IIksAdminApi
     public Dictionary<string, List<CommandModel>> RegistredCommands {get; set;}
     public List<AdminModule> LoadedModules {get; set;}
     // MENU ===
+    /// <summary>
+    /// Creates admin
+    /// </summary>
+    public Task<DBResult> CreateAdmin(Admin actioneer, Admin admin, int? serverId);
+    public Task<DBResult> DeleteAdmin(Admin actioneer, Admin admin);
+    public Task<DBResult> UpdateAdmin(Admin actioneer, Admin admin);
+    public Task<List<Admin>> GetAdminsBySteamId(string steamId, bool ignoreDeleted = true);
+    public Task AddServerIdToAdmin(int adminId, int serverId);
     public IDynamicMenu CreateMenu(string id, string title, MenuType? type = null, MenuColors titleColor = MenuColors.Default, PostSelectAction postSelectAction = PostSelectAction.Nothing, Action<CCSPlayerController>? backAction = null, IDynamicMenu? backMenu = null);
     public void CloseMenu(CCSPlayerController player);
     // FUNC ===

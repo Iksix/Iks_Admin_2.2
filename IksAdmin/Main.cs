@@ -559,7 +559,49 @@ public class AdminApi : IIksAdminApi
     public Admin ConsoleAdmin { get; set; } = null!;
     public string DbConnectionString {get; set;}
     public Dictionary<CCSPlayerController, Action<string>> NextPlayerMessage {get; set;} = new();
-    public List<AdminModule> LoadedModules {get; set;} = new(); 
+    public List<AdminModule> LoadedModules {get; set;} = new();
+    public async Task<DBResult> CreateAdmin(Admin actioneer, Admin admin, int? serverId)
+    {
+        var admins = await GetAdminsBySteamId(admin.SteamId);
+        var existingAdmin = admins.FirstOrDefault(x => x.SteamId == admin.SteamId && x.Servers.Any(s => admin.Servers.Contains(s)));
+        if (
+            // Проверка существует ли админ с таким же serverId как у добавляемого
+            existingAdmin != null
+        )
+        {
+            // Если да то обновляем админа в базе
+            admin.Id = existingAdmin.Id;
+            await UpdateAdmin(actioneer, admin);
+            return new DBResult(admin.Id, 1, "admin has been updated");
+        }
+        // Если нет то добавляем админа и севрер айди к нему
+        var newAdmin = DBAdmins.AddAdminToBase(admin);
+        await AddServerIdToAdmin(newAdmin.Id, serverId ?? ThisServer.Id);
+        await RefreshAdmins();
+        return new DBResult(newAdmin.Id, 0, "Admin has been added");
+    }
+
+    public async Task AddServerIdToAdmin(int adminId, int serverId)
+    {
+        await DBAdmins.AddServerIdToAdmin(adminId, serverId);
+    }
+
+    public async Task<DBResult> DeleteAdmin(Admin actioneer, Admin admin)
+    {
+        await DBAdmins.DeleteAdmin(admin.Id);
+        return new DBResult(null, 0);
+    }
+
+    public async Task<DBResult> UpdateAdmin(Admin actioneer, Admin admin)
+    {
+        await DBAdmins.UpdateAdminInBase(admin);
+        return new DBResult(admin.Id, 0, "Admin has been updated");
+    }
+    
+    public async Task<List<Admin>> GetAdminsBySteamId(string steamId, bool ignoreDeleted = true)
+    {
+        return (await DBAdmins.GetAllAdminsBySteamId(steamId, ignoreDeleted));
+    }
 
     private string _commandInitializer = "core";
 
