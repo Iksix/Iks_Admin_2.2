@@ -51,6 +51,7 @@ public interface IIksAdminApi
     public void ApplyCommForPlayer(PlayerComm comm);
     public void RemoveCommFromPlayer(PlayerComm comm);
     public Task ReloadInfractions(string steamId, string? ip = null, bool instantlyKick = false);
+    public Task ReloadDataFromDBOnAllServers();
     public Task<PlayerSummaries?> GetPlayerSummaries(ulong steamId);
     public void DoActionWithIdentity(CCSPlayerController? actioneer, string identity, Action<CCSPlayerController> action, string[]? blockedArgs = null);
     public void DisconnectPlayer(CCSPlayerController player, string reason, bool instantly = false,

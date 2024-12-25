@@ -17,6 +17,7 @@ public class DynamicMenu : IDynamicMenu
     public Action<CCSPlayerController>? BackAction {get; set;} = null;
     public PostSelectAction PostSelectAction {get; set;} = PostSelectAction.Nothing;
     public List<IDynamicMenuOption> Options {get; set;} = new();
+    private bool _backOptionRendered = false;
     public DynamicMenu(string id, string title, MenuType type = (MenuType)3, MenuColors titleColor = MenuColors.Default, PostSelectAction postSelectAction = PostSelectAction.Nothing, Action<CCSPlayerController>? backAction = null, IDynamicMenu? backMenu = null)
     {
         Id = id;
@@ -29,7 +30,7 @@ public class DynamicMenu : IDynamicMenu
         {
             BackAction = player => backMenu.Open(player);
         }
-
+        
         Main.AdminApi.Debug($@"
             Menu created:
             Id: {Id}
@@ -77,11 +78,19 @@ public class DynamicMenu : IDynamicMenu
         {
             return;
         }
+        
+        if (_backOptionRendered)
+        {
+            Options.RemoveAt(0);
+            _backOptionRendered = false;
+        }
         if (BackAction != null) { // Отрисовка пункта 'Назад'
             Options.Insert(0, new DynamicMenuOption("back_btn", Main.AdminApi.Localizer["MenuOption.Other.Back"], (p, _) => {
                 BackAction.Invoke(p);
             }, null, false));
+            _backOptionRendered = true;
         }
+        
         if (useSortMenu)
         {
             var options = Options.ToList();
@@ -117,7 +126,7 @@ public class DynamicMenu : IDynamicMenu
                         if(!Main.AdminApi.OnOptionExecutedPre(player, this, menu, option)) return; 
                         option.OnExecute(player, option);
                         if(!Main.AdminApi.OnOptionExecutedPost(player, this, menu, option)) return; 
-                    });
+                    }, option.Disabled);
                     options.Remove(option);
                     if (!Main.AdminApi.OnOptionRenderPost(player, this, menu, option)) continue;
                 }
@@ -142,7 +151,7 @@ public class DynamicMenu : IDynamicMenu
                         if(!Main.AdminApi.OnOptionExecutedPre(player, this, menu, option)) return; 
                         option.OnExecute(player, option);
                         if(!Main.AdminApi.OnOptionExecutedPost(player, this, menu, option)) return; 
-                    }); 
+                    }, option.Disabled); 
                     Main.AdminApi.OnOptionRenderPost(player, this, menu, option);
                 }
             } else {
@@ -172,7 +181,7 @@ public class DynamicMenu : IDynamicMenu
                     if(!Main.AdminApi.OnOptionExecutedPre(player, this, menu, option)) return; 
                     option.OnExecute(player, option);
                     if(!Main.AdminApi.OnOptionExecutedPost(player, this, menu, option)) return; 
-                });
+                }, option.Disabled);
                 Main.AdminApi.OnOptionRenderPost(player, this, menu, option);
             }
         }
@@ -278,13 +287,11 @@ public class DynamicMenu : IDynamicMenu
             };
         return colors[(int)color];
     }
-    
-
     public void AddMenuOption(string id, string title, Action<CCSPlayerController, IDynamicMenuOption> onExecute, MenuColors? color = null, bool disabled = false, string viewFlags = "*")
     {
         if (Options.Any(x => x.Id == id))
         {
-            throw new Exception("Option already exists");
+            Main.AdminApi.Debug($"Option \"{id}\" already exists.");
         }
         Options.Add(new DynamicMenuOption(id, title, onExecute, color, disabled, viewFlags));
     }

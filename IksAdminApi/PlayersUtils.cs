@@ -29,6 +29,10 @@ public static class PlayersUtils
             HtmlMessagesTimer.Remove(player);
         }
     }
+    public static void CloseMenu(this CCSPlayerController player)
+    {
+        AdminUtils.AdminApi.CloseMenu(player);
+    }
     public static CCSPlayerController? GetControllerBySteamId(string steamId)
     {
         return Utilities.GetPlayers().FirstOrDefault(x => x != null && x.IsValid && x.AuthorizedSteamID != null && x.AuthorizedSteamID.SteamId64.ToString() == steamId);

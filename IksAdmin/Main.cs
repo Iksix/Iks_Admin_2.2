@@ -562,39 +562,51 @@ public class AdminApi : IIksAdminApi
     public List<AdminModule> LoadedModules {get; set;} = new();
     public async Task<DBResult> CreateAdmin(Admin actioneer, Admin admin, int? serverId)
     {
-        var admins = await GetAdminsBySteamId(admin.SteamId);
-        var existingAdmin = admins.FirstOrDefault(x => x.SteamId == admin.SteamId && x.Servers.Any(s => admin.Servers.Contains(s)));
-        if (
-            // Проверка существует ли админ с таким же serverId как у добавляемого
-            existingAdmin != null
-        )
+        try
         {
-            // Если да то обновляем админа в базе
-            admin.Id = existingAdmin.Id;
-            await UpdateAdmin(actioneer, admin);
-            return new DBResult(admin.Id, 1, "admin has been updated");
+            var admins = await GetAdminsBySteamId(admin.SteamId);
+            var existingAdmin = admins.FirstOrDefault(x =>
+                x.SteamId == admin.SteamId && x.Servers.Any(s => admin.Servers.Contains(s)));
+            if (
+                // Проверка существует ли админ с таким же serverId как у добавляемого
+                existingAdmin != null
+            )
+            {
+                // Если да то обновляем админа в базе
+                admin.Id = existingAdmin.Id;
+                await UpdateAdmin(actioneer, admin);
+                return new DBResult(admin.Id, 1, "admin has been updated");
+            }
+
+            // Если нет то добавляем админа и севрер айди к нему
+            var newAdmin = DBAdmins.AddAdminToBase(admin);
+            await AddServerIdToAdmin(newAdmin.Id, serverId ?? ThisServer.Id);
+            await ReloadDataFromDBOnAllServers();
+            return new DBResult(newAdmin.Id, 0, "Admin has been added");
         }
-        // Если нет то добавляем админа и севрер айди к нему
-        var newAdmin = DBAdmins.AddAdminToBase(admin);
-        await AddServerIdToAdmin(newAdmin.Id, serverId ?? ThisServer.Id);
-        await RefreshAdmins();
-        return new DBResult(newAdmin.Id, 0, "Admin has been added");
+        catch (Exception e)
+        {
+            return new DBResult(null, -1, e.ToString());
+        }
     }
 
     public async Task AddServerIdToAdmin(int adminId, int serverId)
     {
         await DBAdmins.AddServerIdToAdmin(adminId, serverId);
+        await ReloadDataFromDBOnAllServers();
     }
 
     public async Task<DBResult> DeleteAdmin(Admin actioneer, Admin admin)
     {
         await DBAdmins.DeleteAdmin(admin.Id);
+        await ReloadDataFromDBOnAllServers();
         return new DBResult(null, 0);
     }
 
     public async Task<DBResult> UpdateAdmin(Admin actioneer, Admin admin)
     {
         await DBAdmins.UpdateAdminInBase(admin);
+        await ReloadDataFromDBOnAllServers();
         return new DBResult(admin.Id, 0, "Admin has been updated");
     }
     
@@ -857,6 +869,10 @@ public class AdminApi : IIksAdminApi
     public async Task RefreshAdminsOnAllServers()
     {
         await Main.AdminApi.SendRconToAllServers("css_am_reload_admins");
+    }
+    public async Task ReloadDataFromDBOnAllServers()
+    {
+        await Main.AdminApi.SendRconToAllServers("css_am_reload");
     }
     
 

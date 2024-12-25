@@ -14,7 +14,7 @@
     "MenuOption.AdminAdd" : "Добавить админа",
     "MenuOption.AdminDelete" : "Удалить админа",
     "MenuOption.AdminEdit" : "Редактировать админа",
-    "MenuOption.AdminRefresh" : "Обновить админов",
+    "MenuOption.ReloadData" : "Обновить данные",
 
     "MenuTitle.GroupsManage" : "Управление группами",
     "MenuOption.GroupsManage" : "Управление группами",
@@ -91,5 +91,14 @@
     "Prefix.Minutes" : "мин.",
     "Prefix.Hours" : "час.",
     "Prefix.Days" : "дн.",
-    "Other.Never" : "Никогда"
+    "Other.Never" : "Никогда",
+    
+    "Message.AM.DataReloaded" : "{green}Информация синхронизированна с базой данных ✔",
+    "Message.AM.ADD.FlagsSet" : "Напишите флаги в чат: {red}!abc...",
+    "Message.AM.ADD.ImmunitySet" : "Напишите иммунитет в чат: {red}!10",
+    "MenuOption.AM.ADD.Name" : "Ник: {value}",
+    "MenuOption.AM.ADD.SteamId" : "SteamID: {value}",
+    "MenuOption.AM.ADD.Flags" : "Флаги: {value}",
+    "MenuOption.AM.ADD.Immunity" : "Иммунитет: {value}",
+    "MenuOption.AM.ADD.Group" : "Группа: {value}"
 }

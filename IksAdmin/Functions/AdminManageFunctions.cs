@@ -23,48 +23,32 @@ public static class AdminManageFunctions
             groupId = group!.Id;
         }
         Helper.Reply(info, "Adding admin...");
-        Task.Run(async () => {
-            var admin = new Admin(
-                steamId,
-                name,
-                flags,
-                immunity,
-                groupId,
-                discord,
-                vk,
-                endAt: time == 0 ? null : AdminUtils.CurrentTimestamp() + time
-            );
-            var existingAdmin = await DBAdmins.GetAdmin(steamId, serverId, ignoreDeleted: false);
-            if (existingAdmin != null)
+        var admin = new Admin(
+            steamId,
+            name,
+            flags,
+            immunity,
+            groupId,
+            discord,
+            vk,
+            endAt: time == 0 ? null : AdminUtils.CurrentTimestamp() + time
+        );
+        Task.Run(async () =>
+        {
+            var newAdmin = await Main.AdminApi.CreateAdmin(caller.Admin()!, admin, serverId);
+            switch (newAdmin.QueryStatus)
             {
-                if (existingAdmin.DeletedAt != null) {
-                    Helper.Reply(info, $"Finded DELETED admin with id: {admin.Id} | Admin will be updated with new stats ✔");
-                }
-                admin.Id = existingAdmin.Id;
-                await DBAdmins.UpdateAdminInBase(admin);
-                
-                return;
+                case 0: 
+                    Helper.Reply(info, "Admin added \u2714");
+                    break;
+                case 1: 
+                    Helper.Reply(info, "Admin !UPDATED!");
+                    break;
+                default:
+                    Helper.Reply(info, "Unexpected query status! Please check server console!");
+                    Main.AdminApi.LogError(newAdmin.QueryMessage);
+                    break;
             }
-            
-            var newAdmin = await DBAdmins.AddAdminToBase(admin);
-            Helper.Reply(info, "Admin added ✔");
-            
-            try
-            {
-                if (serverId != null)
-                {
-                    await DBAdmins.AddServerIdToAdmin(newAdmin.Id, (int)serverId);
-                } else {
-                    await DBAdmins.AddServerIdToAdmin(newAdmin.Id, Main.AdminApi.ThisServer.Id);
-                }
-                await Main.AdminApi.RefreshAdmins();
-            }
-            catch (System.Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
-            
         });
     }
 

@@ -12,16 +12,14 @@ public static class GroupsManageMenus
     static IStringLocalizer Localizer = AdminApi.Localizer;
     public static Dictionary<Admin, Group> AddGroupBuffer = new();
     public static Dictionary<Admin, Group> EditGroupBuffer = new();
-    public static void OpenGroupsManageMenu(CCSPlayerController caller)
+    public static void OpenGroupsManageMenu(CCSPlayerController caller, IDynamicMenu backMenu)
     {
         var menu = AdminApi.CreateMenu(
             Main.GenerateMenuId("gm"),
             Localizer["MenuTitle.GroupsManage"],
-            titleColor: MenuColors.Gold
+            titleColor: MenuColors.Gold,
+            backMenu: backMenu
         );
-        menu.BackAction = (p) => {
-            AdminManageMenus.OpenAdminManageMenu(caller);
-        };
         
         menu.AddMenuOption(Main.GenerateOptionId("gm_add"), Localizer["MenuOption.GroupAdd"], (_, _) => {
             OpenGroupAddMenu(caller, menu);
@@ -68,7 +66,7 @@ public static class GroupsManageMenus
         });
         menu.AddMenuOption(Main.GenerateOptionId("gm_add_save"), Localizer["MenuOption.SaveGroup"], (_, _) => {
             caller.PrintToChat("Группа сохраняется...");
-            OpenGroupsManageMenu(caller);
+            backMenu.Open(caller);
             Task.Run(async () => {
                 await DBGroups.AddGroup(group);
                 Server.NextFrame(() => {

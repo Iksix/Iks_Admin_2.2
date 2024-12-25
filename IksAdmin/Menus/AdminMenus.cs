@@ -20,7 +20,7 @@ public static class AdminMenus
             id: Main.GenerateOptionId("am"),
             title: Localizer["MenuOption.AdminsManage"],
             (p, _) => {
-                AdminManageMenus.OpenAdminManageMenu(caller, menu);
+                AdminManageMenus.OpenAdminsControllMenu(caller, menu);
             },
             viewFlags: AdminUtils.GetAllPermissionGroupFlags("admins_manage")
         );

@@ -3,6 +3,7 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Entities;
+using Microsoft.Extensions.Localization;
 
 namespace IksAdminApi;
 
@@ -93,7 +94,24 @@ public static class AdminUtils
     {
         return GetConfigMethod();
     }
-    public static void Print(this CCSPlayerController? player, string message, string tag = "")
+    public static string AReplace(this LocalizedString localizer, string[] keys, object[] values)
+    {
+        var input = localizer.ToString()!;
+        for (int i = 0; i < keys.Length; i++)
+        {
+            input = input.Replace("{" + keys[i] + "}", values[i].ToString());
+        }
+        return input;
+    }
+    public static string AReplace(this string input, string[] keys, object[] values)
+    {
+        for (int i = 0; i < keys.Length; i++)
+        {
+            input = input.Replace("{" + keys[i] + "}", values[i].ToString());
+        }
+        return input;
+    }
+    public static void Print(this CCSPlayerController? player, string message, string? tag = null)
     {
         if (message.Trim() == "") return;
         var eventData = new EventData("print_to_player");
@@ -110,17 +128,21 @@ public static class AdminUtils
         message = eventData.Get<string>("message");
         tag = eventData.Get<string>("tag");
         
-        if (player == null)
+        Server.NextFrame(() =>
         {
-            Console.WriteLine(message);
-            return;
-        }
-        foreach (var str in message.Split("\n"))
-        {
-            player.PrintToChat($" {tag} {str}");
-        }
+            if (player == null)
+            {
+                Console.WriteLine(message);
+                return;
+            }
+            foreach (var str in message.Split("\n"))
+            {
+                player.PrintToChat($" {tag ?? AdminApi.Localizer["Tag"]} {str}");
+            }
 
-        eventData.Invoke("print_to_player_post");
+            eventData.Invoke("print_to_player_post");
+        });
+        
     }
     public static string? GetIp(this CCSPlayerController player)
     {
@@ -153,13 +175,16 @@ public static class AdminUtils
             Server.PrintToChatAll($" {tag} {str}");
         }
     }
-    public static void Reply(this CommandInfo info, string message, string tag = "")
+    public static void Reply(this CommandInfo info, string message, string? tag = null)
     {
         if (message.Trim() == "") return;
-        foreach (var str in message.Split("\n"))
+        Server.NextFrame(() =>
         {
-            info.ReplyToCommand($" {tag} {str}");
-        }
+            foreach (var str in message.Split("\n"))
+            {
+                info.ReplyToCommand($" {tag ?? AdminApi.Localizer["Tag"]} {str}");
+            }
+        });
     }
     /// <returns>Возвращает строку из текущих флагов по праву(ex: "admin_manage.add") (учитывая замену в кфг)</returns>
     public static string GetCurrentPermissionFlags(string key)
