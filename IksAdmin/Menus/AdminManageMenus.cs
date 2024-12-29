@@ -1,4 +1,5 @@
 using System.Reflection;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using IksAdmin.Functions;
 using IksAdminApi;
@@ -133,19 +134,44 @@ public static class AdminManageMenus
                 OpenAdminAddMenu(caller, target, backMenu);
             }, backMenu: menu);
         });
-        // menu.AddMenuOption(Main.GenerateOptionId("delete"), _localizer["MenuOption.AM.ADD."], (_, _) =>
-        // {
-        //         
-        // });
-        // menu.AddMenuOption(Main.GenerateOptionId("delete"), _localizer["MenuOption.AdminDelete"], (_, _) =>
-        // {
-        //         
-        // });
-        // menu.AddMenuOption(Main.GenerateOptionId("delete"), _localizer["MenuOption.AdminDelete"], (_, _) =>
-        // {
-        //         
-        // });
+        menu.AddMenuOption(Main.GenerateOptionId("vk"), _localizer["MenuOption.AM.ADD.Vk"].AReplace(["value"], [admin.CurrentImmunity]), (_, _) =>
+        {
+            caller.Print(_localizer["Message.AM.ADD.VkSet"]);
+            _api.HookNextPlayerMessage(caller, str =>
+            {
+                if (str != "-")
+                    admin.Vk = str;
+                else admin.Vk = null;
+                OpenAdminAddMenu(caller, target, backMenu);
+            });
+        });
+        menu.AddMenuOption(Main.GenerateOptionId("discord"), _localizer["MenuOption.AM.ADD.Discord"].AReplace(["value"], [admin.CurrentImmunity]), (_, _) =>
+        {
+            caller.Print(_localizer["Message.AM.ADD.DiscordSet"]);
+            _api.HookNextPlayerMessage(caller, str =>
+            {
+                if (str != "-")
+                    admin.Discord = str;
+                else admin.Discord = null;
+                OpenAdminAddMenu(caller, target, backMenu);
+            });
+        });
         
+        menu.AddMenuOption(Main.GenerateOptionId("save"), _localizer["MenuOption.AM.ADD.Save"], (_, _) =>
+        {
+            caller.Print(_localizer["Message.AM.ADD.AdminSave"]);
+            Task.Run(async () =>
+            {
+                var result = await _api.CreateAdmin(caller.Admin()!, AddAdminBuffer[caller.Admin()!], _api.ThisServer.Id);
+                if (result.QueryStatus < 0)
+                {
+                    caller.Print(_localizer["ActionError.Other"]);
+                    _api.LogError(result.QueryMessage);
+                    return;
+                }
+                caller.Print(_localizer["Message.AM.ADD.AdminSaved"]);
+            });
+        });
 
         menu.Open(caller);
     }
