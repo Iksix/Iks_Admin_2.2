@@ -6,9 +6,6 @@ public class Group {
     public string Flags {get; set;}
     public int Immunity {get; set;}
     public string? Comment {get; set;}
-    public int CreatedAt {get; set;} = AdminUtils.CurrentTimestamp();
-    public int UpdatedAt {get; set;} = AdminUtils.CurrentTimestamp();
-    public int? DeletedAt {get; set;} = null;
     public GroupLimitation[] Limitations {get {
         return AdminUtils.AdminApi.GroupLimitations.Where(x => x.GroupId == Id).ToArray();
     }}
@@ -16,16 +13,13 @@ public class Group {
     /// <summary>
     /// For getting from db
     /// </summary>
-    public Group(int id, string name, string flags, int immunity, string? comment, int createdAt, int updatedAt, int? deletedAt)
+    public Group(int id, string name, string flags, int immunity, string? comment)
     {
         Id = id;
         Name = name;
         Flags = flags;
         Immunity = immunity;
         Comment = comment;
-        CreatedAt = createdAt;
-        UpdatedAt = updatedAt;
-        DeletedAt = deletedAt;
     }
     /// <summary>
     /// For creating new group

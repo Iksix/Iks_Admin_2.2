@@ -33,13 +33,45 @@ public static class AdminUtils
         return (int)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
     }
 
-    public static PlayerComm? GetComm(this CCSPlayerController player)
+    public static List<PlayerComm> GetComms(this CCSPlayerController player)
     {
-        return AdminApi.Comms.FirstOrDefault(x => x.SteamId == player.AuthorizedSteamID!.SteamId64.ToString());
+        return AdminApi.Comms.Where(x => x.SteamId == player.AuthorizedSteamID!.SteamId64.ToString()).ToList();
     }
     public static string GetDurationString( int seconds )
     {
         return $"{seconds} сек.";
+    }
+    public static bool CanUnban(Admin admin, PlayerBan existingBan)
+    {
+        var bannedBy = existingBan.Admin;
+        if (bannedBy == null) return true;
+        if (bannedBy.SteamId == admin.SteamId) return true;
+        if (bannedBy.SteamId != "CONSOLE")
+        {
+            if (admin.HasPermissions("blocks_manage.remove_all")) return true;
+        } else {
+            if (admin.HasPermissions("blocks_manage.remove_console")) return true;
+            return false;
+        }
+        if (admin.HasPermissions("blocks_manage.remove_immunity") && bannedBy.CurrentImmunity < admin.CurrentImmunity) return true;
+        if (admin.HasPermissions("other.equals_immunity_action") && admin.HasPermissions("blocks_manage.remove_immunity") && bannedBy.CurrentImmunity <= admin.CurrentImmunity) return true;
+        return false;
+    }
+    public static bool CanUnComm(Admin admin, PlayerComm comm)
+    {
+        var bannedBy = comm.Admin;
+        if (bannedBy == null) return true;
+        if (bannedBy.SteamId == admin.SteamId) return true;
+        if (bannedBy.SteamId != "CONSOLE")
+        {
+            if (admin.HasPermissions("blocks_manage.remove_all")) return true;
+        } else {
+            if (admin.HasPermissions("blocks_manage.remove_console")) return true;
+            return false;
+        }
+        if (admin.HasPermissions("blocks_manage.remove_immunity") && bannedBy.CurrentImmunity < admin.CurrentImmunity) return true;
+        if (admin.HasPermissions("other.equals_immunity_action") && admin.HasPermissions("blocks_manage.remove_immunity") && bannedBy.CurrentImmunity <= admin.CurrentImmunity) return true;
+        return false;
     }
 
     public static bool HasMute(this List<PlayerComm> comms)
@@ -184,13 +216,10 @@ public static class AdminUtils
     public static void Reply(this CommandInfo info, string message, string? tag = null)
     {
         if (message.Trim() == "") return;
-        Server.NextFrame(() =>
+        foreach (var str in message.Split("\n"))
         {
-            foreach (var str in message.Split("\n"))
-            {
-                info.ReplyToCommand($" {tag ?? AdminApi.Localizer["Tag"]} {str}");
-            }
-        });
+            info.ReplyToCommand($" {tag ?? AdminApi.Localizer["Tag"]} {str}");
+        }
     }
     /// <returns>Возвращает строку из текущих флагов по праву(ex: "admin_manage.add") (учитывая замену в кфг)</returns>
     public static string GetCurrentPermissionFlags(string key)

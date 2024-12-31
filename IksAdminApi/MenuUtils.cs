@@ -15,11 +15,11 @@ public static class MenuUtils
     {
         return $"iksadmin:option:{id}";
     }
-    public static void OpenSelectPlayer(CCSPlayerController caller, string idPrefix, Action<PlayerInfo, IDynamicMenu> action, bool includeBots = false, IDynamicMenu? backMenu = null)
+    public static void OpenSelectPlayer(CCSPlayerController caller, string idPrefix, Action<PlayerInfo, IDynamicMenu> action, bool includeBots = false, IDynamicMenu? backMenu = null, string? customTitle = null)
     {
         var menu = _api.CreateMenu(
             GenerateMenuId(idPrefix + "_select_player"),
-            _localizer["MenuTitle." + "HELP_SelectPlayer"],
+            customTitle ?? _localizer["MenuTitle." + "HELP_SelectPlayer"],
             titleColor: MenuColors.Gold,
             backMenu: backMenu
         );
@@ -37,11 +37,11 @@ public static class MenuUtils
 
         menu.Open(caller);
     }
-    public static void OpenSelectItem<T>(CCSPlayerController caller, string idPrefix, string parameter, List<T> objects, Action<T?, IDynamicMenu> action, IDynamicMenu? backMenu = null, bool nullOption = true)
+    public static void SelectItem<T>(CCSPlayerController caller, string idPrefix, string parameter, List<T> objects, Action<T?, IDynamicMenu> action, IDynamicMenu? backMenu = null, bool nullOption = true, string? customTitle = null)
     {
         var menu = _api.CreateMenu(
             GenerateMenuId(idPrefix + "_select_item"),
-            _localizer["MenuTitle." + "HELP_SelectItem"],
+            customTitle ?? _localizer["MenuTitle." + "HELP_SelectItem"],
             titleColor: MenuColors.Gold,
             backMenu: backMenu
         );
@@ -64,11 +64,11 @@ public static class MenuUtils
 
         menu.Open(caller);
     }
-    public static void OpenSelectItem<T>(CCSPlayerController caller, string idPrefix, List<T> objects, Action<T?, IDynamicMenu> action, IDynamicMenu? backMenu = null, bool nullOption = true)
+    public static void SelectItem<T>(CCSPlayerController caller, string idPrefix, List<T> objects, Action<T?, IDynamicMenu> action, IDynamicMenu? backMenu = null, bool nullOption = true, string? customTitle = null)
     {
         var menu = _api.CreateMenu(
             GenerateMenuId(idPrefix + "_select_item"),
-            _localizer["MenuTitle." + "HELP_SelectItem"],
+            customTitle ?? _localizer["MenuTitle." + "HELP_SelectItem"],
             titleColor: MenuColors.Gold,
             backMenu: backMenu
         );

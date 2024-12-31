@@ -253,4 +253,5 @@ public static class DBBans
         if (admin.HasPermissions("other.equals_immunity_action") && admin.HasPermissions("blocks_manage.remove_immunity") && bannedBy.CurrentImmunity <= admin.CurrentImmunity) return true;
         return false;
     }
+
 }

@@ -166,4 +166,7 @@ public interface IIksAdminApi
     public event Action<AdminModule> OnModuleLoaded;
 
     public void Kick(Admin admin, CCSPlayerController player, string reason);
+    public Task<DBResult> CreateGroup(Group group);
+    public Task<DBResult> UpdateGroup(Group group);
+    public Task<DBResult> DeleteGroup(Group group);
 }

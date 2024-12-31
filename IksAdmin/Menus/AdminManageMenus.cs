@@ -59,7 +59,7 @@ public static class AdminManageMenus
         });
         menu.AddMenuOption(Main.GenerateOptionId("edit_this_server"), _localizer["MenuOption.AM.Edit.ThisServer"], (_, _) =>
         {
-            MenuUtils.OpenSelectItem<Admin?>(caller, "am_edit", "Name", _api.ServerAdmins!, (t, m) =>
+            MenuUtils.SelectItem<Admin?>(caller, "am_edit", "Name", _api.ServerAdmins!, (t, m) =>
             {
                 var newAdmin = new Admin(t!.Id, t.SteamId, t.Name, t.Flags, t.Immunity, t.GroupId, t.Discord, t.Vk, t.Disabled, t.EndAt, t.CreatedAt, t.UpdatedAt, t.DeletedAt);
                 EditAdminBuffer[caller.Admin()!] = newAdmin;
@@ -69,7 +69,7 @@ public static class AdminManageMenus
         });
         menu.AddMenuOption(Main.GenerateOptionId("edit_all"), _localizer["MenuOption.AM.Edit.All"], (_, _) =>
         {
-            MenuUtils.OpenSelectItem<Admin?>(caller, "am_edit", "Name", _api.AllAdmins!, (t, m) =>
+            MenuUtils.SelectItem<Admin?>(caller, "am_edit", "Name", _api.AllAdmins!, (t, m) =>
             {
                 var newAdmin = new Admin(t!.Id, t.SteamId, t.Name, t.Flags, t.Immunity, t.GroupId, t.Discord, t.Vk, t.Disabled, t.EndAt, t.CreatedAt, t.UpdatedAt, t.DeletedAt);
                 EditAdminBuffer[caller.Admin()!] = newAdmin;
@@ -79,7 +79,7 @@ public static class AdminManageMenus
         });
         menu.AddMenuOption(Main.GenerateOptionId("delete"), _localizer["MenuOption.AdminDelete"], (_, _) =>
         {
-            MenuUtils.OpenSelectItem<Admin?>(caller, "am_delete", "Name", _api.ServerAdmins!, (t, m) =>
+            MenuUtils.SelectItem<Admin?>(caller, "am_delete", "Name", _api.ServerAdmins!, (t, m) =>
             {
                 var cAdmin = caller.Admin();
                 Task.Run(async () =>
@@ -148,7 +148,7 @@ public static class AdminManageMenus
         menu.AddMenuOption(Main.GenerateOptionId("group"), _localizer["MenuOption.AM.Group"].AReplace(["value"], [admin.Group?.Name ?? ""]), (_, _) =>
         {
             var groups = _api.Groups;
-            MenuUtils.OpenSelectItem<Group?>(caller, "am_add", "Name", groups!, (g, m) =>
+            MenuUtils.SelectItem<Group?>(caller, "am_add", "Name", groups!, (g, m) =>
             {
                 admin.GroupId = g?.Id ?? null;
                 admin.Immunity = null;
@@ -290,7 +290,7 @@ public static class AdminManageMenus
         menu.AddMenuOption(Main.GenerateOptionId("group"), _localizer["MenuOption.AM.Group"].AReplace(["value"], [admin.Group?.Name ?? ""]), (_, _) =>
         {
             var groups = _api.Groups;
-            MenuUtils.OpenSelectItem<Group?>(caller, "am_add", "Name", groups!, (g, m) =>
+            MenuUtils.SelectItem<Group?>(caller, "am_add", "Name", groups!, (g, m) =>
             {
                 admin.GroupId = g?.Id ?? null;
                 admin.Immunity = null;

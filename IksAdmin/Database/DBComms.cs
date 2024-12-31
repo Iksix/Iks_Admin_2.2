@@ -155,7 +155,7 @@ public static class DBComms
     {
         try
         {
-            if (!CanUncomm(admin, comm)) return new DBResult(comm.Id, 2, "admin can't do this");
+            if (!CanUnComm(admin, comm)) return new DBResult(comm.Id, 2, "admin can't do this");
             await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
             await conn.QueryAsync(@"
@@ -177,7 +177,7 @@ public static class DBComms
         }
     }
 
-    private static bool CanUncomm(Admin admin, PlayerComm comm)
+    private static bool CanUnComm(Admin admin, PlayerComm comm)
     {
         var bannedBy = comm.Admin;
         if (bannedBy == null) return true;

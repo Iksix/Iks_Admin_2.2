@@ -12,10 +12,7 @@ create table if not exists iks_groups(
     name varchar(64) not null unique,
     flags varchar(32) not null,
     immunity int not null,
-    comment varchar(255) default null,
-    created_at int not null,
-    updated_at int not null,
-    deleted_at int default null
+    comment varchar(255) default null
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
 create table if not exists iks_admins(
     id int not null auto_increment primary key,

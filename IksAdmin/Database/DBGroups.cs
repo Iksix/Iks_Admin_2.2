@@ -12,13 +12,10 @@ public static class DBGroups
         name as name,
         flags as flags,
         immunity as immunity,
-        comment as comment,
-        created_at as createdAt,
-        updated_at as updatedAt,
-        deleted_at as deletedAt
+        comment as comment
         from iks_groups
     ";
-    public static async Task<Group> AddGroup(Group group)
+    public static async Task<DBResult> AddGroup(Group group)
     {
         try
         {
@@ -27,7 +24,6 @@ public static class DBGroups
             var existingGroup = await GetGroup(group.Name, ignoreDeleted: false);
             if (existingGroup != null)
             {
-                var oldGroup = Main.AdminApi.Groups.FirstOrDefault(g => g.Id == existingGroup.Id);
                 Main.AdminApi.Debug($"Group {group.Name} already exists...");
                 Main.AdminApi.Debug($"Set new group {group.Name} id = {existingGroup.Id} ✔");
                 group.Id = existingGroup.Id;
@@ -40,7 +36,7 @@ public static class DBGroups
         catch (MySqlException e)
         {
             Main.AdminApi.LogError(e.ToString());
-            throw;
+            return new DBResult(null, -1, e.Message);
         }
     }
     public static async Task<Group?> GetGroup(string groupName, bool ignoreDeleted = true)
@@ -86,7 +82,7 @@ public static class DBGroups
         }
     }
 
-    public static async Task<Group> AddGroupToBase(Group group)
+    public static async Task<DBResult> AddGroupToBase(Group group)
     {
         try
         {
@@ -108,7 +104,7 @@ public static class DBGroups
             Main.AdminApi.Debug($"Group added to base ✔");
             Main.AdminApi.Debug($"Group id = {group!.Id} ✔");
             Main.AdminApi.Groups.Add(group);
-            return group;
+            return new DBResult(id, 0);
         }
         catch (MySqlException e)
         {
@@ -116,7 +112,7 @@ public static class DBGroups
             throw;
         }
     }
-    public static async Task<Group> UpdateGroupInBase(Group group)
+    public static async Task<DBResult> UpdateGroupInBase(Group group)
     {
         try
         {
@@ -127,9 +123,7 @@ public static class DBGroups
                 name = @name,
                 flags = @flags,
                 immunity = @immunity,
-                comment = @comment,
-                updated_at = unix_timestamp(),
-                deleted_at = null
+                comment = @comment
                 where id = @id 
             ", new {
                 id = group.Id,
@@ -142,33 +136,34 @@ public static class DBGroups
             if (pluginGroup != null)
                 pluginGroup = group;
             Main.AdminApi.Debug($"Group updated in base ✔");
-            return group;
+            return new DBResult(group.Id, 1);
         }
         catch (MySqlException e)
         {
             Main.AdminApi.LogError(e.ToString());
-            throw;
+            return new DBResult(null, -1, e.ToString());
         }
     }
-    public static async Task DeleteGroup(string name)
+    public static async Task<DBResult> DeleteGroup(Group group)
     {
         try
         {
             await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
             await conn.QueryAsync(@"
-                update iks_groups set 
-                deleted_at = current_timestamp()
-                where name = @name
+                update iks_admins set group_id=null
+                where group_id = @groupId;
+                delete from iks_groups where id=@groupId
             ", new {
-                name
+                groupId = group.Id
             });
             Main.AdminApi.Debug($"Group deleted ✔");
+            return new DBResult(null, 0);
         }
         catch (MySqlException e)
         {
             Main.AdminApi.LogError(e.ToString());
-            throw;
+            return new DBResult(null, -1, e.ToString());
         }
     }
 

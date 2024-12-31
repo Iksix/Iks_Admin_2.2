@@ -64,8 +64,9 @@
     "ActionSuccess.UnBanSuccess" : "{green}Цель успешно разбанена!",
     "ActionSuccess.UnSilenceSuccess" : "{green}С игрока успешно снят silence!",
     "ActionSuccess.SilenceSuccess" : "{green}Игроку успешно выдан silence!",
-    
+
     "Message.WhenGag" : "{red}У вас есть активный гаг!\nЗавершится: {red}{date} ",
+    "Message.WhenSilence" : "{red}У вас есть активный silence!\nЗавершится: {red}{date} ",
     "Message.WhenGagEnd" : "{green}Гаг снят! Вы снова можете писать!",
     "Message.WhenMuteEnd" : "{green}Мут снят! Вы снова можете говорить!",
     "Message.WhenSilenceEnd" : "{green}Silence снят! Вы снова можете говорить!",

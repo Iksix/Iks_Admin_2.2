@@ -185,11 +185,20 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             return HookResult.Continue;
         }
         
-        var comm = player.GetComm();
-        if (comm != null && comm.MuteType is 1 or 2)
+        var comm = player.GetComms();
+        if (comm.HasGag())
         {
+            var gag = comm.GetGag();
             Helper.Print(player, Localizer["Message.WhenGag"].Value
-                .Replace("{date}", comm.EndAt == 0 ? Localizer["Other.Never"] : Utils.GetDateString(comm.EndAt))
+                .Replace("{date}", gag.EndAt == 0 ? Localizer["Other.Never"] : Utils.GetDateString(gag.EndAt))
+            );
+            return HookResult.Stop;
+        }
+        if (comm.HasSilence())
+        {
+            var silence = comm.GetSilence();
+            Helper.Print(player, Localizer["Message.WhenSilence"].Value
+                .Replace("{date}", silence.EndAt == 0 ? Localizer["Other.Never"] : Utils.GetDateString(silence.EndAt))
             );
             return HookResult.Stop;
         }
@@ -429,7 +438,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             "removemute",
             "Снять мут с игрока (оффлайн)",
             "blocks_manage.unmute",
-            "css_unmute <steamId> <reason>",
+            "css_removemute <steamId> <reason>",
             CmdMutes.RemoveMute,
             minArgs: 2 
         );
@@ -438,7 +447,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             "silence",
             "Выдать silence игроку (онлайн)",
             "blocks_manage.silence",
-            "css_mute <#uid/#steamId/name/@...> <time> <reason>",
+            "css_silence <#uid/#steamId/name/@...> <time> <reason>",
             CmdSilences.Silence,
             minArgs: 3 
         );
@@ -446,7 +455,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             "unsilence",
             "Снять silence с игрока (онлайн)",
             "blocks_manage.unsilence",
-            "css_unmute <#uid/#steamId/name/@...> <reason>",
+            "css_unsilence <#uid/#steamId/name/@...> <reason>",
             CmdSilences.UnSilence,
             minArgs: 2 
         );
@@ -454,7 +463,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             "addsilence",
             "Выдать silence игроку (оффлайн)",
             "blocks_manage.silence",
-            "css_addmute <steamId> <time> <reason>",
+            "css_addsilence <steamId> <time> <reason>",
             CmdSilences.AddSilence,
             minArgs: 3 
         );
@@ -462,7 +471,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             "removesilence",
             "Снять silence с игрока (оффлайн)",
             "blocks_manage.unsilence",
-            "css_unmute <steamId> <reason>",
+            "css_removesilence <steamId> <reason>",
             CmdSilences.RemoveSilence,
             minArgs: 2 
         );
@@ -519,12 +528,18 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
         PlayersUtils.ClearHtmlMessage(player!);
         if (player == null || player.IsBot) return HookResult.Continue;
         AdminApi.DisconnectedPlayers.Insert(0, new PlayerInfo(player));
-        AdminApi.Comms.Remove(player.GetComm()!);
+        var comms = player.GetComms();
+        foreach (var comm in comms)
+        {
+            AdminApi.Comms.Remove(comm);
+        }
         return HookResult.Continue;
     }
     
     public override void Unload(bool hotReload)
     {
+        RemoveCommandListener("say", OnSay, HookMode.Pre);
+        RemoveCommandListener("say_team", OnSay, HookMode.Pre);
         foreach (var commands in AdminApi.RegistredCommands)
         {
             if (commands.Key != ModuleName) continue;
@@ -661,6 +676,7 @@ public class AdminApi : IIksAdminApi
                 Config.ServerName,
                 Config.RconPassword
             );
+        var adminsBeforeReload = ServerAdmins.ToArray();
         try
         {
             Debug("Init Database");
@@ -672,10 +688,18 @@ public class AdminApi : IIksAdminApi
             Debug("Refresh Admins");
             await RefreshAdmins();
             Warns = await DBWarns.GetAllActive();
-            await SendRconToAllServers("css_am_reload_servers", true);
-            await SendRconToAllServers("css_am_reload_admins", true);
+            await SendRconToAllServers("css_am_reload", true);
             Server.NextFrame(() => {
                 OnReady?.Invoke();
+                var noAdmins = adminsBeforeReload.Where(x => !ServerAdmins.Contains(x));
+                foreach (var player in noAdmins)
+                {
+                    var controller = player.Controller;
+                    if (controller != null)
+                    {
+                        CloseMenu(controller);
+                    }
+                }
             });
         }
         catch (Exception e)
@@ -895,7 +919,14 @@ public class AdminApi : IIksAdminApi
         foreach (var server in AllServers)
         {
             if (ignoreSelf && server.Ip == ThisServer.Ip) continue;
-            await SendRconToServer(server, command);
+            try
+            {
+                await SendRconToServer(server, command);
+            }
+            catch (Exception _)
+            {
+                continue;
+            }
         }
     }
 
@@ -1966,5 +1997,26 @@ public class AdminApi : IIksAdminApi
         DisconnectPlayer(player, reason, admin: admin);
         eventData.EventKey = "kick_player_post";
         _ = OnDynamicEvent?.Invoke(eventData) ?? HookResult.Continue;
+    }
+
+    public async Task<DBResult> CreateGroup(Group group)
+    {
+        var result = await DBGroups.AddGroup(group);
+        await ReloadDataFromDBOnAllServers();
+        return result;
+    }
+
+    public async Task<DBResult> UpdateGroup(Group group)
+    {
+        var result = await DBGroups.UpdateGroupInBase(group);
+        await ReloadDataFromDBOnAllServers();
+        return result;
+    }
+
+    public async Task<DBResult> DeleteGroup(Group group)
+    {
+        var result = await DBGroups.DeleteGroup(group);
+        await ReloadDataFromDBOnAllServers();
+        return result;
     }
 }
