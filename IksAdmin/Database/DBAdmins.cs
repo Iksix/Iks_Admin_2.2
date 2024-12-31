@@ -99,6 +99,54 @@ public static class DBAdmins
             throw;
         }
     }
+    public static async Task RemoveServerIdFromAdmin(int adminId, int serverId)
+    {
+        try
+        {
+            await using var conn = new MySqlConnection(DB.ConnectionString);
+            await conn.OpenAsync();
+            var existingAdmin = await GetAdminById(adminId);
+            if (existingAdmin == null)
+            {
+                Main.AdminApi.LogError($"Admin {adminId} not finded ✖");
+                return;
+            }
+            Main.AdminApi.Debug($"Admin {existingAdmin.Name} finded ✔");
+            Main.AdminApi.Debug($"Removing server id...");
+            await conn.QueryAsync(@"
+            delete from iks_admin_to_server where admin_id = @adminId and server_id = @serverId
+            ", new {adminId, serverId});
+        }
+        catch (MySqlException e)
+        {
+            Main.AdminApi.LogError(e.ToString());
+            throw;
+        }
+    }
+    public static async Task RemoveServerIdsFromAdmin(int adminId)
+    {
+        try
+        {
+            await using var conn = new MySqlConnection(DB.ConnectionString);
+            await conn.OpenAsync();
+            var existingAdmin = await GetAdminById(adminId);
+            if (existingAdmin == null)
+            {
+                Main.AdminApi.LogError($"Admin {adminId} not finded ✖");
+                return;
+            }
+            Main.AdminApi.Debug($"Admin {existingAdmin.Name} finded ✔");
+            Main.AdminApi.Debug($"Removing server id...");
+            await conn.QueryAsync(@"
+            delete from iks_admin_to_server where admin_id = @adminId
+            ", new {adminId});
+        }
+        catch (MySqlException e)
+        {
+            Main.AdminApi.LogError(e.ToString());
+            throw;
+        }
+    }
     public static async Task<Admin?> GetAdmin(string steamId, int? serverId = null, bool ignoreDeleted = true)
     {
         try

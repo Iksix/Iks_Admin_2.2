@@ -3,6 +3,7 @@
 
     "MenuTitle.AdminMain" : "Админ меню",
     "MenuTitle.GroupAdding" : "Добавление группы",
+    "MenuTitle.HELP_SelectItem" : "Выберите:",
 
     "MenuTitle.Other.SelectReason" : "Выберите причину",
     "MenuTitle.Other.SelectTime" : "Выберите время",
@@ -92,13 +93,23 @@
     "Prefix.Hours" : "час.",
     "Prefix.Days" : "дн.",
     "Other.Never" : "Никогда",
-    
-    "Message.AM.DataReloaded" : "{green}Информация синхронизированна с базой данных ✔",
-    "Message.AM.ADD.FlagsSet" : "Напишите флаги в чат: {red}!abc...",
-    "Message.AM.ADD.ImmunitySet" : "Напишите иммунитет в чат: {red}!10",
-    "MenuOption.AM.ADD.Name" : "Ник: {value}",
-    "MenuOption.AM.ADD.SteamId" : "SteamID: {value}",
-    "MenuOption.AM.ADD.Flags" : "Флаги: {value}",
-    "MenuOption.AM.ADD.Immunity" : "Иммунитет: {value}",
-    "MenuOption.AM.ADD.Group" : "Группа: {value}"
+    "Message.AM.DataReloaded" : "{green}Информация синхронизирована с базой данных ✔",
+    "Message.AM.FlagsSet" : "Напишите флаги в чат: {red}!abc...",
+    "Message.AM.ImmunitySet" : "Напишите иммунитет в чат: {red}!10",
+    "Message.AM.VkSet" : "Напишите VK ID в чат: {red}!someId\n{red}!- {white}- для того что бы оставить пустым",
+    "Message.AM.DiscordSet" : "Напишите Discord в чат: {red}!iks__\n{red}!- {white}- для того что бы оставить пустым",
+    "Message.AM.AdminSave" : "Сохранение админа...",
+    "Message.AM.AdminSaved" : "{green}Админ сохранён ✔",
+    "MenuOption.AM.Name" : "Ник: {value}",
+    "MenuOption.AM.SteamId" : "SteamID: {value}",
+    "MenuOption.AM.Flags" : "Флаги: {value}",
+    "MenuOption.AM.Immunity" : "Иммунитет: {value}",
+    "MenuOption.AM.Group" : "Группа: {value}",
+    "MenuOption.AM.Vk" : "ВК: {value}",
+    "MenuOption.AM.Discord" : "Дискорд: {value}",
+    "MenuOption.AM.Save" : "Сохранить админа",
+    "MenuOption.AM.ServerId" : "Сервера: {value}",
+
+    "MenuOption.AM.Edit.ThisServer" : "Редактировать (этот сервер)",
+    "MenuOption.AM.Edit.All" : "Редактировать (все)",
 }

@@ -593,7 +593,16 @@ public class AdminApi : IIksAdminApi
     public async Task AddServerIdToAdmin(int adminId, int serverId)
     {
         await DBAdmins.AddServerIdToAdmin(adminId, serverId);
-        await ReloadDataFromDBOnAllServers();
+    }
+
+    public async Task RemoveServerIdFromAdmin(int adminId, int serverId)
+    {
+        await DBAdmins.RemoveServerIdFromAdmin(adminId, serverId);
+    }
+
+    public async Task RemoveServerIdsFromAdmin(int adminId)
+    {
+        await DBAdmins.RemoveServerIdsFromAdmin(adminId);
     }
 
     public async Task<DBResult> DeleteAdmin(Admin actioneer, Admin admin)

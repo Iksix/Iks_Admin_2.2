@@ -44,7 +44,18 @@ public interface IIksAdminApi
     public Task<DBResult> DeleteAdmin(Admin actioneer, Admin admin);
     public Task<DBResult> UpdateAdmin(Admin actioneer, Admin admin);
     public Task<List<Admin>> GetAdminsBySteamId(string steamId, bool ignoreDeleted = true);
+    /// <summary>
+    /// Adds server id for admin
+    /// </summary>
     public Task AddServerIdToAdmin(int adminId, int serverId);
+    /// <summary>
+    /// Removes server id from admin
+    /// </summary>
+    public Task RemoveServerIdFromAdmin(int adminId, int serverId);
+    /// <summary>
+    /// Removes all server ids from admin
+    /// </summary>
+    public Task RemoveServerIdsFromAdmin(int adminId);
     public IDynamicMenu CreateMenu(string id, string title, MenuType? type = null, MenuColors titleColor = MenuColors.Default, PostSelectAction postSelectAction = PostSelectAction.Nothing, Action<CCSPlayerController>? backAction = null, IDynamicMenu? backMenu = null);
     public void CloseMenu(CCSPlayerController player);
     // FUNC ===
