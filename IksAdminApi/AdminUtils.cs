@@ -72,7 +72,7 @@ public static class AdminUtils
         return FindAdminByControllerMethod(player);
     }
     
-    public static Admin? Admin(this PlayerInfo player)
+    public static Admin? ServerAdmin(this PlayerInfo player)
     {
         return AdminApi.ServerAdmins.FirstOrDefault(x => x.SteamId == player.SteamId);
     }
@@ -81,6 +81,12 @@ public static class AdminUtils
         return FindAdminByIdMethod(id);
     }
     public static Admin? Admin(string steamId)
+    {
+        if (steamId.ToLower() == "console")
+            return AdminApi.ConsoleAdmin;
+        return AdminApi.AllAdmins.FirstOrDefault(x => x.SteamId == steamId);
+    }
+    public static Admin? ServerAdmin(string steamId)
     {
         if (steamId.ToLower() == "console")
             return AdminApi.ConsoleAdmin;

@@ -45,7 +45,7 @@ public static class MenuUtils
             titleColor: MenuColors.Gold,
             backMenu: backMenu
         );
-        if (!nullOption)
+        if (nullOption)
         {
             menu.AddMenuOption("null", "Nothing", (_, _) =>
             {
@@ -72,7 +72,7 @@ public static class MenuUtils
             titleColor: MenuColors.Gold,
             backMenu: backMenu
         );
-        if (!nullOption)
+        if (nullOption)
         {
             menu.AddMenuOption("null", "Nothing", (_, _) =>
             {

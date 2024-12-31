@@ -21,7 +21,7 @@ public static class CmdAdminManage
         {
             throw new ArgumentException("Time must be a number");
         }
-        int? serverId = args[3] == "this" ? null : int.Parse(args[3]);
+        int? serverId = args[3] == "this" ? AdminApi.ThisServer.Id : int.Parse(args[3]);
         switch (args.Count)
         {
             case 5:
@@ -37,7 +37,7 @@ public static class CmdAdminManage
 
     public static void AddFlag(CCSPlayerController? caller, List<string> args, CommandInfo info)
     {
-        var admin = AdminUtils.Admin(args[0]);
+        var admin = AdminUtils.ServerAdmin(args[0]);
         if (admin == null)
         {
             return;
@@ -48,7 +48,7 @@ public static class CmdAdminManage
     public static void AddFlagOrAdmin(CCSPlayerController? caller, List<string> args, CommandInfo info)
     {
         // am_addflag_or_admin <steamId> <name> <time/0> <server_id/this> <flags> <immunity>
-        var admin = AdminUtils.Admin(args[0]);
+        var admin = AdminUtils.ServerAdmin(args[0]);
         if (admin == null)
         {
             Add(caller, args, info);
@@ -56,6 +56,10 @@ public static class CmdAdminManage
         }
         var flags = args[1];
         AdminManageFunctions.AddFlag(caller, info, admin, flags);
+        Task.Run(async () =>
+        {
+            await AdminApi.ReloadDataFromDBOnAllServers();
+        });
     }
 
     public static void AddServerId(CCSPlayerController? caller, List<string> args, CommandInfo info)
@@ -69,5 +73,9 @@ public static class CmdAdminManage
         }
         int? serverId = args[1] == "this" ? null : int.Parse(args[1]);
         AdminManageFunctions.AddServerId(caller, info, admin, serverId);
+        Task.Run(async () =>
+        {
+            await AdminApi.ReloadDataFromDBOnAllServers();
+        });
     }
 }

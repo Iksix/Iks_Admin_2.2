@@ -140,6 +140,11 @@ public static class DBAdmins
             await conn.QueryAsync(@"
             delete from iks_admin_to_server where admin_id = @adminId
             ", new {adminId});
+            foreach (var adm in AdminUtils.AdminApi.AdminsToServer.ToList())
+            {
+                if (adm.AdminId == adminId)
+                    AdminUtils.AdminApi.AdminsToServer.Remove(adm);
+            }
         }
         catch (MySqlException e)
         {
@@ -228,12 +233,12 @@ public static class DBAdmins
         {
             await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
-            var ignoreDeletedString = ignoreDeleted ? "where deleted_at is null" : "";
+            var ignoreDeletedString = ignoreDeleted ? "and deleted_at is null" : "";
             var admins = (await conn.QueryAsync<Admin>($@"
                 {AdminSelect}
+                where steam_id = @steamId 
                 {ignoreDeletedString}
-                where steam_id = @steamId
-            ")).ToList();
+            ", new { steamId })).ToList();
 
             return admins;
         }

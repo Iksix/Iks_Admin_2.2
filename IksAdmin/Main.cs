@@ -18,7 +18,6 @@ using static CounterStrikeSharp.API.Modules.Commands.CommandInfo;
 using Group = IksAdminApi.Group;
 using IksAdmin.Commands;
 using CounterStrikeSharp.API.Core.Commands;
-using Timer = CounterStrikeSharp.API.Modules.Timers.Timer;
 using CounterStrikeSharp.API.ValveConstants.Protobuf;
 using CounterStrikeSharp.API.Modules.Utils;
 using SteamWebAPI2.Utilities;
@@ -29,11 +28,6 @@ namespace IksAdmin;
 
 public class Main : BasePlugin, IPluginConfig<PluginConfig>
 {
-    [ConsoleCommand("test")]
-    public void testcmd(CCSPlayerController? controller, CommandInfo info)
-    {
-        Console.WriteLine(AdminUtils.GetCurrentPermissionFlags(">*"));
-    }
     public override string ModuleName => "IksAdmin";
     public override string ModuleVersion => "2.2";
     public override string ModuleAuthor => "iks [Discord: iks__]";
@@ -564,9 +558,9 @@ public class AdminApi : IIksAdminApi
     {
         try
         {
-            var admins = await GetAdminsBySteamId(admin.SteamId);
+            var admins = await DBAdmins.GetAllAdmins(serverId, false);
             var existingAdmin = admins.FirstOrDefault(x =>
-                x.SteamId == admin.SteamId && x.Servers.Any(s => admin.Servers.Contains(s)));
+                x.SteamId == admin.SteamId && x.Servers.Contains((int)serverId!));
             if (
                 // Проверка существует ли админ с таким же serverId как у добавляемого
                 existingAdmin != null
@@ -579,7 +573,7 @@ public class AdminApi : IIksAdminApi
             }
 
             // Если нет то добавляем админа и севрер айди к нему
-            var newAdmin = DBAdmins.AddAdminToBase(admin);
+            var newAdmin = await DBAdmins.AddAdminToBase(admin);
             await AddServerIdToAdmin(newAdmin.Id, serverId ?? ThisServer.Id);
             await ReloadDataFromDBOnAllServers();
             return new DBResult(newAdmin.Id, 0, "Admin has been added");
@@ -884,7 +878,6 @@ public class AdminApi : IIksAdminApi
         await Main.AdminApi.SendRconToAllServers("css_am_reload");
     }
     
-
     public void HookNextPlayerMessage(CCSPlayerController player, Action<string> action)
     {
         Debug("Log next player message: " + player.PlayerName);
@@ -911,7 +904,7 @@ public class AdminApi : IIksAdminApi
         var ip = server.Ip.Split(":")[0];
         var port = server.Ip.Split(":")[1];
         Debug($"Sending rcon command [{command}] to server ({server.Name})[{server.Ip}] ...");
-        using var rcon = new RCON(new IPEndPoint(IPAddress.Parse(ip), int.Parse(port)), server.Rcon ?? "", 10000);
+        using var rcon = new RCON(new IPEndPoint(IPAddress.Parse(ip), int.Parse(port)), server.Rcon ?? "");
         await rcon.ConnectAsync();
         var result = await rcon.SendCommandAsync(command);
         Debug($"Success ✔");
@@ -1051,7 +1044,7 @@ public class AdminApi : IIksAdminApi
                         .Replace("{min}", minTimeInt.ToString())
                         .Replace("{max}", maxTimeInt.ToString())
                     );
-                    return new DBResult(null, 3, "limitations limit reached");;
+                    return new DBResult(null, 3, "limitations limit reached");
                 }
                 if (maxByDay != null)
                 {
@@ -1061,7 +1054,7 @@ public class AdminApi : IIksAdminApi
                         Helper.PrintToSteamId(admin.SteamId, AdminUtils.AdminApi.Localizer["Limitations.MaxByDayLimit"].Value
                             .Replace("{date}", Utils.GetDateString(lastPunishments[0].CreatedAt + 60*60*24))
                         );
-                        return new DBResult(null, 3, "limitations limit reached");;
+                        return new DBResult(null, 3, "limitations limit reached");
                     }
                 }
             }
@@ -1231,8 +1224,8 @@ public class AdminApi : IIksAdminApi
 
     public bool CanDoActionWithPlayer(string callerId, string targetId)
     {
-        var callerAdmin = AdminUtils.Admin(callerId);
-        var targetAdmin = AdminUtils.Admin(callerId);
+        var callerAdmin = AdminUtils.ServerAdmin(callerId);
+        var targetAdmin = AdminUtils.ServerAdmin(callerId);
 
         if (targetAdmin == null) return true;
 
@@ -1590,7 +1583,7 @@ public class AdminApi : IIksAdminApi
             var reservedReason = SilenceConfig.Config.Reasons.FirstOrDefault(x => x.Title.ToLower() == comm.Reason.ToLower());
             if (reservedReason != null)
             {
-                Debug($"Do reservedReason transformations...");
+                Debug("Do reservedReason transformations...");
                 if (reservedReason.BanOnAllServers)
                     comm.ServerId = null;
                 comm.Reason = reservedReason.Text;
