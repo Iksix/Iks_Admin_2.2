@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("IksAdminApi")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+aba97e9e6eeeb810d8e884cf5e5fd53e12490c58")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+881172bd350d961e701d52f16ad73174438ac1e4")]
 [assembly: System.Reflection.AssemblyProductAttribute("IksAdminApi")]
 [assembly: System.Reflection.AssemblyTitleAttribute("IksAdminApi")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

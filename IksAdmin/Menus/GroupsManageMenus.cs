@@ -32,7 +32,25 @@ public static class GroupsManageMenus
             }, nullOption: false, backMenu: menu);
         }, viewFlags: _api.GetCurrentPermissionFlags("groups_manage.edit"));
         menu.AddMenuOption("delete", Localizer["MenuOption.GroupDelete"], (_, _) => {
-            OpenGroupAddMenu(caller, menu);
+            MenuUtils.SelectItem<Group?>(caller, "group_edit", "Name", _api.Groups!, (g, m) =>
+            {
+                caller.Print("Подтвердите удаление введя: !delete");
+                caller.Print("Админов с этой группой: " + _api.AllAdmins.Count(x => x.GroupId == g!.Id));
+                _api.HookNextPlayerMessage(caller, msg =>
+                {
+                    if (msg != "delete")
+                    {
+                        caller.Print("Удаление отменено");
+                        return;
+                    }
+                    caller.Print("Удаление группы...");
+                    Task.Run(async () =>
+                    {
+                        await _api.DeleteGroup(g);
+                        caller.Print("Группа удалена \u2714");
+                    });
+                });
+            }, nullOption: false, backMenu: menu);
         }, viewFlags: _api.GetCurrentPermissionFlags("groups_manage.delete"));
 
         menu.Open(caller);
