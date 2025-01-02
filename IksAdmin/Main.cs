@@ -250,6 +250,9 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
         // Players manage ===
         AdminApi.RegisterPermission("players_manage.kick", "k");
         AdminApi.RegisterPermission("players_manage.change_team", "k");
+        // SERVERS MANAGE === 
+        AdminApi.RegisterPermission("servers_manage.reload_data", "z");
+        AdminApi.RegisterPermission("servers_manage.rcon", "z");
         // Other ===
         AdminApi.RegisterPermission("other.equals_immunity_action", "e"); // Разрешить взаймодействие с админами равными по иммунитету (Включая снятие наказаний если есть флаг blocks_manage.remove_immunity)
         AdminApi.RegisterPermission("other.admin_chat", "b");

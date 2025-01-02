@@ -5,7 +5,7 @@ using Microsoft.Extensions.Localization;
 
 namespace IksAdmin.Menus;
 
-public static class AdminMenus
+public static class MenuMain
 {
     static IIksAdminApi AdminApi = Main.AdminApi;
     static IStringLocalizer Localizer = AdminApi.Localizer;
@@ -17,16 +17,18 @@ public static class AdminMenus
             backMenu: backMenu
         );
         menu.AddMenuOption(
-            id: Main.GenerateOptionId("am"),
-            title: Localizer["MenuOption.AdminsManage"],
+            id: Main.GenerateOptionId("sm"),
+            title: Localizer["MenuOption.SM"],
             (p, _) => {
-                AdminManageMenus.OpenAdminsControllMenu(caller, menu);
+                MenuAM.OpenServersManageMenu(caller, menu);
             },
-            viewFlags: AdminUtils.GetAllPermissionGroupFlags("admins_manage")
+            viewFlags: AdminUtils.GetAllPermissionGroupFlags("admins_manage") 
+                       + AdminUtils.GetAllPermissionGroupFlags("groups_manage") 
+                       + AdminUtils.GetAllPermissionGroupFlags("servers_manage")
         );
         menu.AddMenuOption(
             id: Main.GenerateOptionId("bm"),
-            title: Localizer["MenuOption.BlocksManage"],
+            title: Localizer["MenuOption.BM"],
             (p, _) => {
                 OpenBlocksManageMenu(caller, menu);
             },
@@ -39,14 +41,14 @@ public static class AdminMenus
     {
         var menu = AdminApi.CreateMenu(
             id: Main.GenerateMenuId("bm"),
-            title: Localizer["MenuTitle.BlocksManage"],
+            title: Localizer["MenuTitle.BM"],
             backMenu: backMenu
         );
         menu.AddMenuOption(
             id: Main.GenerateOptionId("bans"),
             title: Localizer["MenuOption.BansManage"],
             (p, _) => {
-                BansManageMenu.OpenBansMenu(caller, menu);
+                MenuBansM.OpenBansMenu(caller, menu);
             }
         );
         menu.AddMenuOption(

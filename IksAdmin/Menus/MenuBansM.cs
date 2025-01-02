@@ -7,7 +7,7 @@ using Microsoft.Extensions.Localization;
 
 namespace IksAdmin.Menus;
 
-public static class BansManageMenu
+public static class MenuBansM
 {
     static IIksAdminApi AdminApi {get; set;} = Main.AdminApi;
     static IStringLocalizer Localizer {get; set;} = Main.AdminApi.Localizer;
@@ -63,7 +63,6 @@ public static class BansManageMenu
         var players = AdminApi.DisconnectedPlayers;
         foreach (var player in players)
         {
-            var admin = caller.Admin();
             if (!AdminApi.CanDoActionWithPlayer(caller.GetSteamId()!, player.SteamId!))
                 continue;
             menu.AddMenuOption(Main.GenerateOptionId("bm_offline_ban_add_" + player.SteamId!), player.PlayerName, (_, _) => {
@@ -81,7 +80,6 @@ public static class BansManageMenu
         var players = PlayersUtils.GetOnlinePlayers();
         foreach (var player in players)
         {
-            var admin = caller.Admin();
             if (!AdminApi.CanDoActionWithPlayer(caller.GetSteamId()!, player.AuthorizedSteamID!.SteamId64.ToString()))
                 continue;
             menu.AddMenuOption(Main.GenerateOptionId("bm_ban_add_" + player.GetSteamId()), player.PlayerName, (_, _) => {

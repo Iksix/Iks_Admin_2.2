@@ -11,7 +11,7 @@ public static class CmdBase
 
     public static void AdminMenu(CCSPlayerController? caller, List<string> args, CommandInfo info)
     {
-        AdminMenus.OpenAdminMenu(caller!);
+        MenuMain.OpenAdminMenu(caller!);
     }
 
     public static void Reload(CCSPlayerController? caller, List<string> args, CommandInfo info)

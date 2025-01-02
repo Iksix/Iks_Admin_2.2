@@ -7,7 +7,7 @@ using Microsoft.Extensions.Localization;
 
 namespace IksAdmin.Menus;
 
-public static class AdminManageMenus
+public static class MenuAM
 {
     static IIksAdminApi _api = Main.AdminApi;
     static IStringLocalizer _localizer = _api.Localizer;
@@ -15,28 +15,36 @@ public static class AdminManageMenus
     public static Dictionary<Admin, Admin> EditAdminBuffer = new();
     public static Dictionary<Admin, List<int>> EditAdminServerIdBuffer = new();
 
-    public static void OpenAdminsControllMenu(CCSPlayerController caller, IDynamicMenu backMenu)
+    public static void OpenServersManageMenu(CCSPlayerController caller, IDynamicMenu backMenu)
     {
         var menu = _api.CreateMenu(
             Main.GenerateMenuId("ac"),
-            _localizer["MenuTitle.AdminsControll"],
+            _localizer["MenuTitle.SM"],
             titleColor: MenuColors.Gold,
             backMenu: backMenu
         );
-        menu.AddMenuOption(Main.GenerateOptionId("am"), _localizer["MenuOption.AdminsManage"], (_, _) => { 
+        menu.AddMenuOption("am", _localizer["MenuOption.AM"], (_, _) => { 
             OpenAdminManageMenuSection(caller, menu);
         }, 
         viewFlags: AdminUtils.GetAllPermissionGroupFlags("admins_manage"));
-        menu.AddMenuOption(Main.GenerateOptionId("gm"), _localizer["MenuOption.GroupsManage"], (_, _) => {
-            if (GroupsManageMenus.AddGroupBuffer.ContainsKey(caller.Admin()!))
+        menu.AddMenuOption("gm", _localizer["MenuOption.GM"], (_, _) => {
+            if (MenuGM.AddGroupBuffer.ContainsKey(caller.Admin()!))
             {
-                GroupsManageMenus.AddGroupBuffer[caller.Admin()!] = new Group("ExampleGroup", "abc", 0);
+                MenuGM.AddGroupBuffer[caller.Admin()!] = new Group("ExampleGroup", "abc", 0);
             } else {
-                GroupsManageMenus.AddGroupBuffer.Add(caller.Admin()!, new Group("ExampleGroup", "abc", 0));
+                MenuGM.AddGroupBuffer.Add(caller.Admin()!, new Group("ExampleGroup", "abc", 0));
             }
-            GroupsManageMenus.OpenGroupsManageMenu(caller, menu);
+            MenuGM.OpenGroupsManageMenu(caller, menu);
         }, 
         viewFlags: AdminUtils.GetAllPermissionGroupFlags("groups_manage"));
+        menu.AddMenuOption("reload", _localizer["MenuOption.ReloadData"], (_, _) =>
+        {
+            Task.Run(async () =>
+            {
+                await _api.ReloadDataFromDBOnAllServers();
+                caller.Print(_localizer["Message.AM.DataReloaded"]);
+            });
+        }, viewFlags: AdminUtils.GetCurrentPermissionFlags("servers_manage.reload_data"));
         
         menu.Open(caller);
     }
@@ -45,19 +53,19 @@ public static class AdminManageMenus
     {
         var menu = _api.CreateMenu(
             Main.GenerateMenuId("am"),
-            _localizer["MenuTitle." + "AdminsManage"],
+            _localizer["MenuTitle." + "AM"],
             titleColor: MenuColors.Gold,
             backMenu: backMenu
         );
 
-        menu.AddMenuOption(Main.GenerateOptionId("add"), _localizer["MenuOption.AdminAdd"], (_, _) =>
+        menu.AddMenuOption("add", _localizer["MenuOption.AM.Add"], (_, _) =>
         {
             MenuUtils.OpenSelectPlayer(caller, "am_add", (t, m) =>
             {
                 OpenAdminAddMenu(caller, t, m);
             }, backMenu: menu);
         });
-        menu.AddMenuOption(Main.GenerateOptionId("edit_this_server"), _localizer["MenuOption.AM.Edit.ThisServer"], (_, _) =>
+        menu.AddMenuOption("edit_this_server", _localizer["MenuOption.AM.Edit.ThisServer"], (_, _) =>
         {
             MenuUtils.SelectItem<Admin?>(caller, "am_edit", "Name", _api.ServerAdmins!, (t, m) =>
             {
@@ -67,7 +75,7 @@ public static class AdminManageMenus
                 OpenAdminEditMenu(caller, newAdmin, m);
             }, backMenu: menu, nullOption: false);
         });
-        menu.AddMenuOption(Main.GenerateOptionId("edit_all"), _localizer["MenuOption.AM.Edit.All"], (_, _) =>
+        menu.AddMenuOption("edit_all", _localizer["MenuOption.AM.Edit.All"], (_, _) =>
         {
             MenuUtils.SelectItem<Admin?>(caller, "am_edit", "Name", _api.AllAdmins!, (t, m) =>
             {
@@ -77,7 +85,7 @@ public static class AdminManageMenus
                 OpenAdminEditMenu(caller, newAdmin, m);
             }, backMenu: menu, nullOption: false);
         });
-        menu.AddMenuOption(Main.GenerateOptionId("delete"), _localizer["MenuOption.AdminDelete"], (_, _) =>
+        menu.AddMenuOption("delete", _localizer["MenuOption.AdminDelete"], (_, _) =>
         {
             MenuUtils.SelectItem<Admin?>(caller, "am_delete", "Name", _api.ServerAdmins!, (t, m) =>
             {
@@ -92,16 +100,7 @@ public static class AdminManageMenus
                 });
             }, nullOption: false, backMenu: menu);
         });
-        menu.AddMenuOption(Main.GenerateOptionId("reload"), _localizer["MenuOption.ReloadData"], (_, _) =>
-        {
-            Task.Run(async () =>
-            {
-                await _api.ReloadDataFromDBOnAllServers();
-                caller.Print(_localizer["Message.AM.DataReloaded"]);
-            });
-        });
         
-
         menu.Open(caller);
     }
 
@@ -113,26 +112,26 @@ public static class AdminManageMenus
             titleColor: MenuColors.Gold,
             backMenu: backMenu
         );
-        menu.AddMenuOption(Main.GenerateOptionId("name"), _localizer["MenuOption.AM.Name"].AReplace(["value"], [admin.Name]), (_, _) =>
+        menu.AddMenuOption("name", _localizer["MenuOption.AM.Name"].AReplace(["value"], [admin.Name]), (_, _) =>
         {}, disabled: true);
-        menu.AddMenuOption(Main.GenerateOptionId("steam_id"), _localizer["MenuOption.AM.SteamId"].AReplace(["value"], [admin.SteamId]), (_, _) =>
+        menu.AddMenuOption("steam_id", _localizer["MenuOption.AM.SteamId"].AReplace(["value"], [admin.SteamId]), (_, _) =>
         {}, disabled: true);
-        menu.AddMenuOption(Main.GenerateOptionId("server_id"), _localizer["MenuOption.AM.ServerId"].AReplace(["value"], [string.Join(";", admin.Servers)]), (_, _) =>
+        menu.AddMenuOption("server_id", _localizer["MenuOption.AM.ServerId"].AReplace(["value"], [string.Join(";", admin.Servers)]), (_, _) =>
         {
             OpenServerIdEditMenu(caller, admin, backMenu);
         });
-        menu.AddMenuOption(Main.GenerateOptionId("flags"), _localizer["MenuOption.AM.Flags"].AReplace(["value"], [admin.CurrentFlags]), (_, _) =>
+        menu.AddMenuOption("flags", _localizer["MenuOption.AM.Flags"].AReplace(["value"], [admin.CurrentFlags]), (_, _) =>
         {
-            caller.Print(_localizer["Message.AM.FlagsSet"]);
+            caller.Print(_localizer["Message.CH.FlagsSet"]);
             _api.HookNextPlayerMessage(caller, flags =>
             {
                 admin.Flags = flags;
                 OpenAdminEditMenu(caller, admin, backMenu);
             });
         }, disabled: admin.GroupId != null);
-        menu.AddMenuOption(Main.GenerateOptionId("immunity"), _localizer["MenuOption.AM.Immunity"].AReplace(["value"], [admin.CurrentImmunity]), (_, _) =>
+        menu.AddMenuOption("immunity", _localizer["MenuOption.AM.Immunity"].AReplace(["value"], [admin.CurrentImmunity]), (_, _) =>
         {
-            caller.Print(_localizer["Message.AM.ImmunitySet"]);
+            caller.Print(_localizer["Message.CH.ImmunitySet"]);
             _api.HookNextPlayerMessage(caller, str =>
             {
                 if (!int.TryParse(str, out var immunity))
@@ -145,7 +144,7 @@ public static class AdminManageMenus
                 OpenAdminEditMenu(caller, admin, backMenu);
             });
         }, disabled: admin.GroupId != null);
-        menu.AddMenuOption(Main.GenerateOptionId("group"), _localizer["MenuOption.AM.Group"].AReplace(["value"], [admin.Group?.Name ?? ""]), (_, _) =>
+        menu.AddMenuOption("group", _localizer["MenuOption.AM.Group"].AReplace(["value"], [admin.Group?.Name ?? ""]), (_, _) =>
         {
             var groups = _api.Groups;
             MenuUtils.SelectItem<Group?>(caller, "am_add", "Name", groups!, (g, m) =>
@@ -156,7 +155,7 @@ public static class AdminManageMenus
                 OpenAdminEditMenu(caller, admin, backMenu);
             }, backMenu: menu);
         });
-        menu.AddMenuOption(Main.GenerateOptionId("vk"), _localizer["MenuOption.AM.Vk"].AReplace(["value"], [admin.Vk ?? ""]), (_, _) =>
+        menu.AddMenuOption("vk", _localizer["MenuOption.AM.Vk"].AReplace(["value"], [admin.Vk ?? ""]), (_, _) =>
         {
             caller.Print(_localizer["Message.AM.VkSet"]);
             _api.HookNextPlayerMessage(caller, str =>
@@ -167,7 +166,7 @@ public static class AdminManageMenus
                 OpenAdminEditMenu(caller, admin, backMenu);
             });
         });
-        menu.AddMenuOption(Main.GenerateOptionId("discord"), _localizer["MenuOption.AM.Discord"].AReplace(["value"], [admin.Discord ?? ""]), (_, _) =>
+        menu.AddMenuOption("discord", _localizer["MenuOption.AM.Discord"].AReplace(["value"], [admin.Discord ?? ""]), (_, _) =>
         {
             caller.Print(_localizer["Message.AM.DiscordSet"]);
             _api.HookNextPlayerMessage(caller, str =>
@@ -179,7 +178,7 @@ public static class AdminManageMenus
             });
         });
         
-        menu.AddMenuOption(Main.GenerateOptionId("save"), _localizer["MenuOption.AM.Save"], (_, _) =>
+        menu.AddMenuOption("save", _localizer["MenuOption.AM.Save"], (_, _) =>
         {
             caller.Print(_localizer["Message.AM.AdminSave"]);
             var serverIds = EditAdminServerIdBuffer[caller.Admin()!];
@@ -259,22 +258,22 @@ public static class AdminManageMenus
 
         var admin = AddAdminBuffer[caller.Admin()!];
         
-        menu.AddMenuOption(Main.GenerateOptionId("name"), _localizer["MenuOption.AM.Name"].AReplace(["value"], [target.PlayerName]), (_, _) =>
+        menu.AddMenuOption("name", _localizer["MenuOption.AM.Name"].AReplace(["value"], [target.PlayerName]), (_, _) =>
         {}, disabled: true);
-        menu.AddMenuOption(Main.GenerateOptionId("steam_id"), _localizer["MenuOption.AM.SteamId"].AReplace(["value"], [target.SteamId!]), (_, _) =>
+        menu.AddMenuOption("steam_id", _localizer["MenuOption.AM.SteamId"].AReplace(["value"], [target.SteamId!]), (_, _) =>
         {}, disabled: true);
-        menu.AddMenuOption(Main.GenerateOptionId("flags"), _localizer["MenuOption.AM.Flags"].AReplace(["value"], [admin.CurrentFlags]), (_, _) =>
+        menu.AddMenuOption("flags", _localizer["MenuOption.AM.Flags"].AReplace(["value"], [admin.CurrentFlags]), (_, _) =>
         {
-            caller.Print(_localizer["Message.AM.FlagsSet"]);
+            caller.Print(_localizer["Message.CH.FlagsSet"]);
             _api.HookNextPlayerMessage(caller, flags =>
             {
                 admin.Flags = flags;
                 OpenAdminAddMenu(caller, target, backMenu);
             });
         }, disabled: admin.GroupId != null);
-        menu.AddMenuOption(Main.GenerateOptionId("immunity"), _localizer["MenuOption.AM.Immunity"].AReplace(["value"], [admin.CurrentImmunity]), (_, _) =>
+        menu.AddMenuOption("immunity", _localizer["MenuOption.AM.Immunity"].AReplace(["value"], [admin.CurrentImmunity]), (_, _) =>
         {
-            caller.Print(_localizer["Message.AM.ImmunitySet"]);
+            caller.Print(_localizer["Message.CH.ImmunitySet"]);
             _api.HookNextPlayerMessage(caller, str =>
             {
                 if (!int.TryParse(str, out var immunity))
@@ -287,7 +286,7 @@ public static class AdminManageMenus
                 OpenAdminAddMenu(caller, target, backMenu);
             });
         }, disabled: admin.GroupId != null);
-        menu.AddMenuOption(Main.GenerateOptionId("group"), _localizer["MenuOption.AM.Group"].AReplace(["value"], [admin.Group?.Name ?? ""]), (_, _) =>
+        menu.AddMenuOption("group", _localizer["MenuOption.AM.Group"].AReplace(["value"], [admin.Group?.Name ?? ""]), (_, _) =>
         {
             var groups = _api.Groups;
             MenuUtils.SelectItem<Group?>(caller, "am_add", "Name", groups!, (g, m) =>
@@ -298,7 +297,7 @@ public static class AdminManageMenus
                 OpenAdminAddMenu(caller, target, m);
             }, backMenu: menu);
         });
-        menu.AddMenuOption(Main.GenerateOptionId("vk"), _localizer["MenuOption.AM.Vk"].AReplace(["value"], [admin.Vk ?? ""]), (_, _) =>
+        menu.AddMenuOption("vk", _localizer["MenuOption.AM.Vk"].AReplace(["value"], [admin.Vk ?? ""]), (_, _) =>
         {
             caller.Print(_localizer["Message.AM.VkSet"]);
             _api.HookNextPlayerMessage(caller, str =>
@@ -309,7 +308,7 @@ public static class AdminManageMenus
                 OpenAdminAddMenu(caller, target, backMenu);
             });
         });
-        menu.AddMenuOption(Main.GenerateOptionId("discord"), _localizer["MenuOption.AM.Discord"].AReplace(["value"], [admin.Discord ?? ""]), (_, _) =>
+        menu.AddMenuOption("discord", _localizer["MenuOption.AM.Discord"].AReplace(["value"], [admin.Discord ?? ""]), (_, _) =>
         {
             caller.Print(_localizer["Message.AM.DiscordSet"]);
             _api.HookNextPlayerMessage(caller, str =>
@@ -321,7 +320,7 @@ public static class AdminManageMenus
             });
         });
         
-        menu.AddMenuOption(Main.GenerateOptionId("save"), _localizer["MenuOption.AM.Save"], (_, _) =>
+        menu.AddMenuOption("save", _localizer["MenuOption.AM.Save"], (_, _) =>
         {
             caller.Print(_localizer["Message.AM.AdminSave"]);
             var cAdmin = caller.Admin()!;
