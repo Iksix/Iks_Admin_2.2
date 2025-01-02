@@ -27,14 +27,14 @@ public static class UtilsFunctions
         return Main.AdminApi.RegistredPermissions;
     }
 
-    public static IAdminConfig GetConfigMethod()
+    public static AdminConfig GetConfigMethod()
     {
         return Main.AdminApi.Config;
     }
 
     public static void SetDebugMethod(string message)
     {
-        Main.AdminApi.Debug(message);
+        AdminUtils.LogDebug(message);
     }
 
     public static string GetCurrentFlagsFunc(Admin admin)

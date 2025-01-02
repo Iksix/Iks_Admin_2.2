@@ -23,10 +23,8 @@ public class PlayerInfo
         UserId = (int)player.UserId!;
         Slot = player.Slot;
         Ip = player.GetIp();
-        if (player.AuthorizedSteamID == null)
+        if (!player.IsBot)
         {
-            SteamId = null;
-        } else {
             SteamId = player.AuthorizedSteamID!.SteamId64.ToString();
         }
         PlayerName = player.PlayerName;

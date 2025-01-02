@@ -14,28 +14,28 @@ public static class Helper
         string json = streamReader.ReadToEnd();
         var sortMenus = JsonSerializer.Deserialize<Dictionary<string, SortMenu[]>>(json, new JsonSerializerOptions() { ReadCommentHandling = JsonCommentHandling.Skip })!;
         Main.AdminApi.SortMenus = sortMenus;
-        Main.AdminApi.Debug("Sort Menus setted!");
+        AdminUtils.LogDebug("Sort Menus setted!");
         foreach (var item in Main.AdminApi.SortMenus)
         {
-            Main.AdminApi.Debug($@"Menu key: {item.Key}");
-            Main.AdminApi.Debug($@"Menu options: ");
-            Main.AdminApi.Debug($@"ID | ViewFlags | View");
+            AdminUtils.LogDebug($@"Menu key: {item.Key}");
+            AdminUtils.LogDebug($@"Menu options: ");
+            AdminUtils.LogDebug($@"ID | ViewFlags | View");
             foreach (var option in item.Value)
             {
-                Main.AdminApi.Debug($@"{option.Id} | {option.ViewFlags} | {option.View}");
+                AdminUtils.LogDebug($@"{option.Id} | {option.ViewFlags} | {option.View}");
             }
         }
     }
     public static void Print(CCSPlayerController? player, string message)
     {
-        Main.AdminApi.Debug("Print: " + message);
+        AdminUtils.LogDebug("Print: " + message);
         Server.NextFrame(() => {
             player.Print(message, Main.AdminApi.Localizer["Tag"]);
         });
     }
     public static void PrintToSteamId(string steamId, string message)
     {
-        Main.AdminApi.Debug("Print to steamId: " + message);
+        AdminUtils.LogDebug("Print to steamId: " + message);
         if (steamId == "CONSOLE")
         {
             Console.WriteLine(message);
@@ -48,7 +48,7 @@ public static class Helper
     }
     public static void PrintToAdmin(Admin admin, string message)
     {
-        Main.AdminApi.Debug("Print to admin: " + message);
+        AdminUtils.LogDebug("Print to admin: " + message);
         if (admin.SteamId == "CONSOLE")
         {
             Console.WriteLine(message);

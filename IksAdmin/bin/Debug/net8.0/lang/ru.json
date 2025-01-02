@@ -2,13 +2,14 @@
     "Tag" : "[{red}ADMIN{white}]",
 
     "MenuTitle.AdminMain" : "Админ меню",
-    "MenuTitle.GroupAdding" : "Добавление группы",
     "MenuTitle.HELP_SelectItem" : "Выберите:",
 
     "MenuTitle.Other.SelectReason" : "Выберите причину",
     "MenuTitle.Other.SelectTime" : "Выберите время",
     "MenuOption.Other.OwnReason" : "Своя причина",
     "MenuOption.Other.Back" : "← Назад",
+    "MenuOption.Postfix.Expired" : " [ИСТЕКЛО]",
+    "MenuOption.Postfix.Unbanned" : " [РАЗБАНЕН]",
     
     // Global chat hooks
     "Message.CH.FlagsSet" : "Напишите флаги в чат: {red}!abc...",
@@ -23,6 +24,7 @@
     "MenuOption.AM.Add" : "Добавить админа",
     "MenuOption.AM.Delete" : "Удалить админа",
     "MenuOption.AM.Edit" : "Редактировать админа",
+    "MenuOption.AM.Save" : "Сохранить админа",
     "Message.AM.VkSet" : "Напишите VK ID в чат: {red}!someId\n{red}!- {white}- для того что бы оставить пустым",
     "Message.AM.DiscordSet" : "Напишите Discord в чат: {red}!iks__\n{red}!- {white}- для того что бы оставить пустым",
     "Message.AM.AdminSave" : "Сохранение админа...",
@@ -47,10 +49,11 @@
     // groups_manage
     "MenuTitle.GM" : "Управление группами",
     "MenuTitle.GM.Add" : "Управление группами",
-    "MenuTitle.GM.Edit" : "Управление группами",
+    "MenuTitle.GM.Editing" : "Изменение группы",
+    "MenuOption.GM.Edit" : "Редактировать группу",
     "MenuOption.GM" : "Управление группами",
     "MenuOption.GM.Add" : "Добавить группу",
-    "MenuOption.GM.Delete" : "Добавить группу",
+    "MenuOption.GM.Delete" : "Удалить группу",
     "MenuOption.GM.Name" : "Название: {value}",
     "MenuOption.GM.Flags" : "Флаги: {value}",
     "MenuOption.GM.Immunity" : "Иммунитет: {value}",

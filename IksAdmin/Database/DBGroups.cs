@@ -24,18 +24,18 @@ public static class DBGroups
             var existingGroup = await GetGroup(group.Name, ignoreDeleted: false);
             if (existingGroup != null)
             {
-                Main.AdminApi.Debug($"Group {group.Name} already exists...");
-                Main.AdminApi.Debug($"Set new group {group.Name} id = {existingGroup.Id} ✔");
+                AdminUtils.LogDebug($"Group {group.Name} already exists...");
+                AdminUtils.LogDebug($"Set new group {group.Name} id = {existingGroup.Id} ✔");
                 group.Id = existingGroup.Id;
-                Main.AdminApi.Debug($"Update group in base...");
+                AdminUtils.LogDebug($"Update group in base...");
                 return await UpdateGroupInBase(group);
             }
-            Main.AdminApi.Debug($"Add group to base...");
+            AdminUtils.LogDebug($"Add group to base...");
             return await AddGroupToBase(group);
         }
         catch (MySqlException e)
         {
-            Main.AdminApi.LogError(e.ToString());
+            AdminUtils.LogError(e.ToString());
             return new DBResult(null, -1, e.Message);
         }
     }
@@ -56,7 +56,7 @@ public static class DBGroups
         }
         catch (MySqlException e)
         {
-            Main.AdminApi.LogError(e.ToString());
+            AdminUtils.LogError(e.ToString());
             throw;
         }
     }
@@ -77,7 +77,7 @@ public static class DBGroups
         }
         catch (MySqlException e)
         {
-            Main.AdminApi.LogError(e.ToString());
+            AdminUtils.LogError(e.ToString());
             throw;
         }
     }
@@ -101,14 +101,14 @@ public static class DBGroups
                 comment = group.Comment
             });
             group.Id = id;
-            Main.AdminApi.Debug($"Group added to base ✔");
-            Main.AdminApi.Debug($"Group id = {group!.Id} ✔");
+            AdminUtils.LogDebug($"Group added to base ✔");
+            AdminUtils.LogDebug($"Group id = {group!.Id} ✔");
             Main.AdminApi.Groups.Add(group);
             return new DBResult(id, 0);
         }
         catch (MySqlException e)
         {
-            Main.AdminApi.LogError(e.ToString());
+            AdminUtils.LogError(e.ToString());
             throw;
         }
     }
@@ -135,12 +135,12 @@ public static class DBGroups
             var pluginGroup = Main.AdminApi.Groups.FirstOrDefault(x => x.Id == group.Id);
             if (pluginGroup != null)
                 pluginGroup = group;
-            Main.AdminApi.Debug($"Group updated in base ✔");
+            AdminUtils.LogDebug($"Group updated in base ✔");
             return new DBResult(group.Id, 1);
         }
         catch (MySqlException e)
         {
-            Main.AdminApi.LogError(e.ToString());
+            AdminUtils.LogError(e.ToString());
             return new DBResult(null, -1, e.ToString());
         }
     }
@@ -157,12 +157,12 @@ public static class DBGroups
             ", new {
                 groupId = group.Id
             });
-            Main.AdminApi.Debug($"Group deleted ✔");
+            AdminUtils.LogDebug($"Group deleted ✔");
             return new DBResult(null, 0);
         }
         catch (MySqlException e)
         {
-            Main.AdminApi.LogError(e.ToString());
+            AdminUtils.LogError(e.ToString());
             return new DBResult(null, -1, e.ToString());
         }
     }
@@ -171,24 +171,24 @@ public static class DBGroups
     {
         try
         {
-            Main.AdminApi.Debug("Refresing groups...");
+            AdminUtils.LogDebug("Refresing groups...");
             var groups = await GetAllGroups();
-            Main.AdminApi.Debug("1/2 Groups getted ✔");
+            AdminUtils.LogDebug("1/2 Groups getted ✔");
             Main.AdminApi.Groups = groups;
-            Main.AdminApi.Debug("2/2 Groups setted ✔");
-            Main.AdminApi.Debug("Groups refreshed ✔");
-            Main.AdminApi.Debug("---------------");
-            Main.AdminApi.Debug("Groups:");
-            Main.AdminApi.Debug("id | name | flags | immunity");
+            AdminUtils.LogDebug("2/2 Groups setted ✔");
+            AdminUtils.LogDebug("Groups refreshed ✔");
+            AdminUtils.LogDebug("---------------");
+            AdminUtils.LogDebug("Groups:");
+            AdminUtils.LogDebug("id | name | flags | immunity");
             foreach (var group in groups)
             {
-                Main.AdminApi.Debug($"{group.Id} | {group.Name} | {group.Flags} | {group.Immunity}");
+                AdminUtils.LogDebug($"{group.Id} | {group.Name} | {group.Flags} | {group.Immunity}");
             }
             await RefreshLimitations();
         }
         catch (Exception e)
         {
-            Main.AdminApi.LogError(e.ToString());
+            AdminUtils.LogError(e.ToString());
             throw;
         }
     }
@@ -196,17 +196,17 @@ public static class DBGroups
     {
         try
         {
-            Main.AdminApi.Debug("Refresing limitations...");
+            AdminUtils.LogDebug("Refresing limitations...");
             var limitations = await GetAllLimitations();
-            Main.AdminApi.Debug("1/2 limitations getted ✔");
+            AdminUtils.LogDebug("1/2 limitations getted ✔");
             Main.AdminApi.GroupLimitations = limitations;
-            Main.AdminApi.Debug("2/2 limitations setted ✔");
-            Main.AdminApi.Debug("limitations refreshed ✔");
-            Main.AdminApi.Debug("---------------");
+            AdminUtils.LogDebug("2/2 limitations setted ✔");
+            AdminUtils.LogDebug("limitations refreshed ✔");
+            AdminUtils.LogDebug("---------------");
         }
         catch (Exception e)
         {
-            Main.AdminApi.LogError(e.ToString());
+            AdminUtils.LogError(e.ToString());
             throw;
         }
     }
@@ -233,7 +233,7 @@ public static class DBGroups
         }
         catch (MySqlException e)
         {
-            Main.AdminApi.LogError(e.ToString());
+            AdminUtils.LogError(e.ToString());
             throw;
         }
     }

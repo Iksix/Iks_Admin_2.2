@@ -42,7 +42,7 @@ public static class DBComms
         }
         catch (Exception e)
         {
-            Main.AdminApi.LogError(e.ToString());
+            AdminUtils.LogError(e.ToString());
             throw;
         }
     }
@@ -64,7 +64,7 @@ public static class DBComms
         }
         catch (Exception e)
         {
-            Main.AdminApi.LogError(e.ToString());
+            AdminUtils.LogError(e.ToString());
             throw;
         }
     }
@@ -84,7 +84,7 @@ public static class DBComms
         }
         catch (Exception e)
         {
-            Main.AdminApi.LogError(e.ToString());
+            AdminUtils.LogError(e.ToString());
             throw;
         }
     }
@@ -104,7 +104,7 @@ public static class DBComms
         }
         catch (Exception e)
         {
-            Main.AdminApi.LogError(e.ToString());
+            AdminUtils.LogError(e.ToString());
             throw;
         }
     }
@@ -117,7 +117,7 @@ public static class DBComms
         {
             await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
-            
+            punishment.SetEndAt();
             var id = await conn.QuerySingleAsync<int>(@"
                 insert into iks_comms
                 (steam_id, ip, name, mute_type, duration, reason, server_id, admin_id, unbanned_by, unban_reason, created_at, end_at, updated_at, deleted_at)
@@ -144,7 +144,7 @@ public static class DBComms
         }
         catch (Exception e)
         {
-            Main.AdminApi.LogError(e.ToString());
+            AdminUtils.LogError(e.ToString());
             return new DBResult(null, -1, e.ToString());
         }
     }
@@ -172,7 +172,7 @@ public static class DBComms
         }
         catch (Exception e)
         {
-            Main.AdminApi.LogError(e.ToString());
+            AdminUtils.LogError(e.ToString());
             return new DBResult(comm.Id, -1, e.ToString());
         }
     }

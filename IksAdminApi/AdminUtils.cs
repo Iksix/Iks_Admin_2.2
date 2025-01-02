@@ -8,8 +8,9 @@ using Microsoft.Extensions.Localization;
 namespace IksAdminApi;
 
 
-public static class AdminUtils 
+public static class AdminUtils
 {
+    public static BasePlugin CoreInstance;
     public delegate Admin? AdminFinderByController(CCSPlayerController player);
     public static AdminFinderByController FindAdminByControllerMethod = null!;
     public delegate Admin? AdminFinderById(int id);
@@ -17,12 +18,22 @@ public static class AdminUtils
     public static IIksAdminApi AdminApi = null!;
     public delegate Dictionary<string, Dictionary<string, string>> RightsGetter();
     public static RightsGetter GetPremissions = null!;
-    public delegate IAdminConfig ConfigGetter();
+    public delegate AdminConfig ConfigGetter();
     public static ConfigGetter GetConfigMethod = null!;
     public delegate Group? GetGroupFromIdMethod(int id);
     public static GetGroupFromIdMethod GetGroupFromIdFunc = null!;
-    public delegate void DebugFunc(string message);
-    public static DebugFunc Debug = null!;
+    public static void LogDebug(string message)
+    {
+        Console.ForegroundColor = ConsoleColor.Cyan;
+        Console.WriteLine("[Admin Debug]: " +message);
+        Console.ResetColor();
+    }
+    public static void LogError(string message)
+    {
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine("[Admin Error]: " + message);
+        Console.ResetColor();
+    }
     public static Group? GetGroup(int? id)
     {
         if (id == null) return null;
@@ -128,7 +139,7 @@ public static class AdminUtils
     {
         return FindAdminByControllerMethod(player) != null;
     }
-    public static IAdminConfig Config()
+    public static AdminConfig Config()
     {
         return GetConfigMethod();
     }
@@ -158,7 +169,7 @@ public static class AdminUtils
         eventData.Insert("tag", tag);
         if (eventData.Invoke() != HookResult.Continue)
         {
-            Debug("Print(...) stopped by event PRE ");
+            LogDebug("Print(...) stopped by event PRE ");
             return;
         }
 
@@ -224,7 +235,7 @@ public static class AdminUtils
     /// <returns>Возвращает строку из текущих флагов по праву(ex: "admin_manage.add") (учитывая замену в кфг)</returns>
     public static string GetCurrentPermissionFlags(string key)
     {
-        Debug("GetCurrentPermissionFlags for key: `" + key + "`");
+        LogDebug("GetCurrentPermissionFlags for key: `" + key + "`");
         if (key == ">*") {
             return GetAllPermissionFlags();
         }
@@ -241,9 +252,9 @@ public static class AdminUtils
         }
         if (Config().PermissionReplacement.ContainsKey(key))
         {
-            Debug($"Replace permission flags from config...");
+            LogDebug($"Replace permission flags from config...");
             flags = Config().PermissionReplacement[key];
-            Debug($"Permission flags replacement ✔ | flags: {flags}");
+            LogDebug($"Permission flags replacement ✔ | flags: {flags}");
         }
         return flags;
     }
@@ -305,30 +316,30 @@ public static class AdminUtils
     public static bool HasPermissions(this Admin? admin, string key)
     {
         if (admin != null)
-            Debug($"Checking permission: {admin.Name} | {key}" );
-        else Debug($"Checking permission: {key}" );
+            LogDebug($"Checking permission: {admin.Name} | {key}" );
+        else LogDebug($"Checking permission: {key}" );
         var flags = GetCurrentPermissionFlags(key);
         if (flags == "*")
         {
-            Debug($"Has Access ✔");
+            LogDebug($"Has Access ✔");
             return true;
         }
         if (admin == null) {
-            Debug($"Admin is null | No Access ✖");
+            LogDebug($"Admin is null | No Access ✖");
             return false;
         }
         if (admin.IsDisabled) {
-            Debug($"Admin is disabled | No Access ✖");
+            LogDebug($"Admin is disabled | No Access ✖");
             return false;
         }
         if (admin.CurrentFlags.Contains(flags) || admin.CurrentFlags.Contains("z") || admin.SteamId == "CONSOLE"
             || (key == ">*" && admin.CurrentFlags.ToCharArray().Any(x => flags.Contains(x)))
             )
         {
-            Debug($"Admin has access ✔");
+            LogDebug($"Admin has access ✔");
             return true;
         } else {
-            Debug($"Admin hasn't access ✖");
+            LogDebug($"Admin hasn't access ✖");
             return false;
         }
     }

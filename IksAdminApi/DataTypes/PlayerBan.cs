@@ -23,6 +23,9 @@ public class PlayerBan
     public int UpdatedAt {get; set;} = AdminUtils.CurrentTimestamp();
     public int? DeletedAt {get; set;} = null;
 
+    public bool IsExpired => EndAt != 0 && EndAt < AdminUtils.CurrentTimestamp();
+    public bool IsUnbanned => UnbannedBy != null;
+
     public Admin? Admin {get {
         return AdminUtils.FindAdminByIdMethod(AdminId);
     }}
@@ -65,7 +68,7 @@ public class PlayerBan
         Ip = ip;
         Name = name;
         Duration = duration*60;
-        EndAt = Duration == 0 ? 0 : AdminUtils.CurrentTimestamp() + Duration;
+        SetEndAt();
         Reason = reason; 
         ServerId = serverId;
         BanType = banType;
@@ -78,10 +81,15 @@ public class PlayerBan
         Ip = player.Ip;
         Name = player.PlayerName;
         Duration = duration*60;
-        Reason = reason; 
-        EndAt = Duration == 0 ? 0 : AdminUtils.CurrentTimestamp() + Duration;
+        Reason = reason;
+        SetEndAt();
         ServerId = serverId;
         BanType = banType;
         if (AdminUtils.Config().MirrorsIp.Contains(Ip)) Ip = null;
+    }
+
+    public void SetEndAt()
+    {
+        EndAt = Duration == 0 ? 0 : AdminUtils.CurrentTimestamp() + Duration;
     }
 }

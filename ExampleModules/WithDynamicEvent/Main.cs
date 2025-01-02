@@ -50,10 +50,10 @@ public class Main : AdminModule
 
     private HookResult OnKickPlayerPre(EventData data)
     {
-        AdminApi.Debug("KICK PRE FROM MODULE:");
-        AdminApi.Debug("Admin name: " + data.Get<Admin>("admin").Name);
-        AdminApi.Debug("Player name:" + data.Get<CCSPlayerController>("player").PlayerName);
-        AdminApi.Debug("Reason:" + data.Get<string>("reason"));
+        AdminUtils.LogDebug("KICK PRE FROM MODULE:");
+        AdminUtils.LogDebug("Admin name: " + data.Get<Admin>("admin").Name);
+        AdminUtils.LogDebug("Player name:" + data.Get<CCSPlayerController>("player").PlayerName);
+        AdminUtils.LogDebug("Reason:" + data.Get<string>("reason"));
 
         if (ReplaceReason != null)
         {

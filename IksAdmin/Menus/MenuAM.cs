@@ -37,12 +37,12 @@ public static class MenuAM
             MenuGM.OpenGroupsManageMenu(caller, menu);
         }, 
         viewFlags: AdminUtils.GetAllPermissionGroupFlags("groups_manage"));
-        menu.AddMenuOption("reload", _localizer["MenuOption.ReloadData"], (_, _) =>
+        menu.AddMenuOption("reload", _localizer["MenuOption.SM.ReloadData"], (_, _) =>
         {
             Task.Run(async () =>
             {
                 await _api.ReloadDataFromDBOnAllServers();
-                caller.Print(_localizer["Message.AM.DataReloaded"]);
+                caller.Print(_localizer["Message.SM.DataReloaded"]);
             });
         }, viewFlags: AdminUtils.GetCurrentPermissionFlags("servers_manage.reload_data"));
         
@@ -85,7 +85,7 @@ public static class MenuAM
                 OpenAdminEditMenu(caller, newAdmin, m);
             }, backMenu: menu, nullOption: false);
         });
-        menu.AddMenuOption("delete", _localizer["MenuOption.AdminDelete"], (_, _) =>
+        menu.AddMenuOption("delete", _localizer["MenuOption.AM.Delete"], (_, _) =>
         {
             MenuUtils.SelectItem<Admin?>(caller, "am_delete", "Name", _api.ServerAdmins!, (t, m) =>
             {
@@ -112,11 +112,12 @@ public static class MenuAM
             titleColor: MenuColors.Gold,
             backMenu: backMenu
         );
+        var serverIds = EditAdminServerIdBuffer[caller.Admin()!];
         menu.AddMenuOption("name", _localizer["MenuOption.AM.Name"].AReplace(["value"], [admin.Name]), (_, _) =>
         {}, disabled: true);
         menu.AddMenuOption("steam_id", _localizer["MenuOption.AM.SteamId"].AReplace(["value"], [admin.SteamId]), (_, _) =>
         {}, disabled: true);
-        menu.AddMenuOption("server_id", _localizer["MenuOption.AM.ServerId"].AReplace(["value"], [string.Join(";", admin.Servers)]), (_, _) =>
+        menu.AddMenuOption("server_id", _localizer["MenuOption.AM.ServerId"].AReplace(["value"], [string.Join(";", serverIds)]), (_, _) =>
         {
             OpenServerIdEditMenu(caller, admin, backMenu);
         });
@@ -194,7 +195,7 @@ public static class MenuAM
                 if (result.QueryStatus < 0)
                 {
                     caller.Print(_localizer["ActionError.Other"]);
-                    _api.LogError(result.QueryMessage);
+                    AdminUtils.LogError(result.QueryMessage);
                     return;
                 }
                 caller.Print(_localizer["Message.AM.AdminSaved"]);
@@ -330,7 +331,7 @@ public static class MenuAM
                 if (result.QueryStatus < 0)
                 {
                     caller.Print(_localizer["ActionError.Other"]);
-                    _api.LogError(result.QueryMessage);
+                    AdminUtils.LogError(result.QueryMessage);
                     return;
                 }
                 caller.Print(_localizer["Message.AM.AdminSaved"]);

@@ -9,9 +9,9 @@ public static class GagsFunctions
 
     public static async Task Gag(PlayerComm gag)
     {
-        AdminApi.Debug("Add gag... " + gag.SteamId);
+        AdminUtils.LogDebug("Add gag... " + gag.SteamId);
         var result = await AdminApi.AddGag(gag);
-        AdminApi.Debug("Gag result: " + result);
+        AdminUtils.LogDebug("Gag result: " + result);
         switch (result.QueryStatus)
         {
             case 0:
@@ -30,7 +30,7 @@ public static class GagsFunctions
     }
     public static async Task Ungag(Admin admin, string steamId, string reason)
     {
-        AdminApi.Debug("Trying to ungag... " + steamId);
+        AdminUtils.LogDebug("Trying to ungag... " + steamId);
         var existingComm = (await AdminApi.GetActiveComms(steamId)).GetGag();
         if (existingComm == null)
         {
@@ -39,7 +39,7 @@ public static class GagsFunctions
         }
         existingComm.UnbanReason = reason;
         var result = await AdminApi.UnComm(admin, existingComm);
-        AdminApi.Debug("Ungag result: " + result);
+        AdminUtils.LogDebug("Ungag result: " + result);
         switch (result.QueryStatus)
         {
             case 0:

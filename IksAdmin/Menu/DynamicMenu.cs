@@ -31,7 +31,7 @@ public class DynamicMenu : IDynamicMenu
             BackAction = player => backMenu.Open(player);
         }
         
-        Main.AdminApi.Debug($@"
+        AdminUtils.LogDebug($@"
             Menu created:
             Id: {Id}
             Title: {Title}
@@ -41,7 +41,7 @@ public class DynamicMenu : IDynamicMenu
 
     public void Open(CCSPlayerController player, bool useSortMenu = true)
     {
-        Main.AdminApi.Debug($@"
+        AdminUtils.LogDebug($@"
             Open menu... :
             Player: {player.PlayerName} | [{player.AuthorizedSteamID!.SteamId64}]
             Id: {Id}
@@ -96,7 +96,7 @@ public class DynamicMenu : IDynamicMenu
             var options = Options.ToList();
             if (Main.AdminApi.SortMenus.TryGetValue(Id, out var sortMenu))
             {
-                Main.AdminApi.Debug("With sort menu");
+                AdminUtils.LogDebug("With sort menu");
                 foreach (var sort in sortMenu)
                 {
                     var option = options.FirstOrDefault(x => x.Id == sort.Id);
@@ -160,7 +160,7 @@ public class DynamicMenu : IDynamicMenu
         }
         if (!useSortMenu)
         {
-            Main.AdminApi.Debug("Without sort menu");
+            AdminUtils.LogDebug("Without sort menu");
             foreach (var option in Options)
             {
                 var viewFlags = option.ViewFlags; // Текущие ViewFlags опции
@@ -193,7 +193,7 @@ public class DynamicMenu : IDynamicMenu
     {
         string colorString = GetMenuColorString(player, TitleColor);
         var fullTitleString = colorString.Replace("{value}", RemoveDangerSymbols(player, Title));
-        Main.AdminApi.Debug($"Full title string: {fullTitleString}");
+        AdminUtils.LogDebug($"Full title string: {fullTitleString}");
         return fullTitleString;
     }
 
@@ -201,7 +201,7 @@ public class DynamicMenu : IDynamicMenu
     {
         string colorString = GetMenuColorString(player, option.Color);
         var fullOptionString = colorString.Replace("{value}", RemoveDangerSymbols(player, option.Title));
-        Main.AdminApi.Debug($"Full option string: {fullOptionString}");
+        AdminUtils.LogDebug($"Full option string: {fullOptionString}");
         return fullOptionString;
     }
 
@@ -291,7 +291,7 @@ public class DynamicMenu : IDynamicMenu
     {
         if (Options.Any(x => x.Id == id))
         {
-            Main.AdminApi.Debug($"Option \"{id}\" already exists.");
+            AdminUtils.LogDebug($"Option \"{id}\" already exists.");
         }
         Options.Add(new DynamicMenuOption(id, title, onExecute, color, disabled, viewFlags));
     }
@@ -315,7 +315,7 @@ public class DynamicMenuOption : IDynamicMenuOption
         Disabled = disabled;
         ViewFlags = viewFlags;
 
-        Main.AdminApi.Debug($@"
+        AdminUtils.LogDebug($@"
             Option created:
             Id: {id}
             Title: {title}

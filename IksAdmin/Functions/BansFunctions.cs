@@ -8,9 +8,9 @@ public static class BansFunctions
     public static AdminApi AdminApi = Main.AdminApi;
     public static async Task Ban(PlayerBan ban)
     {
-        AdminApi.Debug("Add ban... " + ban.SteamId);
+        AdminUtils.LogDebug("Add ban... " + ban.SteamId);
         var result = await AdminApi.AddBan(ban);
-        AdminApi.Debug("Ban result: " + result);
+        AdminUtils.LogDebug("Ban result: " + result);
         switch (result.QueryStatus)
         {
             case 0:
@@ -27,9 +27,9 @@ public static class BansFunctions
 
     public static async Task Unban(Admin admin, string steamId, string reason)
     {
-        AdminApi.Debug("Trying to unban... " + steamId);
+        AdminUtils.LogDebug("Trying to unban... " + steamId);
         var result = await AdminApi.Unban(admin, steamId, reason);
-        AdminApi.Debug("Unban result: " + result);
+        AdminUtils.LogDebug("Unban result: " + result);
         switch (result.QueryStatus)
         {
             case 0:
@@ -48,9 +48,9 @@ public static class BansFunctions
     }
     public static async Task UnbanIp(Admin admin, string ip, string reason)
     {
-        AdminApi.Debug("Trying to unban ip... " + ip);
+        AdminUtils.LogDebug("Trying to unban ip... " + ip);
         var result = await AdminApi.Unban(admin, ip, reason);
-        AdminApi.Debug("Unban ip result: " + result);
+        AdminUtils.LogDebug("Unban ip result: " + result);
         switch (result.QueryStatus)
         {
             case 0:

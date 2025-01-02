@@ -14,7 +14,7 @@ public interface IIksAdminApi
     public List<PlayerComm> Comms {get; set;}
     public List<Warn> Warns {get; set;}
 
-    public IAdminConfig Config { get; set; }
+    public AdminConfig Config { get; set; }
     public IStringLocalizer Localizer { get; set; }
     public BasePlugin Plugin { get; set; } 
     public string ModuleDirectory { get; set; }
@@ -62,6 +62,12 @@ public interface IIksAdminApi
     public void ApplyCommForPlayer(PlayerComm comm);
     public void RemoveCommFromPlayer(PlayerComm comm);
     public Task ReloadInfractions(string steamId, string? ip = null, bool instantlyKick = false);
+    
+    /// <summary>
+    /// Reload data from db
+    /// </summary>
+    /// <param name="sendRcon">Send rcon command to all servers?</param>
+    public Task ReloadDataFromDb(bool sendRcon = true);
     public Task ReloadDataFromDBOnAllServers();
     public Task<PlayerSummaries?> GetPlayerSummaries(ulong steamId);
     public void DoActionWithIdentity(CCSPlayerController? actioneer, string identity, Action<CCSPlayerController> action, string[]? blockedArgs = null);
@@ -71,8 +77,6 @@ public interface IIksAdminApi
     public bool CanDoActionWithPlayer(string callerId, string targetId);
     public void SetCommandInititalizer(string moduleName);
     public void ClearCommandInitializer();
-    public void Debug(string message);
-    public void LogError(string message);
     public void RegisterPermission(string key, string defaultFlags);
     public string GetCurrentPermissionFlags(string key);
     public string GetCurrentPermissionFlags(string[] keys);

@@ -46,7 +46,7 @@ public static class AdminManageFunctions
                     break;
                 default:
                     Helper.Reply(info, "Unexpected query status! Please check server console!");
-                    Main.AdminApi.LogError(newAdmin.QueryMessage);
+                    AdminUtils.LogError(newAdmin.QueryMessage);
                     break;
             }
         });

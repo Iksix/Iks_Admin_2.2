@@ -60,7 +60,7 @@ public static class MenuGM
     {
         var menu = _api.CreateMenu(
             Main.GenerateMenuId("gm_edit"),
-            _localizer["MenuTitle.GroupEditing"],
+            _localizer["MenuTitle.GM.Editing"],
             titleColor: MenuColors.Gold,
             backMenu: backMenu
         );
@@ -69,14 +69,14 @@ public static class MenuGM
             caller.Print(_localizer["Message.GM.NameSet"]);
             _api.HookNextPlayerMessage(caller, msg => {
                 group.Name = msg;
-                OpenGroupAddMenu(caller, backMenu);
+                OpenGroupEditMenu(caller, group, backMenu);
             });
         });
         menu.AddMenuOption("flags", _localizer["MenuOption.GM.Flags"].AReplace(["value"], [group.Flags]), (_, _) => {
             caller.Print(_localizer["Message.CH.FlagsSet"]);
             _api.HookNextPlayerMessage(caller, msg => {
                 group.Flags = msg;
-                OpenGroupAddMenu(caller, backMenu);
+                OpenGroupEditMenu(caller, group, backMenu);
             });
         });
         menu.AddMenuOption("immunity", _localizer["MenuOption.GM.Immunity"].AReplace(["value"], [group.Immunity]), (_, _) => {
@@ -85,10 +85,10 @@ public static class MenuGM
                 if (int.TryParse(msg, out var immunity))
                 {
                     group.Immunity = immunity;
-                    OpenGroupAddMenu(caller, backMenu);
+                    OpenGroupEditMenu(caller, group, backMenu);
                 } else {
                     caller.Print(_localizer["Error.MustBeANumber"]);
-                    OpenGroupAddMenu(caller, backMenu);
+                    OpenGroupEditMenu(caller, group, backMenu);
                 }
             });
         });
@@ -96,7 +96,7 @@ public static class MenuGM
             caller.Print(_localizer["Message.GM.CommentSet"]);
             _api.HookNextPlayerMessage(caller, msg => {
                 group.Comment = msg;
-                OpenGroupAddMenu(caller, backMenu);
+                OpenGroupEditMenu(caller, group, backMenu);
             });
         });
         menu.AddMenuOption("save", _localizer["MenuOption.GM.Save"], (_, _) => {
@@ -107,6 +107,7 @@ public static class MenuGM
                 await _api.UpdateGroup(group);
                 Server.NextFrame(() => {
                     caller.Print(_localizer["Message.GM.Saved"]);
+                    OpenGroupEditMenu(caller, group, backMenu);
                 });
             });
         });
@@ -165,6 +166,7 @@ public static class MenuGM
                 await _api.CreateGroup(group);
                 Server.NextFrame(() => {
                     caller.Print(_localizer["Message.GM.Saved"]);
+                    OpenGroupAddMenu(caller, backMenu);
                 });
             });
         });

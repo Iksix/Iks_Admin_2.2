@@ -2,6 +2,7 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Commands;
 using IksAdmin.Functions;
 using IksAdmin.Menus;
+using IksAdminApi;
 
 namespace IksAdmin.Commands;
 
@@ -16,11 +17,13 @@ public static class CmdBase
 
     public static void Reload(CCSPlayerController? caller, List<string> args, CommandInfo info)
     {
-        Helper.Reply(info, "Reloading DB data...");
+        caller.Print("Reloading DB data...");
         Task.Run(async () =>
         {
-            await AdminApi.ReloadDataFromDb();
-            Helper.Reply(info, "DB data reloaded \u2714");
+            if (args.Count > 0 && args[0] == "all")
+                await AdminApi.ReloadDataFromDb();
+            else await AdminApi.ReloadDataFromDb(false);
+            caller.Print( "DB data reloaded \u2714");
         });
     }
 }

@@ -9,9 +9,9 @@ public static class SilenceFunctions
 
     public static async Task Silence(PlayerComm comm)
     {
-        AdminApi.Debug("Add silence... " + comm.SteamId);
+        AdminUtils.LogDebug("Add silence... " + comm.SteamId);
         var result = await AdminApi.AddComm(comm);
-        AdminApi.Debug("Silence result: " + result);
+        AdminUtils.LogDebug("Silence result: " + result);
         switch (result.QueryStatus)
         {
             case 0:
@@ -30,7 +30,7 @@ public static class SilenceFunctions
     }
     public static async Task UnSilence(Admin admin, string steamId, string reason)
     {
-        AdminApi.Debug("Trying to unsilence... " + steamId);
+        AdminUtils.LogDebug("Trying to unsilence... " + steamId);
         var existingComm = (await AdminApi.GetActiveComms(steamId)).GetSilence();
         if (existingComm == null)
         {
@@ -39,7 +39,7 @@ public static class SilenceFunctions
         }
         existingComm.UnbanReason = reason;
         var result = await AdminApi.UnComm(admin, existingComm);
-        AdminApi.Debug("Unsilence result: " + result);
+        AdminUtils.LogDebug("Unsilence result: " + result);
         switch (result.QueryStatus)
         {
             case 0:

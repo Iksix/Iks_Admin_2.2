@@ -26,13 +26,12 @@ using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Timers;
 namespace IksAdmin;
 
-public class Main : BasePlugin, IPluginConfig<PluginConfig>
+public class Main : BasePlugin
 {
     public override string ModuleName => "IksAdmin";
     public override string ModuleVersion => "2.2";
     public override string ModuleAuthor => "iks [Discord: iks__]";
 
-    public PluginConfig Config { get; set; } = null!;
     public static IMenuApi MenuApi = null!;
     private static readonly PluginCapability<IMenuApi?> MenuCapability = new("menu:nfcore");   
     public static AdminApi AdminApi = null!;
@@ -46,10 +45,6 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
     // INSTANT PUNISHMENT ON CONNECT
     public static Dictionary<string, PlayerComm> InstantComm = new();
     
-    
-
-    
-    
 
     public static string GenerateMenuId(string id)
     {
@@ -59,22 +54,12 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
     {
         return $"iksadmin:option:{id}";
     }
-    public void OnConfigParsed(PluginConfig config)
-    {
-        Config = config;
-        var builder = new MySqlConnectionStringBuilder();
-        builder.Password = config.Password;
-        builder.Server = config.Host;
-        builder.Database = config.Database;
-        builder.UserID = config.User;
-        builder.Port = uint.Parse(config.Port);
-        DB.ConnectionString = builder.ConnectionString;
-    }
     public override void Load(bool hotReload)
     {
         Instance = this;
+        AdminUtils.CoreInstance = this;
         PlayersUtils.AdminPluginInstance = this;
-        AdminApi = new AdminApi(this, Config, Localizer, ModuleDirectory, DB.ConnectionString);
+        AdminApi = new AdminApi(this, Localizer, ModuleDirectory, DB.ConnectionString);
         AdminModule.AdminApi = AdminApi;
         AdminUtils.AdminApi = AdminApi;
         AdminApi.OnModuleLoaded += OnModuleLoaded;
@@ -87,7 +72,6 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
         AdminUtils.FindAdminByIdMethod = UtilsFunctions.FindAdminByIdMethod;
         AdminUtils.GetPremissions = UtilsFunctions.GetPermissions;
         AdminUtils.GetConfigMethod = UtilsFunctions.GetConfigMethod;
-        AdminUtils.Debug = UtilsFunctions.SetDebugMethod;
         AdminApi.SetConfigs();
         Helper.SetSortMenus();
         AddCommandListener("say", OnSay);
@@ -126,6 +110,8 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
     {
         var steamId64 = steamId.SteamId64.ToString();
         var player = Utilities.GetPlayerFromSlot(playerSlot);
+        var disconnected = AdminApi.DisconnectedPlayers.FirstOrDefault(x => x.SteamId == steamId64);
+        AdminApi.DisconnectedPlayers.Remove(disconnected);
         var ip = player!.IpAddress;
         Task.Run(async () => {
             await AdminApi.ReloadInfractions(steamId64, ip, true);
@@ -173,11 +159,11 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             msg = msg.Remove(0, 1);
             msg = msg.Remove(msg.Length - 1, 1);
         }
-        AdminApi.Debug($"{player.PlayerName} message: {msg}");
+        AdminUtils.LogDebug($"{player.PlayerName} message: {msg}");
         if (msg.StartsWith("!") || msg.StartsWith("/")) {
             if (AdminApi.NextPlayerMessage.ContainsKey(player))
             {
-                AdminApi.Debug("Next player message: " + msg);
+                AdminUtils.LogDebug("Next player message: " + msg);
                 AdminApi.NextPlayerMessage[player].Invoke(msg.Remove(0, 1));
                 AdminApi.RemoveNextPlayerMessageHook(player);
                 return HookResult.Handled;
@@ -281,7 +267,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
         AdminApi.AddNewCommand(
             "am_reload",
             "Перезагружает данные с БД",
-            "z",
+            "servers_manage.reload_data",
             "css_am_reload",
             CmdBase.Reload,
             minArgs: 0,
@@ -488,12 +474,12 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
             MenuApi = MenuCapability.Get()!;
             if (MenuApi == null)
             {
-                AdminApi.Debug("Start without Menu Manager");
+                AdminUtils.LogDebug("Start without Menu Manager");
             }
         }
         catch (Exception)
         {
-            AdminApi.Debug("Start without Menu Manager");
+            AdminUtils.LogDebug("Start without Menu Manager");
         }
         
     }
@@ -505,11 +491,6 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
         if (player == null) return HookResult.Continue;
         if (player.IsBot) return HookResult.Continue;
         var steamId = player.AuthorizedSteamID!.SteamId64.ToString();
-        var disconnected = AdminApi.DisconnectedPlayers.FirstOrDefault(x => x.SteamId == steamId);
-        if (disconnected != null)
-        {
-            AdminApi.DisconnectedPlayers.Remove(disconnected);
-        }
         if (KickOnFullConnect.ContainsKey(steamId))
         {
             var reason = KickOnFullConnectReason[steamId];
@@ -529,8 +510,10 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
         var player = @event.Userid;
         BlockTeamChange.Remove(player!);
         PlayersUtils.ClearHtmlMessage(player!);
-        if (player == null || player.IsBot) return HookResult.Continue;
+        if (player == null || player.IsBot || player.AuthorizedSteamID == null) return HookResult.Continue;
         AdminApi.DisconnectedPlayers.Insert(0, new PlayerInfo(player));
+        KickOnFullConnect.Remove(player.GetSteamId());
+        KickOnFullConnectReason.Remove(player.GetSteamId());
         var comms = player.GetComms();
         foreach (var comm in comms)
         {
@@ -556,7 +539,7 @@ public class Main : BasePlugin, IPluginConfig<PluginConfig>
 
 public class AdminApi : IIksAdminApi
 {
-    public IAdminConfig Config { get; set; } 
+    public AdminConfig Config { get; set; } 
     public BasePlugin Plugin { get; set; } 
     public IStringLocalizer Localizer { get; set; }
     public Dictionary<string, SortMenu[]> SortMenus { get; set; } = new();
@@ -647,14 +630,23 @@ public class AdminApi : IIksAdminApi
     public MutesConfig MutesConfig {get; set;} = new ();
     public SilenceConfig SilenceConfig {get; set;} = new ();
     public GagsConfig GagsConfig {get; set;} = new ();
+    public AdminConfig AdminConfig {get; set;} = new ();
 
     public List<PlayerInfo> DisconnectedPlayers {get; set;} = new();
     public List<AdminToServer> AdminsToServer {get; set;} = new();
 
-    public AdminApi(BasePlugin plugin, IAdminConfig config, IStringLocalizer localizer, string moduleDirectory, string dbConnectionString)
+    public AdminApi(BasePlugin plugin, IStringLocalizer localizer, string moduleDirectory, string dbConnectionString)
     {
         Plugin = plugin;
-        Config = config;
+        SetConfigs();
+        Config = AdminConfig.Config;
+        var builder = new MySqlConnectionStringBuilder();
+        builder.Password = Config.Password;
+        builder.Server = Config.Host;
+        builder.Database = Config.Database;
+        builder.UserID = Config.User;
+        builder.Port = uint.Parse(Config.Port);
+        DB.ConnectionString = builder.ConnectionString;
         Localizer = localizer;
         ModuleDirectory = moduleDirectory;
         DbConnectionString = dbConnectionString;
@@ -665,14 +657,19 @@ public class AdminApi : IIksAdminApi
 
     public void SetConfigs()
     {
+        AdminConfig.Set();
         BansConfig.Set();
         MutesConfig.Set();
         GagsConfig.Set();
         SilenceConfig.Set();
     }
 
-    public async Task ReloadDataFromDb()
+    public async Task ReloadDataFromDb(bool sendRcon = true)
     {
+        if (sendRcon)
+        {
+            await SendRconToAllServers("css_am_reload", true);
+        }
         var serverModel = new ServerModel(
                 Config.ServerId,
                 Config.ServerIp,
@@ -682,18 +679,16 @@ public class AdminApi : IIksAdminApi
         var adminsBeforeReload = ServerAdmins.ToArray();
         try
         {
-            Debug("Init Database");
+            AdminUtils.LogDebug("Init Database");
             await DB.Init();
-            Debug("Refresh Servers");
+            AdminUtils.LogDebug("Refresh Servers");
             await DBServers.Add(serverModel);
             AllServers = await DBServers.GetAll();
             ThisServer = AllServers.First(x => x.Id == serverModel.Id);
-            Debug("Refresh Admins");
+            AdminUtils.LogDebug("Refresh Admins");
             await RefreshAdmins();
             Warns = await DBWarns.GetAllActive();
-            await SendRconToAllServers("css_am_reload", true);
             Server.NextFrame(() => {
-                OnReady?.Invoke();
                 var noAdmins = adminsBeforeReload.Where(x => !ServerAdmins.Contains(x));
                 foreach (var player in noAdmins)
                 {
@@ -707,7 +702,7 @@ public class AdminApi : IIksAdminApi
         }
         catch (Exception e)
         {
-            LogError(e.ToString());
+            AdminUtils.LogError(e.ToString());
             throw;
         }
     }
@@ -767,20 +762,7 @@ public class AdminApi : IIksAdminApi
         return new DynamicMenu(id, title, (MenuType)type, titleColor, postSelectAction, backAction, backMenu);
     }
 
-    public void Debug(string message)
-    {
-        if (!Config.DebugMode) return;
-        Console.ForegroundColor = ConsoleColor.Cyan;
-        Console.WriteLine("[Admin Debug]: " +message);
-        Console.ResetColor();
-
-    }
-    public void LogError(string message)
-    {
-        Console.ForegroundColor = ConsoleColor.Red;
-        Console.WriteLine("[Admin Error]: " + message);
-        Console.ResetColor();
-    }
+    
 
     public void RegisterPermission(string key, string defaultFlags)
     {
@@ -819,7 +801,7 @@ public class AdminApi : IIksAdminApi
     {
         var result = MenuOpenPre?.Invoke(player, menu, gameMenu) ?? HookResult.Continue;
         if (result is HookResult.Stop or HookResult.Handled) {
-            Debug("Some event handler stopped menu opening | Id: " + menu.Id);
+            AdminUtils.LogDebug("Some event handler stopped menu opening | Id: " + menu.Id);
             return false;
         }
         return true;
@@ -838,7 +820,7 @@ public class AdminApi : IIksAdminApi
     {
         var result = OptionRenderPre?.Invoke(player, menu, gameMenu, option) ?? HookResult.Continue;
         if (result is HookResult.Stop or HookResult.Handled) {
-            Debug("Some event handler skipped option render | Id: " + option.Id);
+            AdminUtils.LogDebug("Some event handler skipped option render | Id: " + option.Id);
             return false;
         }
         return true;
@@ -857,7 +839,7 @@ public class AdminApi : IIksAdminApi
     {
         var result = OptionExecutedPre?.Invoke(player, menu, gameMenu, option) ?? HookResult.Continue;
         if (result is HookResult.Stop or HookResult.Handled) {
-            Debug("Some event handler stopped option executed | Id: " + option.Id);
+            AdminUtils.LogDebug("Some event handler stopped option executed | Id: " + option.Id);
             return false;
         }
         return true;
@@ -907,13 +889,13 @@ public class AdminApi : IIksAdminApi
     
     public void HookNextPlayerMessage(CCSPlayerController player, Action<string> action)
     {
-        Debug("Log next player message: " + player.PlayerName);
+        AdminUtils.LogDebug("Log next player message: " + player.PlayerName);
         NextPlayerMessage[player] = action;
     }
 
     public void RemoveNextPlayerMessageHook(CCSPlayerController player)
     {
-        Debug("Remove next player message hook: " + player.PlayerName);
+        AdminUtils.LogDebug("Remove next player message hook: " + player.PlayerName);
         NextPlayerMessage.Remove(player);
     }
 
@@ -937,12 +919,12 @@ public class AdminApi : IIksAdminApi
     {
         var ip = server.Ip.Split(":")[0];
         var port = server.Ip.Split(":")[1];
-        Debug($"Sending rcon command [{command}] to server ({server.Name})[{server.Ip}] ...");
+        AdminUtils.LogDebug($"Sending rcon command [{command}] to server ({server.Name})[{server.Ip}] ...");
         using var rcon = new RCON(new IPEndPoint(IPAddress.Parse(ip), int.Parse(port)), server.Rcon ?? "");
         await rcon.ConnectAsync();
         var result = await rcon.SendCommandAsync(command);
-        Debug($"Success ✔");
-        Debug($"Response from {server.Name} [{server.Ip}]: {result}");
+        AdminUtils.LogDebug($"Success ✔");
+        AdminUtils.LogDebug($"Response from {server.Name} [{server.Ip}]: {result}");
     }
 
     public ServerModel? GetServerById(int id)
@@ -968,7 +950,7 @@ public class AdminApi : IIksAdminApi
     {
         if (Config.IgnoreCommandsRegistering.Contains(command))
         {
-            Debug($"Adding new command [{command}] was skipped from config");
+            AdminUtils.LogDebug($"Adding new command [{command}] was skipped from config");
             return;
         }
         var tagString = tag == null ? Localizer["Tag"] : tag;
@@ -1011,7 +993,7 @@ public class AdminApi : IIksAdminApi
             catch (Exception e)
             {
                 info.Reply(Localizer["Error.OtherCommandError"].Value.Replace("{usage}", usage), tagString);
-                LogError(e.Message);
+                AdminUtils.LogError(e.Message);
             }
             
         };
@@ -1052,11 +1034,11 @@ public class AdminApi : IIksAdminApi
     {
         try
         {
-            Debug($"Baning player...");
+            AdminUtils.LogDebug($"Baning player...");
             var reservedReason = BansConfig.Config.Reasons.FirstOrDefault(x => x.Title.ToLower() == ban.Reason.ToLower());
             if (reservedReason != null)
             {
-                Debug($"Do reservedReason transformations...");
+                AdminUtils.LogDebug($"Do reservedReason transformations...");
                 if (reservedReason.BanOnAllServers)
                     ban.ServerId = null;
                 ban.Reason = reservedReason.Text;
@@ -1128,10 +1110,10 @@ public class AdminApi : IIksAdminApi
                     });
                     break;
                 case 1:
-                    Debug("Ban already exists!");
+                    AdminUtils.LogDebug("Ban already exists!");
                     break;
                 case -1:
-                    Debug("Some error while ban");
+                    AdminUtils.LogDebug("Some error while ban");
                     break;
             }
             var onBanPost = OnBanPost?.Invoke(ban, ref announce) ?? HookResult.Continue;
@@ -1143,7 +1125,7 @@ public class AdminApi : IIksAdminApi
         }
         catch (Exception e)
         {
-            Main.AdminApi.LogError(e.ToString());
+            AdminUtils.LogError(e.ToString());
             throw;
         }
         
@@ -1154,7 +1136,7 @@ public class AdminApi : IIksAdminApi
         var ban = await GetActiveBan(steamId);
         if (ban == null)
         {
-            Debug("Ban not finded ✖!");
+            AdminUtils.LogDebug("Ban not finded ✖!");
             return new DBResult(null, 1, "Ban not finded ✖!");
         }
         if (!DBBans.CanUnban(admin, ban)) return new DBResult(null, 2, "admin can't unban");
@@ -1177,7 +1159,7 @@ public class AdminApi : IIksAdminApi
                 });
                 break;
             case -1:
-                Debug("Some error while unban");
+                AdminUtils.LogDebug("Some error while unban");
                 break;
         }
         
@@ -1195,7 +1177,7 @@ public class AdminApi : IIksAdminApi
         var ban = await GetActiveBanIp(ip);
         if (ban == null)
         {
-            Debug("Ban not finded ✖!");
+            AdminUtils.LogDebug("Ban not finded ✖!");
             return new DBResult(null, 1, "Ban not finded ✖!");
         }
         
@@ -1219,7 +1201,7 @@ public class AdminApi : IIksAdminApi
                 });
                 break;
             case -1:
-                Debug("Some error while unban");
+                AdminUtils.LogDebug("Some error while unban");
                 break;
         }
         
@@ -1417,9 +1399,9 @@ public class AdminApi : IIksAdminApi
     public async Task ReloadInfractions(string steamId, string? ip = null, bool instantlyKick = false)
     {
         // Проверяем наличие бана и кикаем если есть =)
-        Debug("Reload infractions for: " + steamId);
+        AdminUtils.LogDebug("Reload infractions for: " + steamId);
         var ban = await GetActiveBan(steamId);
-        Debug("Has ban: " + (ban != null).ToString());
+        AdminUtils.LogDebug("Has ban: " + (ban != null).ToString());
         if (ban != null)
         {
             Main.KickOnFullConnect.Add(steamId, instantlyKick);
@@ -1428,9 +1410,9 @@ public class AdminApi : IIksAdminApi
         }
         if (ip != null)
         {
-            Debug("Reload infractions for: " + ip);
+            AdminUtils.LogDebug("Reload infractions for: " + ip);
             ban = await GetActiveBanIp(ip);
-            Debug("Has ip ban: " + (ban != null).ToString());
+            AdminUtils.LogDebug("Has ip ban: " + (ban != null).ToString());
             if (ban != null)
             {
                 Main.KickOnFullConnect.Add(steamId, instantlyKick);
@@ -1445,9 +1427,9 @@ public class AdminApi : IIksAdminApi
                 ApplyCommForPlayer(comm);
             }
         });
-        Debug("Has gag: " + comms.HasGag());
-        Debug("Has mute: " + comms.HasMute());
-        Debug("Has silence: " + comms.HasSilence());
+        AdminUtils.LogDebug("Has gag: " + comms.HasGag());
+        AdminUtils.LogDebug("Has mute: " + comms.HasMute());
+        AdminUtils.LogDebug("Has silence: " + comms.HasSilence());
     }
 
     public void MutePlayerInGame(PlayerComm mute)
@@ -1455,7 +1437,7 @@ public class AdminApi : IIksAdminApi
         var player = PlayersUtils.GetControllerBySteamId(mute.SteamId);
         if (player != null)
         {
-            Debug($"Mute player: {mute.Name} | {mute.SteamId} in game!");
+            AdminUtils.LogDebug($"Mute player: {mute.Name} | {mute.SteamId} in game!");
             Comms.Add(mute);
             player.VoiceFlags = VoiceFlags.Muted;
         } else {
@@ -1479,7 +1461,7 @@ public class AdminApi : IIksAdminApi
         var player = PlayersUtils.GetControllerBySteamId(gag.SteamId);
         if (player != null)
         {
-            Debug($"Gag player: {gag.Name} | {gag.SteamId} in game!");
+            AdminUtils.LogDebug($"Gag player: {gag.Name} | {gag.SteamId} in game!");
             Comms.Add(gag);
         } else {
             Main.InstantComm.Add(gag.SteamId, gag);
@@ -1529,11 +1511,11 @@ public class AdminApi : IIksAdminApi
 
     private async Task<DBResult> UnSilence(Admin admin, string steamId, string? reason, bool announce)
     {
-        Debug($"Ungag player {steamId}!");
+        AdminUtils.LogDebug($"Ungag player {steamId}!");
         var comms = await GetActiveComms(steamId);
         if (!comms.HasSilence())
         {
-            Debug("Silence not finded ✖!");
+            AdminUtils.LogDebug("Silence not finded ✖!");
             return new DBResult(0, 1, "Silence not finded ✖!");
         }
         
@@ -1557,10 +1539,10 @@ public class AdminApi : IIksAdminApi
                 });
                 break;
             case 2:
-                Debug("Not enough permissions for unSilence this player");
+                AdminUtils.LogDebug("Not enough permissions for unSilence this player");
                 break;
             case -1:
-                Debug("Some error while unSilence");
+                AdminUtils.LogDebug("Some error while unSilence");
                 break;
         }
         var onUnCommPost = OnUnCommPost?.Invoke(admin, ref steamId, ref reason, ref announce) ?? HookResult.Continue;
@@ -1602,7 +1584,7 @@ public class AdminApi : IIksAdminApi
         }
         catch (Exception e)
         {
-            Main.AdminApi.LogError(e.ToString());
+            AdminUtils.LogError(e.ToString());
             throw;
         }
         return result;
@@ -1613,11 +1595,11 @@ public class AdminApi : IIksAdminApi
         try
         {
             comm.MuteType = 2;
-            Debug($"Silence player {comm.SteamId}!");
+            AdminUtils.LogDebug($"Silence player {comm.SteamId}!");
             var reservedReason = SilenceConfig.Config.Reasons.FirstOrDefault(x => x.Title.ToLower() == comm.Reason.ToLower());
             if (reservedReason != null)
             {
-                Debug("Do reservedReason transformations...");
+                AdminUtils.LogDebug("Do reservedReason transformations...");
                 if (reservedReason.BanOnAllServers)
                     comm.ServerId = null;
                 comm.Reason = reservedReason.Text;
@@ -1679,10 +1661,10 @@ public class AdminApi : IIksAdminApi
                     });
                     break;
                 case 1:
-                    Debug("Silence already exists!");
+                    AdminUtils.LogDebug("Silence already exists!");
                     break;
                 case -1:
-                    Debug("Some error while silence");
+                    AdminUtils.LogDebug("Some error while silence");
                     break;
             }
             
@@ -1696,7 +1678,7 @@ public class AdminApi : IIksAdminApi
         }
         catch (Exception e)
         {
-            Main.AdminApi.LogError(e.ToString());
+            AdminUtils.LogError(e.ToString());
             throw;
         }
     }
@@ -1706,11 +1688,11 @@ public class AdminApi : IIksAdminApi
         try
         {
             comm.MuteType = 1;
-            Debug($"Gaging player {comm.SteamId}!");
+            AdminUtils.LogDebug($"Gaging player {comm.SteamId}!");
             var reservedReason = GagsConfig.Config.Reasons.FirstOrDefault(x => x.Title.ToLower() == comm.Reason.ToLower());
             if (reservedReason != null)
             {
-                Debug($"Do reservedReason transformations...");
+                AdminUtils.LogDebug($"Do reservedReason transformations...");
                 if (reservedReason.BanOnAllServers)
                     comm.ServerId = null;
                 comm.Reason = reservedReason.Text;
@@ -1771,10 +1753,10 @@ public class AdminApi : IIksAdminApi
                     });
                     break;
                 case 1:
-                    Debug("Gag already exists!");
+                    AdminUtils.LogDebug("Gag already exists!");
                     break;
                 case -1:
-                    Debug("Some error while gag");
+                    AdminUtils.LogDebug("Some error while gag");
                     break;
             }
             
@@ -1788,18 +1770,18 @@ public class AdminApi : IIksAdminApi
         }
         catch (Exception e)
         {
-            Main.AdminApi.LogError(e.ToString());
+            AdminUtils.LogError(e.ToString());
             throw;
         }
     }
 
     public async Task<DBResult> UnGag(Admin admin, string steamId, string? reason, bool announce = true)
     {
-        Debug($"Ungag player {steamId}!");
+        AdminUtils.LogDebug($"Ungag player {steamId}!");
         var comms = await GetActiveComms(steamId);
         if (!comms.HasGag())
         {
-            Debug("Gag not finded ✖!");
+            AdminUtils.LogDebug("Gag not finded ✖!");
             return new DBResult(0, 1, "Gag not finded ✖!");
         }
         
@@ -1823,10 +1805,10 @@ public class AdminApi : IIksAdminApi
                 });
                 break;
             case 2:
-                Debug("Not enough permissions for ungag this player");
+                AdminUtils.LogDebug("Not enough permissions for ungag this player");
                 break;
             case -1:
-                Debug("Some error while ungag");
+                AdminUtils.LogDebug("Some error while ungag");
                 break;
         }
         
@@ -1844,11 +1826,11 @@ public class AdminApi : IIksAdminApi
         try
         {
             comm.MuteType = 0;
-            Debug($"Muting player {comm.SteamId}!");
+            AdminUtils.LogDebug($"Muting player {comm.SteamId}!");
             var reservedReason = MutesConfig.Config.Reasons.FirstOrDefault(x => x.Title.ToLower() == comm.Reason.ToLower());
             if (reservedReason != null)
             {
-                Debug($"Do reservedReason transformations..." );
+                AdminUtils.LogDebug($"Do reservedReason transformations..." );
                 if (reservedReason.BanOnAllServers)
                     comm.ServerId = null;
                 comm.Reason = reservedReason.Text;
@@ -1910,10 +1892,10 @@ public class AdminApi : IIksAdminApi
                     });
                     break;
                 case 1:
-                    Debug("Mute already exists!");
+                    AdminUtils.LogDebug("Mute already exists!");
                     break;
                 case -1:
-                    Debug("Some error while mute");
+                    AdminUtils.LogDebug("Some error while mute");
                     break;
             }
             
@@ -1927,18 +1909,18 @@ public class AdminApi : IIksAdminApi
         }
         catch (Exception e)
         {
-            Main.AdminApi.LogError(e.ToString());
+            AdminUtils.LogError(e.ToString());
             throw;
         }
     }
 
     public async Task<DBResult> UnMute(Admin admin, string steamId, string? reason, bool announce = true)
     {
-        Debug($"Unmute player {steamId}!");
+        AdminUtils.LogDebug($"Unmute player {steamId}!");
         var comms = await DBComms.GetActiveComms(steamId);
         if (!comms.HasMute())
         {
-            Debug("Mute not finded ✖!");
+            AdminUtils.LogDebug("Mute not finded ✖!");
             return new DBResult(0, 1, "Mute not finded ✖!");
         }
         
@@ -1962,10 +1944,10 @@ public class AdminApi : IIksAdminApi
                 });
                 break;
             case 2:
-                Debug("Not enough permissions for unmute this player");
+                AdminUtils.LogDebug("Not enough permissions for unmute this player");
                 break;
             case -1:
-                Debug("Some error while unmute");
+                AdminUtils.LogDebug("Some error while unmute");
                 break;
         }
         
@@ -1980,7 +1962,7 @@ public class AdminApi : IIksAdminApi
     
     public void Kick(Admin admin, CCSPlayerController player, string reason)
     {
-        Debug($"Kicking player {player.PlayerName}...");
+        AdminUtils.LogDebug($"Kicking player {player.PlayerName}...");
         var eventData = new EventData("kick_player_pre");
         eventData.Insert("admin", admin);
         eventData.Insert("player", player);
@@ -1989,7 +1971,7 @@ public class AdminApi : IIksAdminApi
         var onKickEventPre = OnDynamicEvent?.Invoke(eventData) ?? HookResult.Continue;
         if (onKickEventPre != HookResult.Continue)
         {
-            Debug("Stopped by event PRE");
+            AdminUtils.LogDebug("Stopped by event PRE");
             return;
         }
 

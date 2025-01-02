@@ -10,13 +10,13 @@ public static class DBServers
     {
         try
         {
-            Main.AdminApi.Debug("Add server to base...");
+            AdminUtils.LogDebug("Add server to base...");
             await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
             var existingServer = await Get(server.Id);
             if (existingServer != null)
             {
-                Main.AdminApi.Debug("Server exists with id " + existingServer.Id);
+                AdminUtils.LogDebug("Server exists with id " + existingServer.Id);
                 server.Id = existingServer.Id;
                 await Update(server);
                 return;
@@ -30,11 +30,11 @@ public static class DBServers
                 name = server.Name,
                 rcon = server.Rcon
             });
-            Main.AdminApi.Debug("Server added to db ✔");
+            AdminUtils.LogDebug("Server added to db ✔");
         }
         catch (MySqlException e)
         {
-            Main.AdminApi.LogError(e.ToString());
+            AdminUtils.LogError(e.ToString());
             throw;
         }
     }
@@ -43,7 +43,7 @@ public static class DBServers
     {
         try
         {
-            Main.AdminApi.Debug("Server update...");
+            AdminUtils.LogDebug("Server update...");
             await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
             await conn.QueryAsync(@"
@@ -62,11 +62,11 @@ public static class DBServers
                 id = server.Id
             }
             );
-            Main.AdminApi.Debug($"Server updated ✔");
+            AdminUtils.LogDebug($"Server updated ✔");
         }
         catch (MySqlException e)
         {
-            Main.AdminApi.LogError(e.ToString());
+            AdminUtils.LogError(e.ToString());
             throw;
         }
     }
@@ -97,7 +97,7 @@ public static class DBServers
         }
         catch (MySqlException e)
         {
-            Main.AdminApi.LogError(e.ToString());
+            AdminUtils.LogError(e.ToString());
             throw;
         }
     }
@@ -125,7 +125,7 @@ public static class DBServers
         }
         catch (MySqlException e)
         {
-            Main.AdminApi.LogError(e.ToString());
+            AdminUtils.LogError(e.ToString());
             throw;
         }
     }

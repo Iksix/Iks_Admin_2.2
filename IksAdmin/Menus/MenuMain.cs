@@ -48,7 +48,7 @@ public static class MenuMain
             id: Main.GenerateOptionId("bans"),
             title: Localizer["MenuOption.BansManage"],
             (p, _) => {
-                MenuBansM.OpenBansMenu(caller, menu);
+                MenuBansManage.OpenBansMenu(caller, menu);
             }
         );
         menu.AddMenuOption(

@@ -9,9 +9,9 @@ public static class MutesFunctions
 
     public static async Task Mute(PlayerComm mute)
     {
-        AdminApi.Debug("Add mute... " + mute.SteamId);
+        AdminUtils.LogDebug("Add mute... " + mute.SteamId);
         var result = await AdminApi.AddMute(mute);
-        AdminApi.Debug("Mute result: " + result);
+        AdminUtils.LogDebug("Mute result: " + result);
         switch (result.QueryStatus)
         {
             case 0:
@@ -30,7 +30,7 @@ public static class MutesFunctions
     }
     public static async Task Unmute(Admin admin, string steamId, string reason)
     {
-        AdminApi.Debug("Trying to unmute... " + steamId);
+        AdminUtils.LogDebug("Trying to unmute... " + steamId);
         var existingComm = (await AdminApi.GetActiveComms(steamId)).GetMute();
         if (existingComm == null)
         {
@@ -39,7 +39,7 @@ public static class MutesFunctions
         }
         existingComm.UnbanReason = reason;
         var result = await AdminApi.UnComm(admin, existingComm);
-        AdminApi.Debug("Unmute result: " + result);
+        AdminUtils.LogDebug("Unmute result: " + result);
         switch (result.QueryStatus)
         {
             case 0:

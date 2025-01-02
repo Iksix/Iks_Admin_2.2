@@ -43,7 +43,7 @@ public static class DBBans
         }
         catch (Exception e)
         {
-            Main.AdminApi.LogError(e.ToString());
+            AdminUtils.LogError(e.ToString());
             throw;
         }
     }
@@ -65,7 +65,7 @@ public static class DBBans
         }
         catch (Exception e)
         {
-            Main.AdminApi.LogError(e.ToString());
+            AdminUtils.LogError(e.ToString());
             throw;
         }
     }
@@ -85,7 +85,7 @@ public static class DBBans
         }
         catch (Exception e)
         {
-            Main.AdminApi.LogError(e.ToString());
+            AdminUtils.LogError(e.ToString());
             throw;
         }
     }
@@ -108,7 +108,7 @@ public static class DBBans
         }
         catch (Exception e)
         {
-            Main.AdminApi.LogError(e.ToString());
+            AdminUtils.LogError(e.ToString());
             throw;
         }
     }
@@ -128,7 +128,7 @@ public static class DBBans
         }
         catch (Exception e)
         {
-            Main.AdminApi.LogError(e.ToString());
+            AdminUtils.LogError(e.ToString());
             throw;
         }
     }
@@ -148,7 +148,7 @@ public static class DBBans
         }
         catch (Exception e)
         {
-            Main.AdminApi.LogError(e.ToString());
+            AdminUtils.LogError(e.ToString());
             throw;
         }
     }
@@ -167,7 +167,7 @@ public static class DBBans
         }
         catch (Exception e)
         {
-            Main.AdminApi.LogError(e.ToString());
+            AdminUtils.LogError(e.ToString());
             throw;
         }
     }
@@ -180,7 +180,7 @@ public static class DBBans
         {
             await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
-
+            punishment.SetEndAt();
             var id = await conn.QuerySingleAsync<int>(@"
                 insert into iks_bans
                 (steam_id, ip, name, duration, reason, ban_type, server_id, admin_id, unbanned_by, unban_reason, created_at, end_at, updated_at, deleted_at)
@@ -208,7 +208,7 @@ public static class DBBans
         }
         catch (Exception e)
         {
-            Main.AdminApi.LogError(e.ToString());
+            AdminUtils.LogError(e.ToString());
             return new DBResult(null, -1, e.ToString());
         }
     }
@@ -233,7 +233,7 @@ public static class DBBans
         }
         catch (Exception e)
         {
-            Main.AdminApi.LogError(e.ToString());
+            AdminUtils.LogError(e.ToString());
             return new DBResult(null, -1, e.ToString());
         }
     }

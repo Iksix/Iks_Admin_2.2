@@ -28,6 +28,9 @@ public class PlayerComm
     public int CreatedAt {get; set;} = AdminUtils.CurrentTimestamp();
     public int UpdatedAt {get; set;} = AdminUtils.CurrentTimestamp();
     public int? DeletedAt {get; set;} = null;
+    
+    public bool IsExpired => EndAt != 0 && EndAt < AdminUtils.CurrentTimestamp();
+    public bool IsUnbanned => UnbannedBy != null;
 
     public Admin? Admin {get {
         return AdminUtils.FindAdminByIdMethod(AdminId);
@@ -66,8 +69,8 @@ public class PlayerComm
         Ip = ip;
         Name = name;
         Duration = duration * 60;
-        MuteType = (int)type; 
-        EndAt = Duration == 0 ? 0 : AdminUtils.CurrentTimestamp() + Duration;
+        MuteType = (int)type;
+        SetEndAt();
         Reason = reason; 
         ServerId = serverId;
         if (AdminUtils.Config().MirrorsIp.Contains(Ip)) Ip = null;
@@ -80,9 +83,14 @@ public class PlayerComm
         Name = player.PlayerName;
         MuteType = (int)type; 
         Duration = duration * 60;
-        EndAt = Duration == 0 ? 0 : AdminUtils.CurrentTimestamp() + Duration;
+        SetEndAt();
         Reason = reason; 
         ServerId = serverId;
         if (AdminUtils.Config().MirrorsIp.Contains(Ip)) Ip = null;
+    }
+
+    public void SetEndAt()
+    {
+        EndAt = Duration == 0 ? 0 : AdminUtils.CurrentTimestamp() + Duration;
     }
 }

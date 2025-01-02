@@ -1,4 +1,5 @@
 using Dapper;
+using IksAdminApi;
 using MySqlConnector;
 
 namespace IksAdmin;
@@ -132,7 +133,7 @@ create table if not exists iks_groups_limitations(
         }
         catch (MySqlException e)
         {
-            Main.AdminApi.LogError(e.ToString());
+            AdminUtils.LogError(e.ToString());
             throw;
         }
     }

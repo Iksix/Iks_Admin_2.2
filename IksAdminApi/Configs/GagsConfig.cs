@@ -31,8 +31,8 @@ public class GagsConfig : PluginCFG<GagsConfig>, IPluginCFG
 
     public void Set()
     {
-        Config = ReadOrCreate<GagsConfig>("gags_cfg", Config);
-        AdminUtils.Debug("Gags config loaded ✔");
-        AdminUtils.Debug("Reasons count " + Config.Reasons.Count);
+        Config = ReadOrCreate<GagsConfig>("configs/gags_cfg", Config);
+        AdminUtils.LogDebug("Gags config loaded ✔");
+        AdminUtils.LogDebug("Reasons count " + Config.Reasons.Count);
     }
 }

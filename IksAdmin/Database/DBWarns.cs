@@ -37,7 +37,7 @@ public static class DBWarns
         }
         catch (MySqlException e)
         {
-            Main.AdminApi.LogError(e.ToString());
+            AdminUtils.LogError(e.ToString());
             throw;
         }
     }
@@ -69,7 +69,7 @@ public static class DBWarns
         }
         catch (MySqlException e)
         {
-            Main.AdminApi.LogError(e.ToString());
+            AdminUtils.LogError(e.ToString());
             throw;
         }
     }
@@ -105,7 +105,7 @@ public static class DBWarns
         }
         catch (MySqlException e)
         {
-            Main.AdminApi.LogError(e.ToString());
+            AdminUtils.LogError(e.ToString());
             throw;
         }
     }
@@ -126,7 +126,7 @@ public static class DBWarns
         }
         catch (MySqlException e)
         {
-            Main.AdminApi.LogError(e.ToString());
+            AdminUtils.LogError(e.ToString());
             throw;
         }
     }
@@ -147,7 +147,7 @@ public static class DBWarns
         }
         catch (MySqlException e)
         {
-            Main.AdminApi.LogError(e.ToString());
+            AdminUtils.LogError(e.ToString());
             throw;
         }
     }
