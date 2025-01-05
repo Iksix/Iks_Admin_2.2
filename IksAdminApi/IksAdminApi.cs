@@ -112,6 +112,7 @@ public interface IIksAdminApi
     public Task<List<PlayerBan>> GetAllBans(string steamId);
     public Task<PlayerBan?> GetActiveBanIp(string ip);
     public Task<List<PlayerBan>> GetAllIpBans(string ip);
+    public Task<List<PlayerBan>> GetLastBans(int time);
 
     /// <summary>
     /// return statuses: 0 - OK!, 1 - already banned, 2 - stopped by limitations, -1 - other
@@ -123,6 +124,7 @@ public interface IIksAdminApi
     public Task<DBResult> UnComm(Admin admin, PlayerComm comm, bool announce = true);
     public Task<List<PlayerComm>> GetActiveComms(string steamId);
     public Task<List<PlayerComm>> GetAllComms(string steamId);
+    public Task<List<PlayerComm>> GetLastComms(int time);
     // EVENTS ===
     public delegate HookResult MenuOpenHandler(CCSPlayerController player, IDynamicMenu menu, IMenu gameMenu);
     public event MenuOpenHandler MenuOpenPre;

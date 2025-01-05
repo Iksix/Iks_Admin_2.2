@@ -6,10 +6,14 @@
 
     "MenuTitle.Other.SelectReason" : "Выберите причину",
     "MenuTitle.Other.SelectTime" : "Выберите время",
+    "MenuTitle.Other.SelectPlayer" : "Выберите игрока",
     "MenuOption.Other.OwnReason" : "Своя причина",
     "MenuOption.Other.Back" : "← Назад",
     "MenuOption.Postfix.Expired" : " [ИСТЕКЛО]",
     "MenuOption.Postfix.Unbanned" : " [РАЗБАНЕН]",
+    "MenuOption.Postfix.Muted" : " [МУТ]",
+    "MenuOption.Postfix.Gagged" : " [ГАГ]",
+    "MenuOption.Postfix.Silenced" : " [SILENCE]",
     
     // Global chat hooks
     "Message.CH.FlagsSet" : "Напишите флаги в чат: {red}!abc...",
@@ -17,6 +21,7 @@
     "Message.CH.ConfirmDeleting" : "Подтвердите удаление введя: {red}!delete",
     // Global messages
     "Message.GL.DeleteCanceled" : "Удаление отменено",
+    "Message.GL.ReasonSet" : "Введите причину: {red}!причина",
     
     // admins_manage
     "MenuTitle.AM" : "Управление админами",

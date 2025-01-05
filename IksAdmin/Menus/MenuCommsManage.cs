@@ -12,131 +12,263 @@ public static class MenuCommsManage
     static IIksAdminApi _api {get; set;} = Main.AdminApi;
     static IStringLocalizer _localizer {get; set;} = Main.AdminApi.Localizer;
 
-    public static void OpenBansMenu(CCSPlayerController caller, IDynamicMenu? backMenu = null)
+    public static void OpenCommsMenu(CCSPlayerController caller, IDynamicMenu? backMenu = null)
     {
-        var menu = _api.CreateMenu(Main.GenerateMenuId("bm.ban"), _localizer["MenuTitle.BansManage"], backMenu: backMenu);
-        menu.AddMenuOption("add", _localizer["MenuOption.AddBan"], (_, _) => {
-            OpenAddBanMenu(caller, menu);
+        var menu = _api.CreateMenu(Main.GenerateMenuId("cm.comm"), _localizer["MenuTitle.CM"], backMenu: backMenu);
+        menu.AddMenuOption("add", _localizer["MenuOption.CM.Add"], (_, _) => {
+            OpenAddCommMenu(caller, menu);
         });
-        menu.AddMenuOption("add.offline", _localizer["MenuOption.AddOfflineBan"], (_, _) => {
-            OpenAddOfflineBanMenu(caller, menu);
-        });
-        menu.AddMenuOption("unban", _localizer["MenuOption.Unban"], (_, _) => {
+        menu.AddMenuOption("remove", _localizer["MenuOption.CM.Remove"], (_, _) => {
             Task.Run(async () => {
-                var bans = await DBBans.GetLastBans(_api.Config.LastPunishmentTime);
+                var comms = await _api.GetLastComms(_api.Config.LastPunishmentTime);
                 Server.NextFrame(() => {
-                    OpenRemoveBansMenu(caller, bans, menu);
+                    OpenRemoveCommsMenu(caller, comms, menu);
                 });
             });
         });
         menu.Open(caller);
     }
 
-    private static void OpenRemoveBansMenu(CCSPlayerController caller, List<PlayerBan> bans, IDynamicMenu backMenu)
+    private static void OpenRemoveCommsMenu(CCSPlayerController caller, List<PlayerComm> comms, IDynamicMenu backMenu)
     {
-        var menu = _api.CreateMenu(Main.GenerateMenuId("bm_unban"), _localizer["MenuTitle.Unban"], backMenu: backMenu);
+        var menu = _api.CreateMenu(Main.GenerateMenuId("cm_uncomm"), _localizer["MenuTitle.Uncomm"], backMenu: backMenu);
         var admin = caller.Admin()!;
         
-        foreach (var ban in bans)
+        foreach (var comm in comms)
         {
             string postfix = "";
-            if (ban.IsUnbanned)
+            if (comm.IsUnbanned)
                 postfix = _localizer["MenuOption.Postfix.Unbanned"];
-            else if (ban.IsExpired)
+            else if (comm.IsExpired)
                 postfix = _localizer["MenuOption.Postfix.Expired"];
-            menu.AddMenuOption("bm_unban_" + ban.SteamId, ban.NameString + postfix, (_, _) => {
+            menu.AddMenuOption("cm_uncomm_" + comm.SteamId, comm.Name + postfix, (_, _) => {
                 _api.HookNextPlayerMessage(caller, r => {
                     Task.Run(async () => {
-                        if (ban.BanType == 0)
-                            await BansFunctions.Unban(admin, ban.SteamId!, r);
-                        else await BansFunctions.UnbanIp(admin, ban.Ip!, r);
+                        switch (comm.MuteType)
+                        {
+                            case 0:
+                                await MutesFunctions.Unmute(admin, comm.SteamId!, r);
+                                break;
+                            case 1:
+                                await GagsFunctions.Ungag(admin, comm.SteamId!, r);
+                                break;
+                            case 2:
+                                await SilenceFunctions.UnSilence(admin, comm.SteamId!, r);
+                                break;
+                        }
                     });
                 });
-            }, disabled: !AdminUtils.CanUnban(admin, ban) || ban.IsExpired);
+            }, disabled: !AdminUtils.CanUnComm(admin, comm) || comm.IsExpired || comm.IsUnbanned);
         }
+        menu.Open(caller);
+    }
+    public static void OpenAddCommMenu(CCSPlayerController caller, IDynamicMenu backMenu)
+    {
+        var menu = _api.CreateMenu(Main.GenerateMenuId("cm_comm_select"), _localizer["MenuTitle.CM.Select"], backMenu: backMenu);
+        
+        menu.AddMenuOption("mute", _localizer["MenuOption.CM.Mute"], (_, _) =>
+        {
+            SelectPlayerForMute(caller, menu);
+        });
+        menu.AddMenuOption("gag", _localizer["MenuOption.CM.Gag"], (_, _) => {
+            SelectPlayerForGag(caller, menu);
+        });
+        menu.AddMenuOption("silence", _localizer["MenuOption.CM.Silence"], (_, _) => {
+            SelectPlayerForSilence(caller, menu);
+        });
+        
         menu.Open(caller);
     }
 
-    public static void OpenAddOfflineBanMenu(CCSPlayerController caller, IDynamicMenu backMenu)
+    private static void SelectPlayerForMute(CCSPlayerController caller, IDynamicMenu backMenu)
     {
-        var menu = _api.CreateMenu(Main.GenerateMenuId("bm_offline_ban_add"), _localizer["MenuTitle.AddOfflineBan"], backMenu: backMenu);
-        var players = _api.DisconnectedPlayers;
-        foreach (var player in players)
-        {
-            if (!_api.CanDoActionWithPlayer(caller.GetSteamId()!, player.SteamId!))
-                continue;
-            menu.AddMenuOption(Main.GenerateOptionId("bm_offline_ban_add_" + player.SteamId!), player.PlayerName, (_, _) => {
-                OpenSelectReasonMenu(caller, player);
-            });
-        }
-        menu.Open(caller);
-    }
-    public static void OpenAddBanMenu(CCSPlayerController caller, IDynamicMenu backMenu)
-    {
-        var menu = _api.CreateMenu(Main.GenerateMenuId("bm_ban_add"), _localizer["MenuTitle.AddBan"], backMenu: backMenu);
+        var menu = _api.CreateMenu(Main.GenerateMenuId("cm_mute_sp"), _localizer["MenuTitle.Other.SelectPlayer"], backMenu: backMenu);
         var players = PlayersUtils.GetOnlinePlayers();
-        foreach (var player in players)
+        foreach (var p in players)
         {
-            if (!_api.CanDoActionWithPlayer(caller.GetSteamId()!, player.AuthorizedSteamID!.SteamId64.ToString()))
-                continue;
-            menu.AddMenuOption("bm_ban_add_" + player.GetSteamId(), player.PlayerName, (_, _) => {
-                OpenSelectReasonMenu(caller, new PlayerInfo(player));
-            });
+            string postfix = "";
+            if (p.GetComms().HasMute())
+            {
+                postfix = _localizer["MenuOption.Postfix.Muted"];
+            }
+            if (p.GetComms().HasSilence())
+            {
+                postfix = _localizer["MenuOption.Postfix.Silenced"];
+            }
+            menu.AddMenuOption("cm_mute_sp_" + p.GetSteamId(), p.PlayerName + postfix, (_, _) =>
+            {
+                OpenSelectMuteReasonMenu(caller, new PlayerInfo(p));
+            }, disabled: !_api.CanDoActionWithPlayer(caller.GetSteamId(), p.GetSteamId()) || p.GetComms().HasMute() || p.GetComms().HasSilence());
         }
+        
+        menu.Open(caller);
+    }
+    private static void SelectPlayerForGag(CCSPlayerController caller, IDynamicMenu backMenu)
+    {
+        var menu = _api.CreateMenu(Main.GenerateMenuId("cm_gag_sp"), _localizer["MenuTitle.Other.SelectPlayer"], backMenu: backMenu);
+        var players = PlayersUtils.GetOnlinePlayers();
+        foreach (var p in players)
+        {
+            string postfix = "";
+            if (p.GetComms().HasGag())
+            {
+                postfix = _localizer["MenuOption.Postfix.Gagged"];
+            }
+            if (p.GetComms().HasSilence())
+            {
+                postfix = _localizer["MenuOption.Postfix.Silenced"];
+            }
+            menu.AddMenuOption("cm_gag_sp_" + p.GetSteamId(), p.PlayerName + postfix, (_, _) =>
+            {
+                OpenSelectGagReasonMenu(caller, new PlayerInfo(p));
+            }, disabled: !_api.CanDoActionWithPlayer(caller.GetSteamId(), p.GetSteamId()) || p.GetComms().HasGag() || p.GetComms().HasSilence());
+        }
+        
+        menu.Open(caller);
+    }
+    private static void SelectPlayerForSilence(CCSPlayerController caller, IDynamicMenu backMenu)
+    {
+        var menu = _api.CreateMenu(Main.GenerateMenuId("cm_gag_sp"), _localizer["MenuTitle.Other.SelectPlayer"], backMenu: backMenu);
+        var players = PlayersUtils.GetOnlinePlayers();
+        foreach (var p in players)
+        {
+            string postfix = "";
+            if (p.GetComms().HasGag())
+            {
+                postfix = _localizer["MenuOption.Postfix.Gagged"];
+            }
+            if (p.GetComms().HasGag())
+            {
+                postfix += _localizer["MenuOption.Postfix.Muted"];
+            }
+            if (p.GetComms().HasSilence())
+            {
+                postfix = _localizer["MenuOption.Postfix.Silenced"];
+            }
+            menu.AddMenuOption("cm_gag_sp_" + p.GetSteamId(), p.PlayerName + postfix, (_, _) =>
+            {
+                OpenSelectSilenceReasonMenu(caller, new PlayerInfo(p));
+            }, disabled: !_api.CanDoActionWithPlayer(caller.GetSteamId(), p.GetSteamId()) || p.GetComms().HasGag() || p.GetComms().HasMute() || p.GetComms().HasSilence());
+        }
+        
         menu.Open(caller);
     }
 
-    private static void OpenSelectReasonMenu(CCSPlayerController caller, PlayerInfo target)
+    private static void OpenSelectMuteReasonMenu(CCSPlayerController caller, PlayerInfo target)
     {
-        var menu = _api.CreateMenu(Main.GenerateMenuId("bm_ban_reason"), _localizer["MenuTitle.Other.SelectReason"]);
-        var config = BansConfig.Config;
+        var menu = _api.CreateMenu(Main.GenerateMenuId("cm_mute_reason"), _localizer["MenuTitle.Other.SelectReason"]);
+        var config = MutesConfig.Config;
         var reasons = config.Reasons;
-        var admin = caller.Admin()!;
-
-        menu.AddMenuOption("own_ban_reason" ,_localizer["MenuOption.Other.OwnReason"], (_, _) => {
-            Helper.Print(caller, _localizer["Message.PrintOwnReason"]);
+        menu.AddMenuOption("own_reason" ,_localizer["MenuOption.Other.OwnReason"], (_, _) => {
+            caller.Print( _localizer["Message.PrintOwnReason"]);
             _api.HookNextPlayerMessage(caller, reason => {
-                OpenTimeSelectMenu(caller, target, reason, menu);
+                OpenMuteTimeSelectMenu(caller, target, reason, menu);
             });
-        }, viewFlags: AdminUtils.GetCurrentPermissionFlags("blocks_manage.own_ban_reason"));
-
+        }, viewFlags: AdminUtils.GetCurrentPermissionFlags("blocks_manage.own_comm_reason"));
         foreach (var reason in reasons)
         {
             if (reason.Duration != null)
             {
-                if (caller.Admin()!.MaxBanTime != 0)
+                if (caller.Admin()!.MaxMuteTime != 0)
                 {
-                    if (reason.Duration > caller.Admin()!.MaxBanTime)
+                    if (reason.Duration > caller.Admin()!.MaxMuteTime)
                         continue;
                 }
-                if (caller.Admin()!.MinBanTime != 0)
+                if (caller.Admin()!.MinMuteTime != 0)
                 {
-                    if (reason.Duration < caller.Admin()!.MinBanTime)
+                    if (reason.Duration < caller.Admin()!.MinMuteTime)
                         continue;
                 }
             }
-
             menu.AddMenuOption(reason.Title, reason.Title, (_, _) => {
                 if (reason.Duration == null)
                 {
-                    OpenTimeSelectMenu(caller, target, reason.Text, menu);
+                    OpenMuteTimeSelectMenu(caller, target, reason.Text, menu);
                 }
             });
         }
-        
         menu.Open(caller);
     }
-
-    private static void OpenTimeSelectMenu(CCSPlayerController caller, PlayerInfo target, string reason, IDynamicMenu? backMenu = null)
+    
+    private static void OpenSelectGagReasonMenu(CCSPlayerController caller, PlayerInfo target)
     {
-        var menu = _api.CreateMenu(Main.GenerateMenuId("bm_ban_time"), _localizer["MenuTitle.Other.SelectTime"], backMenu: backMenu);
-        var config = BansConfig.Config;
+        var menu = _api.CreateMenu(Main.GenerateMenuId("cm_gag_reason"), _localizer["MenuTitle.Other.SelectReason"]);
+        var config = GagsConfig.Config;
+        var reasons = config.Reasons;
+        menu.AddMenuOption("own_reason" ,_localizer["MenuOption.Other.OwnReason"], (_, _) => {
+            caller.Print( _localizer["Message.PrintOwnReason"]);
+            _api.HookNextPlayerMessage(caller, reason => {
+                OpenGagTimeSelectMenu(caller, target, reason, menu);
+            });
+        }, viewFlags: AdminUtils.GetCurrentPermissionFlags("blocks_manage.own_comm_reason"));
+        foreach (var reason in reasons)
+        {
+            if (reason.Duration != null)
+            {
+                if (caller.Admin()!.MaxGagTime != 0)
+                {
+                    if (reason.Duration > caller.Admin()!.MaxGagTime)
+                        continue;
+                }
+                if (caller.Admin()!.MinGagTime != 0)
+                {
+                    if (reason.Duration < caller.Admin()!.MinGagTime)
+                        continue;
+                }
+            }
+            menu.AddMenuOption(reason.Title, reason.Title, (_, _) => {
+                if (reason.Duration == null)
+                {
+                    OpenGagTimeSelectMenu(caller, target, reason.Text, menu);
+                }
+            });
+        }
+        menu.Open(caller);
+    }
+    private static void OpenSelectSilenceReasonMenu(CCSPlayerController caller, PlayerInfo target)
+    {
+        var menu = _api.CreateMenu(Main.GenerateMenuId("cm_silence_reason"), _localizer["MenuTitle.Other.SelectReason"]);
+        var config = SilenceConfig.Config;
+        var reasons = config.Reasons;
+        menu.AddMenuOption("own_reason" ,_localizer["MenuOption.Other.OwnReason"], (_, _) => {
+            caller.Print( _localizer["Message.PrintOwnReason"]);
+            _api.HookNextPlayerMessage(caller, reason => {
+                OpenSilenceTimeSelectMenu(caller, target, reason, menu);
+            });
+        }, viewFlags: AdminUtils.GetCurrentPermissionFlags("blocks_manage.own_comm_reason"));
+        foreach (var reason in reasons)
+        {
+            if (reason.Duration != null)
+            {
+                if (caller.Admin()!.MaxGagTime != 0 || caller.Admin()!.MaxMuteTime != 0)
+                {
+                    if (reason.Duration > caller.Admin()!.MaxGagTime || reason.Duration > caller.Admin()!.MaxMuteTime)
+                        continue;
+                }
+                if (caller.Admin()!.MinGagTime != 0 || caller.Admin()!.MaxGagTime != 0)
+                {
+                    if (reason.Duration < caller.Admin()!.MinGagTime || reason.Duration < caller.Admin()!.MinMuteTime)
+                        continue;
+                }
+            }
+            menu.AddMenuOption(reason.Title, reason.Title, (_, _) => {
+                if (reason.Duration == null)
+                {
+                    OpenSilenceTimeSelectMenu(caller, target, reason.Text, menu);
+                }
+            });
+        }
+        menu.Open(caller);
+    }
+    private static void OpenMuteTimeSelectMenu(CCSPlayerController caller, PlayerInfo target, string reason, IDynamicMenu? backMenu = null)
+    {
+        var menu = _api.CreateMenu(Main.GenerateMenuId("cm_mute_time"), _localizer["MenuTitle.Other.SelectTime"], backMenu: backMenu);
+        var config = MutesConfig.Config;
         var times = config.Times;
         var admin = caller.Admin()!;
-
-        var ban = new PlayerBan(target, reason, 0, serverId: _api.ThisServer.Id);
-        ban.AdminId = admin.Id;
-        menu.AddMenuOption("own_ban_time" ,_localizer["MenuOption.Other.OwnTime"], (_, _) => {
+        var comm = new PlayerComm(target, 0, reason, 0, serverId: _api.ThisServer.Id);
+        comm.AdminId = admin.Id;
+        menu.AddMenuOption("own_mute_time" ,_localizer["MenuOption.Other.OwnTime"], (_, _) => {
             Helper.Print(caller, _localizer["Message.PrintOwnTime"]);
             _api.HookNextPlayerMessage(caller, time => {
                 if (!int.TryParse(time, out var timeInt))
@@ -144,54 +276,129 @@ public static class MenuCommsManage
                     Helper.Print(caller, _localizer["Error.MustBeANumber"]);
                     return;
                 }
-                ban.Duration = timeInt;
-                Helper.Print(caller, _localizer["ActionSuccess.TimeSetted"]);
-                OpenBanTypeSelectMenu(caller, ban);
+                comm.Duration = timeInt;
+                Task.Run(async () =>
+                {
+                    await MutesFunctions.Mute(comm);
+                });
+                _api.CloseMenu(caller);
             });
-        }, viewFlags: AdminUtils.GetCurrentPermissionFlags("blocks_manage.own_ban_time"));
-
+        }, viewFlags: AdminUtils.GetCurrentPermissionFlags("blocks_manage.own_comm_time"));
         foreach (var time in times)
         {
-            if (caller.Admin()!.MaxBanTime != 0)
+            if (caller.Admin()!.MaxMuteTime != 0)
             {
-                if (time.Key > caller.Admin()!.MaxBanTime)
+                if (time.Key > caller.Admin()!.MaxMuteTime)
                     continue;
             }
-            if (caller.Admin()!.MinBanTime != 0)
+            if (caller.Admin()!.MinMuteTime != 0)
             {
-                if (time.Key < caller.Admin()!.MinBanTime)
+                if (time.Key < caller.Admin()!.MinMuteTime)
                     continue;
             }
-
-            menu.AddMenuOption("ban_time_" + time.Key, time.Value, (_, _) => {
+            menu.AddMenuOption("mute_time_" + time.Key, time.Value, (_, _) => {
                 _api.CloseMenu(caller);
-                ban.Duration = time.Key;
-                OpenBanTypeSelectMenu(caller, ban);
+                comm.Duration = time.Key;
+                Task.Run(async () =>
+                {
+                    await MutesFunctions.Mute(comm);
+                });
             });
         }
-        
         menu.Open(caller);
     }
-
-    private static void OpenBanTypeSelectMenu(CCSPlayerController caller, PlayerBan ban)
+    private static void OpenGagTimeSelectMenu(CCSPlayerController caller, PlayerInfo target, string reason, IDynamicMenu? backMenu = null)
     {
-        var menu = _api.CreateMenu(Main.GenerateMenuId("bm_ban_type"), _localizer["MenuTitle.BanType"]);
-        var admin = caller.Admin();
-        menu.AddMenuOption(Main.GenerateOptionId("bm_ban_steam_id"), _localizer["MenuOption.BanSteamId"], (_, _) => {
-            _api.CloseMenu(caller);
-            Task.Run(async () => {
-                await BansFunctions.Ban(ban);
+        var menu = _api.CreateMenu(Main.GenerateMenuId("cm_gag_time"), _localizer["MenuTitle.Other.SelectTime"], backMenu: backMenu);
+        var config = GagsConfig.Config;
+        var times = config.Times;
+        var admin = caller.Admin()!;
+        var comm = new PlayerComm(target, PlayerComm.MuteTypes.Gag, reason, 0, serverId: _api.ThisServer.Id);
+        comm.AdminId = admin.Id;
+        menu.AddMenuOption("own_gag_time" ,_localizer["MenuOption.Other.OwnTime"], (_, _) => {
+            Helper.Print(caller, _localizer["Message.PrintOwnTime"]);
+            _api.HookNextPlayerMessage(caller, time => {
+                if (!int.TryParse(time, out var timeInt))
+                {
+                    Helper.Print(caller, _localizer["Error.MustBeANumber"]);
+                    return;
+                }
+                comm.Duration = timeInt;
+                Task.Run(async () =>
+                {
+                    await GagsFunctions.Gag(comm);
+                });
+                _api.CloseMenu(caller);
             });
-        });
-            
-        menu.AddMenuOption(Main.GenerateOptionId("bm_ban_ip"), _localizer["MenuOption.BanIp"], (_, _) => {
-            _api.CloseMenu(caller);
-            ban.BanType = 2;
-            Task.Run(async () => {
-                await BansFunctions.Ban(ban);
+        }, viewFlags: AdminUtils.GetCurrentPermissionFlags("blocks_manage.own_comm_time"));
+        foreach (var time in times)
+        {
+            if (caller.Admin()!.MaxGagTime != 0)
+            {
+                if (time.Key > caller.Admin()!.MaxGagTime)
+                    continue;
+            }
+            if (caller.Admin()!.MinGagTime != 0)
+            {
+                if (time.Key < caller.Admin()!.MinGagTime)
+                    continue;
+            }
+            menu.AddMenuOption("gag_time_" + time.Key, time.Value, (_, _) => {
+                _api.CloseMenu(caller);
+                comm.Duration = time.Key;
+                Task.Run(async () =>
+                {
+                    await GagsFunctions.Gag(comm);
+                });
             });
-        }, viewFlags: AdminUtils.GetCurrentPermissionFlags("blocks_manage.ban_ip"));
-        
+        }
+        menu.Open(caller);
+    }
+    private static void OpenSilenceTimeSelectMenu(CCSPlayerController caller, PlayerInfo target, string reason, IDynamicMenu? backMenu = null)
+    {
+        var menu = _api.CreateMenu(Main.GenerateMenuId("cm_silence_time"), _localizer["MenuTitle.Other.SelectTime"], backMenu: backMenu);
+        var config = SilenceConfig.Config;
+        var times = config.Times;
+        var admin = caller.Admin()!;
+        var comm = new PlayerComm(target, PlayerComm.MuteTypes.Silence, reason, 0, serverId: _api.ThisServer.Id);
+        comm.AdminId = admin.Id;
+        menu.AddMenuOption("own_silence_time" ,_localizer["MenuOption.Other.OwnTime"], (_, _) => {
+            Helper.Print(caller, _localizer["Message.PrintOwnTime"]);
+            _api.HookNextPlayerMessage(caller, time => {
+                if (!int.TryParse(time, out var timeInt))
+                {
+                    Helper.Print(caller, _localizer["Error.MustBeANumber"]);
+                    return;
+                }
+                comm.Duration = timeInt;
+                Task.Run(async () =>
+                {
+                    await SilenceFunctions.Silence(comm);
+                });
+                _api.CloseMenu(caller);
+            });
+        }, viewFlags: AdminUtils.GetCurrentPermissionFlags("blocks_manage.own_comm_time"));
+        foreach (var time in times)
+        {
+            if (caller.Admin()!.MaxGagTime != 0 || caller.Admin()!.MaxMuteTime != 0)
+            {
+                if (time.Key > caller.Admin()!.MaxGagTime || time.Key > caller.Admin()!.MaxMuteTime)
+                    continue;
+            }
+            if (caller.Admin()!.MinGagTime != 0 || caller.Admin()!.MinMuteTime != 0)
+            {
+                if (time.Key < caller.Admin()!.MinGagTime || time.Key < caller.Admin()!.MinMuteTime)
+                    continue;
+            }
+            menu.AddMenuOption("silence_time_" + time.Key, time.Value, (_, _) => {
+                _api.CloseMenu(caller);
+                comm.Duration = time.Key;
+                Task.Run(async () =>
+                {
+                    await SilenceFunctions.Silence(comm);
+                });
+            });
+        }
         menu.Open(caller);
     }
 }

@@ -68,6 +68,26 @@ public static class DBComms
             throw;
         }
     }
+    public static async Task<List<PlayerComm>> GetLastComms(int time)
+    {
+        try
+        {
+            await using var conn = new MySqlConnection(DB.ConnectionString);
+            await conn.OpenAsync();
+            var comms = (await conn.QueryAsync<PlayerComm>($@"
+                {SelectComm}
+                where deleted_at is null
+                and (server_id is null or server_id = @serverId)
+                and created_at > unix_timestamp() - @time
+            ", new {time, serverId = Main.AdminApi.ThisServer.Id})).ToList();
+            return comms;
+        }
+        catch (Exception e)
+        {
+            AdminUtils.LogError(e.ToString());
+            throw;
+        }
+    }
     public static async Task<List<PlayerComm>> GetAllComms(string steamId)
     {
         try

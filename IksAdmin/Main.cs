@@ -215,20 +215,20 @@ public class Main : BasePlugin
         AdminApi.RegisterPermission("blocks_manage.unban_ip", "b");
 
         // MUTE
-        AdminApi.RegisterPermission("blocks_manage.mute", "m"); 
-        AdminApi.RegisterPermission("blocks_manage.unmute", "m"); 
-        AdminApi.RegisterPermission("blocks_manage.own_mute_reason", "m"); // С этим флагом у админа появляется пункт в меню для выбора собственной причины
-        AdminApi.RegisterPermission("blocks_manage.own_mute_time", "m"); 
+        AdminApi.RegisterPermission("comms_manage.mute", "m"); 
+        AdminApi.RegisterPermission("comms_manage.unmute", "m"); 
+        AdminApi.RegisterPermission("comms_manage.own_mute_reason", "m"); // С этим флагом у админа появляется пункт в меню для выбора собственной причины
+        AdminApi.RegisterPermission("comms_manage.own_mute_time", "m"); 
         // SILENCE
-        AdminApi.RegisterPermission("blocks_manage.silence", "mg"); 
-        AdminApi.RegisterPermission("blocks_manage.unsilence", "mg"); 
-        AdminApi.RegisterPermission("blocks_manage.own_silence_reason", "mg"); // С этим флагом у админа появляется пункт в меню для выбора собственной причины
-        AdminApi.RegisterPermission("blocks_manage.own_silence_time", "mg"); 
+        AdminApi.RegisterPermission("comms_manage.silence", "mg"); 
+        AdminApi.RegisterPermission("comms_manage.unsilence", "mg"); 
+        AdminApi.RegisterPermission("comms_manage.own_silence_reason", "mg"); // С этим флагом у админа появляется пункт в меню для выбора собственной причины
+        AdminApi.RegisterPermission("comms_manage.own_silence_time", "mg"); 
         // GAG
-        AdminApi.RegisterPermission("blocks_manage.gag", "g"); 
-        AdminApi.RegisterPermission("blocks_manage.ungag", "g"); 
-        AdminApi.RegisterPermission("blocks_manage.own_gag_reason", "g"); // С этим флагом у админа появляется пункт в меню для выбора собственной причины
-        AdminApi.RegisterPermission("blocks_manage.own_gag_time", "g"); 
+        AdminApi.RegisterPermission("comms_manage.gag", "g"); 
+        AdminApi.RegisterPermission("comms_manage.ungag", "g"); 
+        AdminApi.RegisterPermission("comms_manage.own_gag_reason", "g"); // С этим флагом у админа появляется пункт в меню для выбора собственной причины
+        AdminApi.RegisterPermission("comms_manage.own_gag_time", "g"); 
         // OTHER
         AdminApi.RegisterPermission("blocks_manage.remove_immunity", "i"); // Снять наказание выданное админом ниже по иммунитету
         AdminApi.RegisterPermission("blocks_manage.remove_all", "u"); // Снять наказание выданное кем угодно (кроме консоли)
@@ -1238,6 +1238,11 @@ public class AdminApi : IIksAdminApi
         return ban;
     }
 
+    public async Task<List<PlayerBan>> GetLastBans(int time)
+    {
+        return await DBBans.GetLastBans(time);
+    }
+
     public bool CanDoActionWithPlayer(string callerId, string targetId)
     {
         var callerAdmin = AdminUtils.ServerAdmin(callerId);
@@ -1564,6 +1569,12 @@ public class AdminApi : IIksAdminApi
     {
         return await DBComms.GetAllComms(steamId);
     }
+
+    public async Task<List<PlayerComm>> GetLastComms(int time)
+    {
+        return await DBComms.GetLastComms(time);
+    }
+
     public async Task<DBResult> AddComm(PlayerComm comm, bool announce = true)
     {
         DBResult result = new DBResult(-1, -1, "ERROR!");

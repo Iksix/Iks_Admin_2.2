@@ -45,11 +45,12 @@ public static class MenuBansManage
             else if (ban.IsExpired)
                 postfix = _localizer["MenuOption.Postfix.Expired"];
             menu.AddMenuOption("bm_unban_" + ban.SteamId, ban.NameString + postfix, (_, _) => {
+                caller.Print(_localizer["Message.GL.ReasonSet"]);
                 _api.HookNextPlayerMessage(caller, r => {
                     Task.Run(async () => {
                         if (ban.BanType == 0)
-                            await BansFunctions.Unban(admin, ban.SteamId!, r);
-                        else await BansFunctions.UnbanIp(admin, ban.Ip!, r);
+                            await _api.Unban(admin, ban.SteamId!, r);
+                        else await _api.UnbanIp(admin, ban.Ip!, r);
                     });
                 });
             }, disabled: !AdminUtils.CanUnban(admin, ban) || ban.IsExpired || ban.IsUnbanned);
