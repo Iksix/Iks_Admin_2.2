@@ -19,6 +19,9 @@ public static class MenuCommsManage
             OpenAddCommMenu(caller, menu);
         });
         menu.AddMenuOption("remove", _localizer["MenuOption.CM.Remove"], (_, _) => {
+            OpenRemoveCommsMenu(caller, _api.Comms.ToList(), menu);
+        });
+        menu.AddMenuOption("remove_offline", _localizer["MenuOption.CM.RemoveOffline"], (_, _) => {
             Task.Run(async () => {
                 var comms = await _api.GetLastComms(_api.Config.LastPunishmentTime);
                 Server.NextFrame(() => {
@@ -31,7 +34,7 @@ public static class MenuCommsManage
 
     private static void OpenRemoveCommsMenu(CCSPlayerController caller, List<PlayerComm> comms, IDynamicMenu backMenu)
     {
-        var menu = _api.CreateMenu(Main.GenerateMenuId("cm_uncomm"), _localizer["MenuTitle.Uncomm"], backMenu: backMenu);
+        var menu = _api.CreateMenu(Main.GenerateMenuId("cm_uncomm"), _localizer["MenuTitle.CM.UnComm"], backMenu: backMenu);
         var admin = caller.Admin()!;
         
         foreach (var comm in comms)
@@ -41,7 +44,38 @@ public static class MenuCommsManage
                 postfix = _localizer["MenuOption.Postfix.Unbanned"];
             else if (comm.IsExpired)
                 postfix = _localizer["MenuOption.Postfix.Expired"];
+            else
+            {
+                switch (comm.MuteType)
+                {
+                    case 0:
+                        postfix = _localizer["MenuOption.Postfix.Muted"];
+                        break;
+                    case 1:
+                        postfix = _localizer["MenuOption.Postfix.Gagged"];
+                        break;
+                    case 2:
+                        postfix = _localizer["MenuOption.Postfix.Silenced"];
+                        break;
+                }
+            }
+
+            bool hasPermissions = true;
+            if (comm.MuteType == 0)
+            {
+                hasPermissions = admin.HasPermissions("comms_manage.unmute");
+            }
+            else if (comm.MuteType == 1)
+            {
+                hasPermissions = admin.HasPermissions("comms_manage.ungag");
+            }
+            else if (comm.MuteType == 2)
+            {
+                hasPermissions = admin.HasPermissions("comms_manage.unsilence");
+            }
+            
             menu.AddMenuOption("cm_uncomm_" + comm.SteamId, comm.Name + postfix, (_, _) => {
+                caller.Print(_localizer["Message.GL.ReasonSet"]);
                 _api.HookNextPlayerMessage(caller, r => {
                     Task.Run(async () => {
                         switch (comm.MuteType)
@@ -56,26 +90,31 @@ public static class MenuCommsManage
                                 await SilenceFunctions.UnSilence(admin, comm.SteamId!, r);
                                 break;
                         }
+                        comms.Remove(comm);
+                        Server.NextFrame(() =>
+                        {
+                            OpenRemoveCommsMenu(caller, comms, backMenu);
+                        });
                     });
                 });
-            }, disabled: !AdminUtils.CanUnComm(admin, comm) || comm.IsExpired || comm.IsUnbanned);
+            }, disabled: (!AdminUtils.CanUnComm(admin, comm) || comm.IsExpired || comm.IsUnbanned) && hasPermissions);
         }
         menu.Open(caller);
     }
     public static void OpenAddCommMenu(CCSPlayerController caller, IDynamicMenu backMenu)
     {
-        var menu = _api.CreateMenu(Main.GenerateMenuId("cm_comm_select"), _localizer["MenuTitle.CM.Select"], backMenu: backMenu);
+        var menu = _api.CreateMenu(Main.GenerateMenuId("cm_comm_select"), _localizer["MenuTitle.CM.SelectType"], backMenu: backMenu);
         
         menu.AddMenuOption("mute", _localizer["MenuOption.CM.Mute"], (_, _) =>
         {
             SelectPlayerForMute(caller, menu);
-        });
+        }, viewFlags: _api.GetCurrentPermissionFlags("comms_manage.mute"));
         menu.AddMenuOption("gag", _localizer["MenuOption.CM.Gag"], (_, _) => {
             SelectPlayerForGag(caller, menu);
-        });
+        }, viewFlags: _api.GetCurrentPermissionFlags("comms_manage.gag"));
         menu.AddMenuOption("silence", _localizer["MenuOption.CM.Silence"], (_, _) => {
             SelectPlayerForSilence(caller, menu);
-        });
+        }, viewFlags: _api.GetCurrentPermissionFlags("comms_manage.silence"));
         
         menu.Open(caller);
     }
@@ -137,7 +176,7 @@ public static class MenuCommsManage
             {
                 postfix = _localizer["MenuOption.Postfix.Gagged"];
             }
-            if (p.GetComms().HasGag())
+            if (p.GetComms().HasMute())
             {
                 postfix += _localizer["MenuOption.Postfix.Muted"];
             }
@@ -164,7 +203,7 @@ public static class MenuCommsManage
             _api.HookNextPlayerMessage(caller, reason => {
                 OpenMuteTimeSelectMenu(caller, target, reason, menu);
             });
-        }, viewFlags: AdminUtils.GetCurrentPermissionFlags("blocks_manage.own_comm_reason"));
+        }, viewFlags: AdminUtils.GetCurrentPermissionFlags("comms_manage.own_mute_reason"));
         foreach (var reason in reasons)
         {
             if (reason.Duration != null)
@@ -200,7 +239,7 @@ public static class MenuCommsManage
             _api.HookNextPlayerMessage(caller, reason => {
                 OpenGagTimeSelectMenu(caller, target, reason, menu);
             });
-        }, viewFlags: AdminUtils.GetCurrentPermissionFlags("blocks_manage.own_comm_reason"));
+        }, viewFlags: AdminUtils.GetCurrentPermissionFlags("comms_manage.own_gag_reason"));
         foreach (var reason in reasons)
         {
             if (reason.Duration != null)
@@ -235,7 +274,7 @@ public static class MenuCommsManage
             _api.HookNextPlayerMessage(caller, reason => {
                 OpenSilenceTimeSelectMenu(caller, target, reason, menu);
             });
-        }, viewFlags: AdminUtils.GetCurrentPermissionFlags("blocks_manage.own_comm_reason"));
+        }, viewFlags: AdminUtils.GetCurrentPermissionFlags("comms_manage.own_silence_reason"));
         foreach (var reason in reasons)
         {
             if (reason.Duration != null)
@@ -283,7 +322,7 @@ public static class MenuCommsManage
                 });
                 _api.CloseMenu(caller);
             });
-        }, viewFlags: AdminUtils.GetCurrentPermissionFlags("blocks_manage.own_comm_time"));
+        }, viewFlags: AdminUtils.GetCurrentPermissionFlags("comms_manage.own_mute_time"));
         foreach (var time in times)
         {
             if (caller.Admin()!.MaxMuteTime != 0)
@@ -330,7 +369,7 @@ public static class MenuCommsManage
                 });
                 _api.CloseMenu(caller);
             });
-        }, viewFlags: AdminUtils.GetCurrentPermissionFlags("blocks_manage.own_comm_time"));
+        }, viewFlags: AdminUtils.GetCurrentPermissionFlags("comms_manage.own_gag_time"));
         foreach (var time in times)
         {
             if (caller.Admin()!.MaxGagTime != 0)
@@ -377,7 +416,7 @@ public static class MenuCommsManage
                 });
                 _api.CloseMenu(caller);
             });
-        }, viewFlags: AdminUtils.GetCurrentPermissionFlags("blocks_manage.own_comm_time"));
+        }, viewFlags: AdminUtils.GetCurrentPermissionFlags("comms_manage.own_silence_time"));
         foreach (var time in times)
         {
             if (caller.Admin()!.MaxGagTime != 0 || caller.Admin()!.MaxMuteTime != 0)

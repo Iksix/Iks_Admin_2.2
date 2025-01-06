@@ -315,6 +315,10 @@ public static class AdminUtils
     }
     public static bool HasPermissions(this Admin? admin, string key)
     {
+        if (admin.Warns.Count >= AdminApi.Config.MaxWarns)
+        {
+            return false;
+        }
         if (admin != null)
             LogDebug($"Checking permission: {admin.Name} | {key}" );
         else LogDebug($"Checking permission: {key}" );

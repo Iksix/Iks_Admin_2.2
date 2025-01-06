@@ -11,7 +11,7 @@ public static class SilenceFunctions
     {
         AdminUtils.LogDebug("Add silence... " + comm.SteamId);
         var result = await AdminApi.AddComm(comm);
-        AdminUtils.LogDebug("Silence result: " + result);
+        AdminUtils.LogDebug("Silence result: " + result.QueryStatus);
         switch (result.QueryStatus)
         {
             case 0:
@@ -39,7 +39,7 @@ public static class SilenceFunctions
         }
         existingComm.UnbanReason = reason;
         var result = await AdminApi.UnComm(admin, existingComm);
-        AdminUtils.LogDebug("Unsilence result: " + result);
+        AdminUtils.LogDebug("Unsilence result: " + result.QueryStatus);
         switch (result.QueryStatus)
         {
             case 0:

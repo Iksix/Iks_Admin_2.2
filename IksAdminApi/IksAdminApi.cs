@@ -20,7 +20,7 @@ public interface IIksAdminApi
     public string ModuleDirectory { get; set; }
     public Dictionary<string, SortMenu[]> SortMenus { get; set; }
     public Admin ConsoleAdmin {get; set;}
-    public List<Admin> ServerAdmins { get; set; }
+    public List<Admin> ServerAdmins { get; }
     public List<Admin> AllAdmins { get; set; }
     public List<ServerModel> AllServers { get; set; }
     public List<AdminToServer> AdminsToServer {get; set;}
@@ -172,7 +172,18 @@ public interface IIksAdminApi
     public event Action<AdminModule> OnModuleLoaded;
 
     public void Kick(Admin admin, CCSPlayerController player, string reason);
+    
+    // Groups
     public Task<DBResult> CreateGroup(Group group);
     public Task<DBResult> UpdateGroup(Group group);
     public Task<DBResult> DeleteGroup(Group group);
+    public Task<List<Group>> GetAllGroups();
+    
+    // Warns
+    public Task<DBResult> CreateWarn(Warn warn);
+    public Task<DBResult> UpdateWarn(Warn warn);
+    public Task<DBResult> DeleteWarn(Admin admin, Warn warn);
+    public Task<List<Warn>> GetAllWarns();
+    public Task<List<Warn>> GetAllWarnsByAdmin(Admin admin);
+    public Task<List<Warn>> GetAllWarnsForAdmin(Admin admin);
 }

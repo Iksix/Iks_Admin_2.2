@@ -362,14 +362,12 @@ public static class DBAdmins
             admins = admins.Where(x => x.SteamId.ToLower() != "console").ToList();
             Main.AdminApi.AllAdmins = await GetAllAdmins(ignoreDeleted: false);
             AdminUtils.LogDebug("4/5 All admins setted ✔");
-            var serverAdmins = admins.Where(x => x.Servers.Contains(AdminUtils.AdminApi.ThisServer.Id)).ToList();
-            Main.AdminApi.ServerAdmins = serverAdmins;
             AdminUtils.LogDebug("5/5 Server admins setted ✔");
             AdminUtils.LogDebug("Admins refreshed ✔");
             AdminUtils.LogDebug("---------------");
             AdminUtils.LogDebug("Server admins:");
             AdminUtils.LogDebug($"id | name | steamId | flags | immunity | group | serverIds | discord | vk | isDisabled");
-            foreach (var admin in serverAdmins)
+            foreach (var admin in Main.AdminApi.ServerAdmins)
             {
                 AdminUtils.LogDebug($"{admin.Id} | {admin.Name} | {admin.SteamId} | {admin.CurrentFlags} | {admin.CurrentImmunity} | {admin.Group?.Name ?? "NONE"} | {string.Join(";", admin.Servers)} | {admin.Discord ?? "NONE"} | {admin.Vk ?? "NONE"} | {admin.IsDisabled}");
             }

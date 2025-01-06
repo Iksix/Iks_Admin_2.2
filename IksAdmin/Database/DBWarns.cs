@@ -41,7 +41,24 @@ public static class DBWarns
             throw;
         }
     }
-    public static async Task<Warn> InsertToBase(this Warn warn) {
+    public static async Task<List<Warn>> GetAll() {
+        try
+        {
+            await using var conn = new MySqlConnection(DB.ConnectionString);
+            await conn.OpenAsync();
+
+            var warns = (await conn.QueryAsync<Warn>($@"
+            {WarnSelect}
+            ")).ToList();
+            return warns;
+        }
+        catch (MySqlException e)
+        {
+            AdminUtils.LogError(e.ToString());
+            throw;
+        }
+    }
+    public static async Task<DBResult> InsertToBase(this Warn warn) {
         try
         {
             await using var conn = new MySqlConnection(DB.ConnectionString);
@@ -65,15 +82,15 @@ public static class DBWarns
 
             warn.Id = id;
 
-            return warn;
+            return new DBResult(id, 0);
         }
         catch (MySqlException e)
         {
             AdminUtils.LogError(e.ToString());
-            throw;
+            return new DBResult(null, -1, e.Message);
         }
     }
-    public static async Task Update(this Warn warn) {
+    public static async Task<DBResult> UpdateInBase(this Warn warn) {
         try
         {
             await using var conn = new MySqlConnection(DB.ConnectionString);
@@ -102,6 +119,7 @@ public static class DBWarns
                 deletedBy = warn.DeletedBy,
                 deleted_at = warn.DeletedAt
             });
+            return new DBResult(id, 0);
         }
         catch (MySqlException e)
         {

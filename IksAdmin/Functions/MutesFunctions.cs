@@ -11,7 +11,7 @@ public static class MutesFunctions
     {
         AdminUtils.LogDebug("Add mute... " + mute.SteamId);
         var result = await AdminApi.AddMute(mute);
-        AdminUtils.LogDebug("Mute result: " + result);
+        AdminUtils.LogDebug("Mute result: " + result.QueryStatus);
         switch (result.QueryStatus)
         {
             case 0:
@@ -39,11 +39,11 @@ public static class MutesFunctions
         }
         existingComm.UnbanReason = reason;
         var result = await AdminApi.UnComm(admin, existingComm);
-        AdminUtils.LogDebug("Unmute result: " + result);
+        AdminUtils.LogDebug("Unmute result: " + result.QueryStatus);
         switch (result.QueryStatus)
         {
             case 0:
-                Helper.PrintToSteamId(admin.SteamId, AdminApi.Localizer["ActionSuccess.UnmuteSuccess"]);
+                Helper.PrintToSteamId(admin.SteamId, AdminApi.Localizer["ActionSuccess.UnMuteSuccess"]);
                 break;
             case 1:
                 Helper.PrintToSteamId(admin.SteamId, AdminApi.Localizer["ActionError.PunishmentNotFound"]);

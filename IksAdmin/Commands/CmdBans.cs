@@ -76,10 +76,10 @@ public static class CmdBans
     public static void UnbanIp(CCSPlayerController? caller, List<string> args, CommandInfo info)
     {
         var admin = caller.Admin()!;
-        var steamId = args[0];
+        var ip = args[0];
         var reason = args[1];
         Task.Run(async () => {
-            await BansFunctions.UnbanIp(admin, steamId, reason);
+            await BansFunctions.UnbanIp(admin, ip, reason);
         });
     }
 

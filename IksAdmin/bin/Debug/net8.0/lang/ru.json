@@ -8,6 +8,7 @@
     "MenuTitle.Other.SelectTime" : "Выберите время",
     "MenuTitle.Other.SelectPlayer" : "Выберите игрока",
     "MenuOption.Other.OwnReason" : "Своя причина",
+    "MenuOption.Other.OwnTime" : "Своё время",
     "MenuOption.Other.Back" : "← Назад",
     "MenuOption.Postfix.Expired" : " [ИСТЕКЛО]",
     "MenuOption.Postfix.Unbanned" : " [РАЗБАНЕН]",
@@ -19,6 +20,7 @@
     "Message.CH.FlagsSet" : "Напишите флаги в чат: {red}!abc...",
     "Message.CH.ImmunitySet" : "Напишите иммунитет в чат: {red}!10",
     "Message.CH.ConfirmDeleting" : "Подтвердите удаление введя: {red}!delete",
+    "Message.PrintOwnTime" : "Введите своё время в минутах: !10",
     // Global messages
     "Message.GL.DeleteCanceled" : "Удаление отменено",
     "Message.GL.ReasonSet" : "Введите причину: {red}!причина",
@@ -71,23 +73,33 @@
     "Message.GM.Delete" : "Группа удаляется...",
     "Message.GM.Deleted" : "Группа удалена {green}✔",
     "Message.GM.AdminsWithGroup" : "Админов с этой группой: {value}",
-
+    
+    // comms_manage
+    "MenuTitle.CM" : "Управление чатом",
+    "MenuOption.CM" : "Управление чатом",
+    "MenuOption.CM.Add" : "Добавить блокировку",
+    "MenuTitle.CM.UnComm" : "Удалить блокировку чата",
+    "MenuTitle.CM.SelectType" : "Выберите тип блокировки",
+    "MenuOption.CM.Mute" : "Мут",
+    "MenuOption.CM.Gag" : "Гаг",
+    "MenuOption.CM.Silence" : "Всё",
+    "MenuOption.CM.Remove" : "Удалить блокировку",
+    "MenuOption.CM.RemoveOffline" : "Удалить блокировку (оффлайн)",
+    
+    // blocks_manage
     "MenuTitle.BM" : "Управление блокировками",
     "MenuOption.BM" : "Управление блокировками",
     
+    // blocks_manage - bans
     "MenuTitle.BansManage" : "Управление банами",
     "MenuOption.BansManage" : "Управление банами",
-
     "MenuTitle.AddBan" : "Добавить бан",
     "MenuOption.AddBan" : "Добавить бан",
-
     "MenuTitle.BanType" : "Выберите тип бана",
     "MenuOption.BanSteamId" : "Steam ID",
     "MenuOption.BanIp" : "IP",
-
     "MenuTitle.AddOfflineBan" : "Добавить бан (offline)",
     "MenuOption.AddOfflineBan" : "Добавить бан (offline)",
-
     "MenuTitle.Unban" : "Снять бан",
     "MenuOption.Unban" : "Снять бан",
 

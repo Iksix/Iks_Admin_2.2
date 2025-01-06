@@ -11,7 +11,7 @@ public static class GagsFunctions
     {
         AdminUtils.LogDebug("Add gag... " + gag.SteamId);
         var result = await AdminApi.AddGag(gag);
-        AdminUtils.LogDebug("Gag result: " + result);
+        AdminUtils.LogDebug("Gag result: " + result.QueryStatus);
         switch (result.QueryStatus)
         {
             case 0:
@@ -39,7 +39,7 @@ public static class GagsFunctions
         }
         existingComm.UnbanReason = reason;
         var result = await AdminApi.UnComm(admin, existingComm);
-        AdminUtils.LogDebug("Ungag result: " + result);
+        AdminUtils.LogDebug("Ungag result: " + result.QueryStatus);
         switch (result.QueryStatus)
         {
             case 0:

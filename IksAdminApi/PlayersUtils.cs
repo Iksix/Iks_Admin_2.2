@@ -6,7 +6,6 @@ namespace IksAdminApi;
 
 public static class PlayersUtils
 {
-    public static BasePlugin AdminPluginInstance { get; set; } = null!;
     // HTML MESSAGES
     public static Dictionary<CCSPlayerController, string> HtmlMessages = new();
     public static Dictionary<CCSPlayerController, Timer> HtmlMessagesTimer = new();
@@ -15,7 +14,7 @@ public static class PlayersUtils
         ClearHtmlMessage(player);
         if (message == "") return;
         HtmlMessages.Add(player, message);
-        HtmlMessagesTimer.Add(player, AdminPluginInstance.AddTimer(time, () =>
+        HtmlMessagesTimer.Add(player, AdminUtils.CoreInstance.AddTimer(time, () =>
         {
             ClearHtmlMessage(player);
         }));

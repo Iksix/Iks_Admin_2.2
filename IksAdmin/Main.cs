@@ -40,7 +40,6 @@ public class Main : BasePlugin
     public static List<CCSPlayerController> BlockTeamChange = new();
     public static Dictionary<string, bool> KickOnFullConnect = new();
     public static Dictionary<string, string> KickOnFullConnectReason = new();
-    public static BasePlugin Instance = null!;
 
     // INSTANT PUNISHMENT ON CONNECT
     public static Dictionary<string, PlayerComm> InstantComm = new();
@@ -56,9 +55,7 @@ public class Main : BasePlugin
     }
     public override void Load(bool hotReload)
     {
-        Instance = this;
         AdminUtils.CoreInstance = this;
-        PlayersUtils.AdminPluginInstance = this;
         AdminApi = new AdminApi(this, Localizer, ModuleDirectory, DB.ConnectionString);
         AdminModule.AdminApi = AdminApi;
         AdminUtils.AdminApi = AdminApi;
@@ -111,8 +108,8 @@ public class Main : BasePlugin
         var steamId64 = steamId.SteamId64.ToString();
         var player = Utilities.GetPlayerFromSlot(playerSlot);
         var disconnected = AdminApi.DisconnectedPlayers.FirstOrDefault(x => x.SteamId == steamId64);
-        AdminApi.DisconnectedPlayers.Remove(disconnected);
-        var ip = player!.IpAddress;
+        AdminApi.DisconnectedPlayers.Remove(disconnected!);
+        var ip = player!.GetIp();
         Task.Run(async () => {
             await AdminApi.ReloadInfractions(steamId64, ip, true);
         });
@@ -174,7 +171,7 @@ public class Main : BasePlugin
         var comm = player.GetComms();
         if (comm.HasGag())
         {
-            var gag = comm.GetGag();
+            var gag = comm.GetGag()!;
             Helper.Print(player, Localizer["Message.WhenGag"].Value
                 .Replace("{date}", gag.EndAt == 0 ? Localizer["Other.Never"] : Utils.GetDateString(gag.EndAt))
             );
@@ -182,7 +179,7 @@ public class Main : BasePlugin
         }
         if (comm.HasSilence())
         {
-            var silence = comm.GetSilence();
+            var silence = comm.GetSilence()!;
             Helper.Print(player, Localizer["Message.WhenSilence"].Value
                 .Replace("{date}", silence.EndAt == 0 ? Localizer["Other.Never"] : Utils.GetDateString(silence.EndAt))
             );
@@ -242,10 +239,20 @@ public class Main : BasePlugin
         // Other ===
         AdminApi.RegisterPermission("other.equals_immunity_action", "e"); // Разрешить взаймодействие с админами равными по иммунитету (Включая снятие наказаний если есть флаг blocks_manage.remove_immunity)
         AdminApi.RegisterPermission("other.admin_chat", "b");
+        AdminApi.RegisterPermission("other.reload_infractions", "z");
     }
     private void InitializeCommands()
     {
         AdminApi.SetCommandInititalizer(ModuleName);
+        AdminApi.AddNewCommand(
+            "reload_infractions",
+            "Перезагрузить данные игрока",
+            "other.reload_infractions",
+            "css_reload_infractions <SteamID/IP(WITHOUT PORT)>",
+            CmdBase.ReloadInfractions,
+            minArgs: 1,
+            commandUsage: CommandUsage.CLIENT_AND_SERVER
+        );
         AdminApi.AddNewCommand(
             "admin",
             "Открыть админ меню",
@@ -369,7 +376,7 @@ public class Main : BasePlugin
         AdminApi.AddNewCommand(
             "gag",
             "Выдать гаг игроку (онлайн)",
-            "blocks_manage.gag",
+            "comms_manage.gag",
             "css_gag <#uid/#steamId/name/@...> <time> <reason>",
             CmdGags.Gag,
             minArgs: 3 
@@ -377,7 +384,7 @@ public class Main : BasePlugin
         AdminApi.AddNewCommand(
             "ungag",
             "Снять гаг с игрока (онлайн)",
-            "blocks_manage.ungag",
+            "comms_manage.ungag",
             "css_ungag <#uid/#steamId/name/@...> <reason>",
             CmdGags.Ungag,
             minArgs: 2 
@@ -385,7 +392,7 @@ public class Main : BasePlugin
         AdminApi.AddNewCommand(
             "addgag",
             "Выдать гаг игроку (оффлайн)",
-            "blocks_manage.gag",
+            "comms_manage.gag",
             "css_addgag <steamId> <time> <reason>",
             CmdGags.AddGag,
             minArgs: 3 
@@ -393,7 +400,7 @@ public class Main : BasePlugin
         AdminApi.AddNewCommand(
             "removegag",
             "Снять гаг с игрока (оффлайн)",
-            "blocks_manage.ungag",
+            "comms_manage.ungag",
             "css_ungag <steamId> <reason>",
             CmdGags.RemoveGag,
             minArgs: 2 
@@ -402,7 +409,7 @@ public class Main : BasePlugin
         AdminApi.AddNewCommand(
             "mute",
             "Выдать мут игроку (онлайн)",
-            "blocks_manage.mute",
+            "comms_manage.mute",
             "css_mute <#uid/#steamId/name/@...> <time> <reason>",
             CmdMutes.Mute,
             minArgs: 3 
@@ -410,7 +417,7 @@ public class Main : BasePlugin
         AdminApi.AddNewCommand(
             "unmute",
             "Снять мут с игрока (онлайн)",
-            "blocks_manage.unmute",
+            "comms_manage.unmute",
             "css_unmute <#uid/#steamId/name/@...> <reason>",
             CmdMutes.Unmute,
             minArgs: 2 
@@ -418,7 +425,7 @@ public class Main : BasePlugin
         AdminApi.AddNewCommand(
             "addmute",
             "Выдать мут игроку (оффлайн)",
-            "blocks_manage.mute",
+            "comms_manage.mute",
             "css_addmute <steamId> <time> <reason>",
             CmdMutes.AddMute,
             minArgs: 3 
@@ -426,7 +433,7 @@ public class Main : BasePlugin
         AdminApi.AddNewCommand(
             "removemute",
             "Снять мут с игрока (оффлайн)",
-            "blocks_manage.unmute",
+            "comms_manage.unmute",
             "css_removemute <steamId> <reason>",
             CmdMutes.RemoveMute,
             minArgs: 2 
@@ -435,7 +442,7 @@ public class Main : BasePlugin
         AdminApi.AddNewCommand(
             "silence",
             "Выдать silence игроку (онлайн)",
-            "blocks_manage.silence",
+            "comms_manage.silence",
             "css_silence <#uid/#steamId/name/@...> <time> <reason>",
             CmdSilences.Silence,
             minArgs: 3 
@@ -443,7 +450,7 @@ public class Main : BasePlugin
         AdminApi.AddNewCommand(
             "unsilence",
             "Снять silence с игрока (онлайн)",
-            "blocks_manage.unsilence",
+            "comms_manage.unsilence",
             "css_unsilence <#uid/#steamId/name/@...> <reason>",
             CmdSilences.UnSilence,
             minArgs: 2 
@@ -451,7 +458,7 @@ public class Main : BasePlugin
         AdminApi.AddNewCommand(
             "addsilence",
             "Выдать silence игроку (оффлайн)",
-            "blocks_manage.silence",
+            "comms_manage.silence",
             "css_addsilence <steamId> <time> <reason>",
             CmdSilences.AddSilence,
             minArgs: 3 
@@ -459,7 +466,7 @@ public class Main : BasePlugin
         AdminApi.AddNewCommand(
             "removesilence",
             "Снять silence с игрока (оффлайн)",
-            "blocks_manage.unsilence",
+            "comms_manage.unsilence",
             "css_removesilence <steamId> <reason>",
             CmdSilences.RemoveSilence,
             minArgs: 2 
@@ -544,7 +551,15 @@ public class AdminApi : IIksAdminApi
     public IStringLocalizer Localizer { get; set; }
     public Dictionary<string, SortMenu[]> SortMenus { get; set; } = new();
     public string ModuleDirectory { get; set; }
-    public List<Admin> ServerAdmins { get; set; } = new();
+
+    public List<Admin> ServerAdmins
+    {
+        get
+        {
+            return AllAdmins.Where(x => x.Servers.Contains(ThisServer.Id)).ToList();
+        }
+    }
+
     public List<Admin> AllAdmins { get; set; } = new();
     public List<ServerModel> AllServers { get; set; } = new();
     public ServerModel ThisServer { get; set; } = null!;
@@ -908,9 +923,9 @@ public class AdminApi : IIksAdminApi
             {
                 await SendRconToServer(server, command);
             }
-            catch (Exception _)
+            catch (Exception)
             {
-                continue;
+                // ignored
             }
         }
     }
@@ -1413,9 +1428,10 @@ public class AdminApi : IIksAdminApi
             Main.KickOnFullConnectReason.Add(steamId, ban.Reason);
             return;
         }
-        if (ip != null)
+        if (ip != null && !Config.MirrorsIp.Contains(ip))
         {
-            AdminUtils.LogDebug("Reload infractions for: " + ip);
+            
+            AdminUtils.LogDebug("Check ban for: " + ip);
             ban = await GetActiveBanIp(ip);
             AdminUtils.LogDebug("Has ip ban: " + (ban != null).ToString());
             if (ban != null)
@@ -1435,6 +1451,30 @@ public class AdminApi : IIksAdminApi
         AdminUtils.LogDebug("Has gag: " + comms.HasGag());
         AdminUtils.LogDebug("Has mute: " + comms.HasMute());
         AdminUtils.LogDebug("Has silence: " + comms.HasSilence());
+        AdminUtils.LogDebug("Getting admin data");
+        var admins = await GetAdminsBySteamId(steamId);
+        if (admins.Count == 0)
+        {
+            AdminUtils.LogDebug("Admin data is empty \u2716");
+            return;
+        }
+
+        List<int> correctIds = new(); // ID валидных админов
+        for (int i = 0; i < AllAdmins.Count; i++)
+        {
+            var a = AllAdmins[i];
+            var playerAdmin = admins.FirstOrDefault(x => x.Id == a.Id);
+            if (playerAdmin == null) continue;
+            AllAdmins[i] = playerAdmin;
+            correctIds.Add(playerAdmin.Id);
+            AdminUtils.LogDebug("Update ID on server: " + playerAdmin.Id);
+        }
+        var adminsForDelete = AllAdmins.Where(x => x.SteamId == steamId && !correctIds.Contains(x.Id)).ToList();
+        foreach (var adminForDelete in adminsForDelete)
+        {
+            AdminUtils.LogDebug("Remove non valid ids: " + adminForDelete.Id);
+            AllAdmins.Remove(adminForDelete);
+        }
     }
 
     public void MutePlayerInGame(PlayerComm mute)
@@ -2014,5 +2054,68 @@ public class AdminApi : IIksAdminApi
         var result = await DBGroups.DeleteGroup(group);
         await ReloadDataFromDBOnAllServers();
         return result;
+    }
+
+    public async Task<List<Group>> GetAllGroups()
+    {
+        return await DBGroups.GetAllGroups();
+    }
+
+    public async Task<DBResult> CreateWarn(Warn warn)
+    {
+        var eData = new EventData("create_warn");
+        eData.Insert("warn", warn);
+        if (eData.Invoke() != HookResult.Continue)
+        {
+            return new DBResult(null, -2, "Stopped by event WARN");
+        }
+        warn = eData.Get<Warn>("warn");
+        var result = await warn.InsertToBase();
+        if (result.ElementId != null) 
+            Warns.Add(warn);
+        return result;
+    }
+
+    public async Task<DBResult> UpdateWarn(Warn warn)
+    {
+        var eData = new EventData("update_warn");
+        eData.Insert("warn", warn);
+        if (eData.Invoke() != HookResult.Continue)
+        {
+            return new DBResult(null, -2, "Stopped by event WARN");
+        }
+        warn = eData.Get<Warn>("warn");
+        var exWarn = Warns.FirstOrDefault(x => x.Id == warn.Id);
+        if (exWarn != null)
+            exWarn = warn;
+        return await warn.UpdateInBase();
+    }
+
+    public async Task<DBResult> DeleteWarn(Admin admin, Warn warn)
+    {
+        warn.DeletedBy = admin.Id;
+        warn.DeletedAt = AdminUtils.CurrentTimestamp();
+        var eData = new EventData("delete_warn");
+        eData.Insert("warn", warn);
+        if (eData.Invoke() != HookResult.Continue)
+        {
+            return new DBResult(null, -2, "Stopped by event WARN");
+        }
+        warn = eData.Get<Warn>("warn");
+        return await warn.UpdateInBase();
+    }
+
+    public async Task<List<Warn>> GetAllWarns()
+    {
+        return await DBWarns.GetAll();
+    }
+
+    public async Task<List<Warn>> GetAllWarnsByAdmin(Admin admin)
+    {
+        return await DBWarns.GetAllActiveByAdmin(admin.Id);
+    }
+    public async Task<List<Warn>> GetAllWarnsForAdmin(Admin admin)
+    {
+        return await DBWarns.GetAllActiveForAdmin(admin.Id);
     }
 }

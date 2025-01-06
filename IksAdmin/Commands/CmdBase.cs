@@ -8,7 +8,7 @@ namespace IksAdmin.Commands;
 
 public static class CmdBase
 {
-    public static AdminApi AdminApi = Main.AdminApi!;
+    public static AdminApi _api = Main.AdminApi!;
 
     public static void AdminMenu(CCSPlayerController? caller, List<string> args, CommandInfo info)
     {
@@ -21,9 +21,21 @@ public static class CmdBase
         Task.Run(async () =>
         {
             if (args.Count > 0 && args[0] == "all")
-                await AdminApi.ReloadDataFromDb();
-            else await AdminApi.ReloadDataFromDb(false);
+                await _api.ReloadDataFromDb();
+            else await _api.ReloadDataFromDb(false);
             caller.Print( "DB data reloaded \u2714");
+        });
+    }
+
+    public static void ReloadInfractions(CCSPlayerController? caller, List<string> args, CommandInfo info)
+    {
+        var steamId = args[0];
+        var player = PlayersUtils.GetControllerBySteamId(steamId) ?? PlayersUtils.GetControllerByIp(steamId);
+        if (player == null) return;
+        string? ip = player.GetIp();
+        Task.Run(async () =>
+        {
+            await _api.ReloadInfractions(steamId, ip);
         });
     }
 }

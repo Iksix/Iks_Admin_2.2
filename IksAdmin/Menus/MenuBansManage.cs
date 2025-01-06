@@ -51,6 +51,11 @@ public static class MenuBansManage
                         if (ban.BanType == 0)
                             await _api.Unban(admin, ban.SteamId!, r);
                         else await _api.UnbanIp(admin, ban.Ip!, r);
+                        var b = await DBBans.GetLastBans(_api.Config.LastPunishmentTime);
+                        Server.NextFrame(() =>
+                        {
+                            OpenRemoveBansMenu(caller, b, menu);
+                        });
                     });
                 });
             }, disabled: !AdminUtils.CanUnban(admin, ban) || ban.IsExpired || ban.IsUnbanned);

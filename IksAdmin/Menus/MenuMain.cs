@@ -34,14 +34,6 @@ public static class MenuMain
             },
             viewFlags: AdminUtils.GetAllPermissionGroupFlags("blocks_manage")
         );
-        menu.AddMenuOption(
-            id: "cm",
-            title: Localizer["MenuOption.CM"],
-            (p, _) => {
-                MenuCommsManage.OpenCommsMenu(caller, menu);
-            },
-            viewFlags: AdminUtils.GetAllPermissionGroupFlags("comms_manage")
-        );
         menu.Open(caller);
     }
 
@@ -60,11 +52,12 @@ public static class MenuMain
             }
         );
         menu.AddMenuOption(
-            id: Main.GenerateOptionId("bm"),
-            title: Localizer["MenuOption.BlocksManage"],
+            id: "cm",
+            title: Localizer["MenuOption.CM"],
             (p, _) => {
-                OpenBlocksManageMenu(caller, menu);
-            }
+                MenuCommsManage.OpenCommsMenu(caller, menu);
+            },
+            viewFlags: AdminUtils.GetAllPermissionGroupFlags("comms_manage")
         );
         menu.Open(caller);
     }
