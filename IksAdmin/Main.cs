@@ -57,7 +57,7 @@ public class Main : BasePlugin
     {
         AdminUtils.CoreInstance = this;
         AdminApi = new AdminApi(this, Localizer, ModuleDirectory, DB.ConnectionString);
-        AdminModule.AdminApi = AdminApi;
+        AdminModule.Api = AdminApi;
         AdminUtils.AdminApi = AdminApi;
         AdminApi.OnModuleLoaded += OnModuleLoaded;
         AdminApi.OnModuleUnload += OnModuleUnload;
@@ -196,6 +196,11 @@ public class Main : BasePlugin
         AdminApi.RegisterPermission("admins_manage.delete", "z");
         AdminApi.RegisterPermission("admins_manage.edit", "z");
         AdminApi.RegisterPermission("admins_manage.refresh", "z");
+        // Admin manage ===
+        AdminApi.RegisterPermission("admins_manage.warn_add", "z");
+        AdminApi.RegisterPermission("admins_manage.warn_delete", "z");
+        AdminApi.RegisterPermission("admins_manage.warn_edit", "z");
+        AdminApi.RegisterPermission("admins_manage.warn_refresh", "z");
         // Groups manage ===
         AdminApi.RegisterPermission("groups_manage.add", "z");
         AdminApi.RegisterPermission("groups_manage.delete", "z");
@@ -251,6 +256,15 @@ public class Main : BasePlugin
             "css_reload_infractions <SteamID/IP(WITHOUT PORT)>",
             CmdBase.ReloadInfractions,
             minArgs: 1,
+            commandUsage: CommandUsage.CLIENT_AND_SERVER
+        );
+        AdminApi.AddNewCommand(
+            "am_warn",
+            "Выдать варн",
+            "admins_manage.warn_add",
+            "css_am_warn <SteamID> <time> <reason>",
+            CmdAdminManage.Warn,
+            minArgs: 3,
             commandUsage: CommandUsage.CLIENT_AND_SERVER
         );
         AdminApi.AddNewCommand(
@@ -1002,7 +1016,7 @@ public class AdminApi : IIksAdminApi
             }
             catch (ArgumentException)
             {
-                info.Reply(Localizer["Error.DifferentNumberOfArgs"].Value.Replace("{usage}", usage), tagString);
+                info.Reply(Localizer["Error.ArgumentException"].Value.Replace("{usage}", usage), tagString);
                 throw;
             }
             catch (Exception e)
@@ -2061,10 +2075,11 @@ public class AdminApi : IIksAdminApi
         return await DBGroups.GetAllGroups();
     }
 
-    public async Task<DBResult> CreateWarn(Warn warn)
+    public async Task<DBResult> CreateWarn(Warn warn, bool announce = true)
     {
-        var eData = new EventData("create_warn");
+        var eData = new EventData("create_warn_pre");
         eData.Insert("warn", warn);
+        eData.Insert("announce", announce);
         if (eData.Invoke() != HookResult.Continue)
         {
             return new DBResult(null, -2, "Stopped by event WARN");
@@ -2073,6 +2088,18 @@ public class AdminApi : IIksAdminApi
         var result = await warn.InsertToBase();
         if (result.ElementId != null) 
             Warns.Add(warn);
+        await ReloadDataFromDBOnAllServers();
+        if (eData.Invoke("create_warn_post") != HookResult.Continue)
+        {
+            return new DBResult(null, -2, "Stopped by event WARN");
+        }
+        warn = eData.Get<Warn>("warn");
+        announce = eData.Get<bool>("announce");
+        Server.NextFrame(() =>
+        {
+            if (announce)
+                Announces.Warn(warn);
+        });
         return result;
     }
 
@@ -2088,10 +2115,11 @@ public class AdminApi : IIksAdminApi
         var exWarn = Warns.FirstOrDefault(x => x.Id == warn.Id);
         if (exWarn != null)
             exWarn = warn;
+        await ReloadDataFromDBOnAllServers();
         return await warn.UpdateInBase();
     }
 
-    public async Task<DBResult> DeleteWarn(Admin admin, Warn warn)
+    public async Task<DBResult> DeleteWarn(Admin admin, Warn warn, bool announce = true)
     {
         warn.DeletedBy = admin.Id;
         warn.DeletedAt = AdminUtils.CurrentTimestamp();
@@ -2102,6 +2130,7 @@ public class AdminApi : IIksAdminApi
             return new DBResult(null, -2, "Stopped by event WARN");
         }
         warn = eData.Get<Warn>("warn");
+        await ReloadDataFromDBOnAllServers();
         return await warn.UpdateInBase();
     }
 

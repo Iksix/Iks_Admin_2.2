@@ -180,9 +180,9 @@ public interface IIksAdminApi
     public Task<List<Group>> GetAllGroups();
     
     // Warns
-    public Task<DBResult> CreateWarn(Warn warn);
+    public Task<DBResult> CreateWarn(Warn warn, bool announce = true);
     public Task<DBResult> UpdateWarn(Warn warn);
-    public Task<DBResult> DeleteWarn(Admin admin, Warn warn);
+    public Task<DBResult> DeleteWarn(Admin admin, Warn warn, bool announce = true);
     public Task<List<Warn>> GetAllWarns();
     public Task<List<Warn>> GetAllWarnsByAdmin(Admin admin);
     public Task<List<Warn>> GetAllWarnsForAdmin(Admin admin);

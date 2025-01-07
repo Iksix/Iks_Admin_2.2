@@ -6,12 +6,14 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Commands;
 using IksAdmin.Functions;
 using IksAdminApi;
+using Microsoft.Extensions.Localization;
 
 namespace IksAdmin.Commands;
 
 public static class CmdAdminManage
 {
-    public static AdminApi AdminApi = Main.AdminApi!;
+    private static AdminApi _api = Main.AdminApi!;
+    private static IStringLocalizer _localizer = _api.Localizer;
     public static void Add(CCSPlayerController? caller, List<string> args, CommandInfo info)
     {
         var steamId = args[0];
@@ -21,7 +23,7 @@ public static class CmdAdminManage
         {
             throw new ArgumentException("Time must be a number");
         }
-        int? serverId = args[3] == "this" ? AdminApi.ThisServer.Id : int.Parse(args[3]);
+        int? serverId = args[3] == "this" ? _api.ThisServer.Id : int.Parse(args[3]);
         switch (args.Count)
         {
             case 5:
@@ -58,13 +60,13 @@ public static class CmdAdminManage
         AdminManageFunctions.AddFlag(caller, info, admin, flags);
         Task.Run(async () =>
         {
-            await AdminApi.ReloadDataFromDBOnAllServers();
+            await _api.ReloadDataFromDBOnAllServers();
         });
     }
 
     public static void AddServerId(CCSPlayerController? caller, List<string> args, CommandInfo info)
     {
-        // css_am_add_server_id <steamId> <server_id/this>
+        // css_am_add_server_id <SteamID> <server_id/this>
         var admin = AdminUtils.Admin(args[0]);
         if (admin == null)
         {
@@ -75,7 +77,36 @@ public static class CmdAdminManage
         AdminManageFunctions.AddServerId(caller, info, admin, serverId);
         Task.Run(async () =>
         {
-            await AdminApi.ReloadDataFromDBOnAllServers();
+            await _api.ReloadDataFromDBOnAllServers();
+        });
+    }
+
+    public static void Warn(CCSPlayerController? caller, List<string> args, CommandInfo info)
+    {
+        // css_am_warn <SteamID> <time> <reason>
+        var admin = caller.Admin()!;
+        var targetAdmin = AdminUtils.ServerAdmin(args[0]);
+        if (targetAdmin == null)
+        {
+            info.Reply(_localizer["ActionError.TargetNotFound"]);
+            return;
+        }
+        if (!_api.CanDoActionWithPlayer(admin.SteamId, targetAdmin.SteamId))
+        {
+            info.Reply(_localizer["ActionError.NotEnoughPermissionsForAction"]);
+            return;
+        }
+
+        var time = args[1];
+        if (!int.TryParse(time, out var timeInt))
+        {
+            throw new ArgumentException("Time must be a number");
+        }
+        var reason = string.Join(" ", args.Skip(2));
+        var warn = new Warn(admin.Id, targetAdmin.Id, timeInt, reason);
+        Task.Run(async () =>
+        {
+            await _api.CreateWarn(warn);
         });
     }
 }

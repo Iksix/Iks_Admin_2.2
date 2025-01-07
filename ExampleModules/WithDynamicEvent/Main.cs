@@ -28,7 +28,7 @@ public class Main : AdminModule
 
     public override void OnAllPluginsLoaded(bool hotReload)
     {
-        AdminApi.OnDynamicEvent += OnDynamicEvent;
+        Api.OnDynamicEvent += OnDynamicEvent;
     }
 
     private HookResult OnDynamicEvent(EventData data)

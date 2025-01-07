@@ -82,4 +82,14 @@ public static class Announces
                 .Replace("{duration}", AdminUtils.GetDurationString(comm.Duration)), tag: Localizer["Tag"]
         );
     }
+
+    public static void Warn(Warn warn)
+    {
+        AdminUtils.PrintToServer(Localizer["Announce.Warn"].Value
+                .Replace("{admin}", AdminUtils.Admin(warn.AdminId)!.Name)
+                .Replace("{target}", AdminUtils.Admin(warn.TargetId)!.Name)
+                .Replace("{reason}", warn.Reason)
+                .Replace("{duration}", (AdminUtils.GetDurationString(warn.Duration)).ToString()), tag: Localizer["Tag"]
+        );
+    }
 }

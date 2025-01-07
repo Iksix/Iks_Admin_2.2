@@ -8,7 +8,9 @@ public class Warn
     public int Duration {get; set;}
     public string Reason {get; set;}
     public int CreatedAt {get; set;} = AdminUtils.CurrentTimestamp();
-    public int EndAt {get; set;}
+
+    public int EndAt { get; set; } = 0;
+
     public int UpdatedAt {get; set;} = AdminUtils.CurrentTimestamp();
     public int? DeletedAt {get; set;} = null;
     public int? DeletedBy {get; set;} = null;
@@ -43,20 +45,24 @@ public class Warn
         Reason = reason;
         CreatedAt = createdAt;
         UpdatedAt = updatedAt;
-        EndAt = endAt;
         DeletedAt = deletedAt;
         DeletedBy = deletedBy;
+        EndAt = endAt;
     }
     public Warn(
-        int AdminId,
-        int TargetId,
-        int Duration,
-        string Reason
+        int adminId,
+        int targetId,
+        int duration,
+        string reason
     ) {
-        this.AdminId = AdminId;   
-        this.TargetId = TargetId;  
-        this.Duration = Duration;  
-        this.Reason = Reason; 
+        AdminId = adminId;   
+        TargetId = targetId;  
+        Duration = duration*60;  
+        Reason = reason;
+        SetEndAt();
+    }
+    public void SetEndAt()
+    {
         EndAt = Duration == 0 ? 0 : AdminUtils.CurrentTimestamp() + Duration;
     }
 }

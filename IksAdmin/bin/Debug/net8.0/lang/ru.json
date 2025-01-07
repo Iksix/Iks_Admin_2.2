@@ -107,6 +107,7 @@
     "Error.MustBeANumber" : "{red}Параметр должен быть числом!!! ✖",
     "Error.NotEnoughPermissions" : "{red}Недостаточно прав для использования команды ✖",
     "Error.DifferentNumberOfArgs" : "{red}Неправильное кол-во аргументов ✖\n{red}Использование: \n{usage}",
+    "Error.ArgumentException" : "{red}Неправильный какого-то аргумента ✖\n{red}Использование: \n{usage}",
     "Error.OtherCommandError" : "{red}При выполнении команды возникла ошибка ✖\n{red}Использование: \n{usage}",
     
     "ActionError.Other" : "{red}Возникла неизвестная ошибка обратитесь к владельцу сервера ✖", // Значит что ошибка выводится в консоль, чекаем там
@@ -114,6 +115,7 @@
     "ActionError.AlreadyBanned" : "{red}Этот игрок/айпи уже наказан ✖",
     "ActionError.TargetNotFound" : "{red}Цель не найдена ✖",
     "ActionError.PunishmentNotFound" : "{red}Наказание не найдено ✖",
+    "ActionError.NotEnoughPermissionsForAction" : "{red}У вас недостаточно прав для взаимодействия с этим игроком ✖",
     
     "ActionSuccess.BanSuccess" : "{green}Цель успешно забанена!",
     "ActionSuccess.GagSuccess" : "{green}Игрок успешно гагнут!",
