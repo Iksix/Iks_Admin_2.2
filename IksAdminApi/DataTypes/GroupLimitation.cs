@@ -11,9 +11,6 @@ public class GroupLimitation
     public int GroupId {get; set;}
     public string LimitationKey {get; set;}
     public string LimitationValue {get; set;}
-    public int CreatedAt {get; set;} = AdminUtils.CurrentTimestamp();
-    public int UpdatedAt {get; set;} = AdminUtils.CurrentTimestamp();
-    public int? DeletedAt {get; set;} = null;
     public Group? Group {get => AdminUtils.GetGroup(GroupId);}
     public int GetInt {get {
         if (int.TryParse(LimitationValue, out int result))
@@ -26,15 +23,12 @@ public class GroupLimitation
     /// <summary>
     /// Getting from base
     /// </summary>
-    public GroupLimitation(int id, int groupId, string limitationKey, string limitationValue, int createdAt, int updatedAt, int? deletedAt = null)
+    public GroupLimitation(int id, int groupId, string limitationKey, string limitationValue)
     {
         Id = id;
         GroupId = groupId;
         LimitationKey = limitationKey;
         LimitationValue = limitationValue;
-        CreatedAt = createdAt;
-        UpdatedAt = updatedAt;
-        DeletedAt = deletedAt;
     }
     /// <summary>
     /// Create new

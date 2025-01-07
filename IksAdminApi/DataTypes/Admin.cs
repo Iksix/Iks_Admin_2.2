@@ -34,7 +34,10 @@ public class Admin
         return AdminUtils.GetGroup(GroupId);
     }}
     public bool IsDisabled {get {
-        return Disabled == 1;
+        return Disabled == 1 || IsDisabledByWarns;
+    }}
+    public bool IsDisabledByWarns {get {
+        return Warns.Count >= AdminUtils.AdminApi.Config.MaxWarns;
     }}
     public int[] Servers { get  {
         var a = AdminUtils.AdminApi.AdminsToServer.Where(x => x.AdminId == Id).ToArray();

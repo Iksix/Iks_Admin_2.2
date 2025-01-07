@@ -21,7 +21,7 @@ public static class DBGroups
         {
             await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
-            var existingGroup = await GetGroup(group.Name, ignoreDeleted: false);
+            var existingGroup = await GetGroup(group.Name);
             if (existingGroup != null)
             {
                 AdminUtils.LogDebug($"Group {group.Name} already exists...");
@@ -39,17 +39,15 @@ public static class DBGroups
             return new DBResult(null, -1, e.Message);
         }
     }
-    public static async Task<Group?> GetGroup(string groupName, bool ignoreDeleted = true)
+    public static async Task<Group?> GetGroup(string groupName)
     {
         try
         {
             await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
-            var ignoreDeletedString = ignoreDeleted ? "and deleted_at is null" : "";
             var group = await conn.QueryFirstOrDefaultAsync<Group>($@"
                 {GroupSelect}
                 where name = @groupName
-                {ignoreDeletedString}
             ", new { groupName });
 
             return group;
@@ -67,10 +65,8 @@ public static class DBGroups
         {
             await using var conn = new MySqlConnection(DB.ConnectionString);
             await conn.OpenAsync();
-            var ignoreDeletedString = ignoreDeleted ? "where deleted_at is null" : "";
             var groups = (await conn.QueryAsync<Group>($@"
                 {GroupSelect}
-                {ignoreDeletedString}
             ")).ToList();
 
             return groups;
@@ -222,12 +218,8 @@ public static class DBGroups
                 id as id,
                 group_id as groupId,
                 limitation_key as limitationKey,
-                limitation_value as limitationValue,
-                created_at as createdAt,
-                updated_at as updatedAt,
-                deleted_at as deletedAt
+                limitation_value as limitationValue
                 from iks_groups_limitations
-                where deleted_at is null
             ")).ToList();
             return limitations;
         }

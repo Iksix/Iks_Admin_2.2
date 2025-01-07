@@ -96,17 +96,14 @@ create table if not exists iks_admins_warns(
     deleted_at int default null,
     deleted_by int default null,
     foreign key (admin_id) references iks_admins(id),
-    foreign key (target_id) references iks_servers(id),
+    foreign key (target_id) references iks_admins(id),
     foreign key (deleted_by) references iks_admins(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
 create table if not exists iks_groups_limitations( 
     id int not null auto_increment primary key,
     group_id int not null,
     limitation_key varchar(64) not null,
-    limitation_value varchar(32) not null,
-    created_at int not null,
-    updated_at int not null,
-    deleted_at int default null,
+    limitation_value varchar(32) not null
     foreign key (group_id) references iks_groups(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
 

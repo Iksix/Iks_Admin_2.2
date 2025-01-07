@@ -170,6 +170,11 @@ public interface IIksAdminApi
     public void EOnModuleUnload(AdminModule module);
     public event Action<AdminModule> OnModuleUnload;
     public event Action<AdminModule> OnModuleLoaded;
+    
+    /// <summary>
+    /// Срабатывает после ReloadInfractions при входе игрока
+    /// </summary>
+    public event Action<string, string> OnFullConnect;
 
     public void Kick(Admin admin, CCSPlayerController player, string reason);
     

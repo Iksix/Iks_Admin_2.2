@@ -112,6 +112,7 @@
     
     "ActionError.Other" : "{red}Возникла неизвестная ошибка обратитесь к владельцу сервера ✖", // Значит что ошибка выводится в консоль, чекаем там
     "ActionError.NotEnoughPermissionsForUnban" : "{red}У вас не достаточно прав для снятия этого наказания ✖",
+    "ActionError.DisabledByWarns" : "{red}Ваша админ привилегия отключена из за большого количества предупреждений ✖",
     "ActionError.AlreadyBanned" : "{red}Этот игрок/айпи уже наказан ✖",
     "ActionError.TargetNotFound" : "{red}Цель не найдена ✖",
     "ActionError.PunishmentNotFound" : "{red}Наказание не найдено ✖",
@@ -132,16 +133,19 @@
     "Message.WhenMuteEnd" : "{green}Мут снят! Вы снова можете говорить!",
     "Message.WhenSilenceEnd" : "{green}Silence снят! Вы снова можете говорить!",
     "Message.PrintOwnReason" : "Введите свою причину в чат: {red}!причина",
+    "Message.CmdWho" : "Информация об игроке {red}{name}{white}:\nSteamID: {red}{steamId}\nАдмин группа: {red}{group}\nФлаги: {red}{flags}\nИммунитет: {red}{immunity}",
+    "Message.CmdWho_NotAdmin" : "Информация об игроке {red}{name}{white}:\nSteamID: {red}{steamId}\n{red}Не имеет админ привилегии ✖",
     
     "Announce.BanAdded" : "Админ {red}{admin}{white} заблокировал игрока {red}{name}\nПричина: {red}{reason}\nСрок: {red}{duration}",
     "Announce.BanAddedIp" : "Админ {red}{admin}{white} заблокировал игрока {red}{name}{white} по айпи\nПричина: {red}{reason}\nСрок: {red}{duration}",
     "Announce.Unbanned" : "Админ {red}{admin}{white} разблокировал игрока {red}{name}\nПричина: {red}{reason}",
-    "Announce.GagAdded" : "Админ {red}{admin}{white} выдал гаг игроку {red}{name}\nПричина: {red}{reason}\nСрок: {red}{duration}",
-    "Announce.UnGagged": "Админ {red}{admin}{white} снял гаг с игрока {red}{name}\nПричина: {red}{reason}\nСрок: {red}{duration}",
-    "Announce.MuteAdded" : "Админ {red}{admin}{white} выдал мут игроку {red}{name}\nПричина: {red}{reason}\nСрок: {red}{duration}",
-    "Announce.UnMuted": "Админ {red}{admin}{white} снял мут с игрока {red}{name}\nПричина: {red}{reason}\nСрок: {red}{duration}",
-    "Announce.SilenceAdded" : "Админ {red}{admin}{white} выдал silence игроку {red}{name}\nПричина: {red}{reason}\nСрок: {red}{duration}",
-    "Announce.UnSilenced": "Админ {red}{admin}{white} снял silence с игрока {red}{name}\nПричина: {red}{reason}\nСрок: {red}{duration}",
+    "Announce.GagAdded" : "Админ {red}{admin}{white} выдал {red}гаг{white} игроку {red}{name}\nПричина: {red}{reason}\nСрок: {red}{duration}",
+    "Announce.UnGagged": "Админ {red}{admin}{white} снял {red}гаг{white} с игрока {red}{name}\nПричина: {red}{reason}\nСрок: {red}{duration}",
+    "Announce.MuteAdded" : "Админ {red}{admin}{white} выдал {red}мут{white} игроку {red}{name}\nПричина: {red}{reason}\nСрок: {red}{duration}",
+    "Announce.UnMuted": "Админ {red}{admin}{white} снял {red}мут{white} с игрока {red}{name}\nПричина: {red}{reason}\nСрок: {red}{duration}",
+    "Announce.SilenceAdded" : "Админ {red}{admin}{white} выдал {red}silence{white} игроку {red}{name}\nПричина: {red}{reason}\nСрок: {red}{duration}",
+    "Announce.UnSilenced": "Админ {red}{admin}{white} снял {red}silence{white} с игрока {red}{name}\nПричина: {red}{reason}\nСрок: {red}{duration}",
+    "Announce.Warn": "Админ {red}{admin}{white} выдал {red}предупреждение{white} админу {red}{name}\nПричина: {red}{reason}\nСрок: {red}{duration}\nКол-во предупреждений: {red}{now}{white}/{red}{max}",
     
     "Limitations.TimeLimit" : "{red}Вы можете выдать это наказание только в промежутке от {min}мин. - {max}мин. ",
     "Limitations.MaxByDayLimit" : "{red}Вы превысили свой суточный лимит наказаний!\nСледующее наказание будет доступно: {date} ",

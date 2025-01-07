@@ -29,10 +29,7 @@ create table if not exists iks_groups(
     name varchar(64) not null unique,
     flags varchar(32) not null,
     immunity int not null,
-    comment varchar(255) default null,
-    created_at int not null,
-    updated_at int not null,
-    deleted_at int default null
+    comment varchar(255) default null
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
 create table if not exists iks_admins(
     id int not null auto_increment primary key,
@@ -116,7 +113,7 @@ create table if not exists iks_admins_warns(
     deleted_at int default null,
     deleted_by int default null,
     foreign key (admin_id) references iks_admins(id),
-    foreign key (target_id) references iks_servers(id),
+    foreign key (target_id) references iks_admins(id),
     foreign key (deleted_by) references iks_admins(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
 create table if not exists iks_groups_limitations( 
@@ -124,9 +121,6 @@ create table if not exists iks_groups_limitations(
     group_id int not null,
     limitation_key varchar(64) not null,
     limitation_value varchar(32) not null,
-    created_at int not null,
-    updated_at int not null,
-    deleted_at int default null,
     foreign key (group_id) references iks_groups(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
             ");

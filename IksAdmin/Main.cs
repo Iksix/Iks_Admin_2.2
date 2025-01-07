@@ -43,7 +43,6 @@ public class Main : BasePlugin
 
     // INSTANT PUNISHMENT ON CONNECT
     public static Dictionary<string, PlayerComm> InstantComm = new();
-    
 
     public static string GenerateMenuId(string id)
     {
@@ -112,6 +111,16 @@ public class Main : BasePlugin
         var ip = player!.GetIp();
         Task.Run(async () => {
             await AdminApi.ReloadInfractions(steamId64, ip, true);
+            Server.NextFrame(() =>
+            {
+                AdminApi.OnFullConnectInvoke(steamId64, ip ?? "");
+                var admin = player.Admin();
+                if (admin == null) return;
+                if (admin.Warns.Count >= AdminApi.Config.MaxWarns)
+                {
+                    player.Print(Localizer["ActionError.DisabledByWarns"]);
+                }
+            });
         });
     }
 
@@ -238,6 +247,7 @@ public class Main : BasePlugin
         // Players manage ===
         AdminApi.RegisterPermission("players_manage.kick", "k");
         AdminApi.RegisterPermission("players_manage.change_team", "k");
+        AdminApi.RegisterPermission("players_manage.who", "b");
         // SERVERS MANAGE === 
         AdminApi.RegisterPermission("servers_manage.reload_data", "z");
         AdminApi.RegisterPermission("servers_manage.rcon", "z");
@@ -265,6 +275,15 @@ public class Main : BasePlugin
             "css_am_warn <SteamID> <time> <reason>",
             CmdAdminManage.Warn,
             minArgs: 3,
+            commandUsage: CommandUsage.CLIENT_AND_SERVER
+        );
+        AdminApi.AddNewCommand(
+            "who",
+            "Просмотреть информацию об игроке",
+            "players_manage.who",
+            "css_who <#uid/#steamId/name/@...>",
+            CmdBase.Who,
+            minArgs: 1,
             commandUsage: CommandUsage.CLIENT_AND_SERVER
         );
         AdminApi.AddNewCommand(
@@ -893,6 +912,12 @@ public class AdminApi : IIksAdminApi
     public event Action? OnReady;
     public event Action<AdminModule>? OnModuleUnload;
     public event Action<AdminModule>? OnModuleLoaded;
+    public event Action<string, string>? OnFullConnect;
+
+    public void OnFullConnectInvoke(string steamId, string ip)
+    {
+        OnFullConnect?.Invoke(steamId, ip);
+    }
 
     public bool OnOptionExecutedPost(CCSPlayerController player, IDynamicMenu menu, IMenu gameMenu, IDynamicMenuOption option)
     {
@@ -984,6 +1009,11 @@ public class AdminApi : IIksAdminApi
         }
         var tagString = tag == null ? Localizer["Tag"] : tag;
         CommandCallback callback = (p, info) => {
+            if (p != null && p.Admin() != null && p.Admin()!.IsDisabledByWarns)
+            {
+                info.Reply(Localizer["ActionError.DisabledByWarns"]);
+                return;
+            }
             if (commandUsage == CommandUsage.CLIENT_ONLY && p == null)
             {
                 info.Reply("It's client only command ✖", tagString);
@@ -1489,6 +1519,29 @@ public class AdminApi : IIksAdminApi
             AdminUtils.LogDebug("Remove non valid ids: " + adminForDelete.Id);
             AllAdmins.Remove(adminForDelete);
         }
+        AdminUtils.LogDebug("Reload warns...");
+        var admin = AdminUtils.Admin(steamId)!;
+        AdminUtils.LogDebug("Admin id: " + admin.Id);
+        var warns = await GetAllWarnsForAdmin(admin);
+        foreach (var warn in warns.ToList())
+        {
+            var exWarn = Warns.FirstOrDefault(x => x.Id == warn.Id);
+            if (exWarn != null)
+            {
+                exWarn = warn;
+            }
+            else
+            {
+                Warns.Add(warn);
+            }
+        }
+        var warnsForDelete = Warns.Where(x => warns.All(warn => warn.Id != x.Id)).ToList();
+        foreach (var warn in warnsForDelete)
+        {
+            AdminUtils.LogDebug("Delete invalid warn: " + warn.Id);
+            Warns.Remove(warn);
+        }
+        AdminUtils.LogDebug("Warns count: " + admin.Warns.Count);
     }
 
     public void MutePlayerInGame(PlayerComm mute)

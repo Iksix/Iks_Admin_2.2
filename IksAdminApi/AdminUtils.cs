@@ -24,8 +24,12 @@ public static class AdminUtils
     public static GetGroupFromIdMethod GetGroupFromIdFunc = null!;
     public static void LogDebug(string message)
     {
+        if (AdminApi != null && AdminApi.Config != null && !AdminApi.Config.DebugMode)
+        {
+            return;
+        }
         Console.ForegroundColor = ConsoleColor.Cyan;
-        Console.WriteLine("[Admin Debug]: " +message);
+        Console.WriteLine("[Admin Debug]: " + message);
         Console.ResetColor();
     }
     public static void LogError(string message)
@@ -315,7 +319,7 @@ public static class AdminUtils
     }
     public static bool HasPermissions(this Admin? admin, string key)
     {
-        if (admin.Warns.Count >= AdminApi.Config.MaxWarns)
+        if (admin!.Warns.Count >= AdminApi.Config.MaxWarns)
         {
             return false;
         }

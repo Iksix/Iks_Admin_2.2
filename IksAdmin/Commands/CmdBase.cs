@@ -3,12 +3,14 @@ using CounterStrikeSharp.API.Modules.Commands;
 using IksAdmin.Functions;
 using IksAdmin.Menus;
 using IksAdminApi;
+using Microsoft.Extensions.Localization;
 
 namespace IksAdmin.Commands;
 
 public static class CmdBase
 {
-    public static AdminApi _api = Main.AdminApi!;
+    private static AdminApi _api = Main.AdminApi!;
+    private static IStringLocalizer _localizer = _api.Localizer;
 
     public static void AdminMenu(CCSPlayerController? caller, List<string> args, CommandInfo info)
     {
@@ -37,5 +39,28 @@ public static class CmdBase
         {
             await _api.ReloadInfractions(steamId, ip);
         });
+    }
+
+    public static void Who(CCSPlayerController? caller, List<string> args, CommandInfo info)
+    {
+        var identity = args[0];
+        _api.DoActionWithIdentity(caller, identity, target =>
+        {
+            if (target.IsBot) return;
+            var targetAdmin = target.Admin();
+            if (targetAdmin == null)
+            {
+                caller.Print(_localizer["Message.CmdWho_NotAdmin"].AReplace(
+                    ["name", "steamId"],
+                    [target.PlayerName, target.GetSteamId()]
+                ));
+                return;
+            }
+            caller.Print(_localizer["Message.CmdWho"].AReplace(
+                ["name", "steamId", "group", "flags", "immunity"],
+                [target.PlayerName, target.GetSteamId(), targetAdmin.Group?.Name ?? "", targetAdmin.CurrentFlags, targetAdmin.CurrentImmunity]
+            ));
+        }, blockedArgs: ["@bots"]);
+        
     }
 }
