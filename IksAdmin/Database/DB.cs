@@ -62,9 +62,9 @@ create table if not exists iks_admin_to_server(
 
 create table if not exists iks_comms(
     id int not null auto_increment primary key,
-    steam_id varchar(17) not null,
+    steam_id bigint not null,
     ip varchar(32),
-    name varchar(64),
+    name varchar(128),
     mute_type int not null comment '0 - voice(mute), 1 - chat(gag), 2 - both(silence)', 
     duration int not null,
     reason varchar(128) not null,
@@ -78,14 +78,15 @@ create table if not exists iks_comms(
     deleted_at int default null,
     foreign key (admin_id) references iks_admins(id),
     foreign key (unbanned_by) references iks_admins(id),
-    foreign key (server_id) references iks_servers(id)
+    foreign key (server_id) references iks_servers(id),
+    index `idx_steam_id` (`steam_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 create table if not exists iks_bans(
     id int not null auto_increment primary key,
-    steam_id varchar(17),
+    steam_id bigint,
     ip varchar(32),
-    name varchar(64) null,
+    name varchar(128),
     duration int not null,
     reason varchar(128) not null,
     ban_type tinyint not null default 0 comment '0 - SteamId, 1 - Ip, 2 - Both',
@@ -99,7 +100,8 @@ create table if not exists iks_bans(
     deleted_at int default null,
     foreign key (admin_id) references iks_admins(id),
     foreign key (unbanned_by) references iks_admins(id),
-    foreign key (server_id) references iks_servers(id)
+    foreign key (server_id) references iks_servers(id),
+    index `idx_steam_id` (`steam_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
 create table if not exists iks_admins_warns(
     id int not null auto_increment primary key,

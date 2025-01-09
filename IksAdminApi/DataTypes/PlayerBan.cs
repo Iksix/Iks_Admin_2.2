@@ -40,13 +40,13 @@ public class PlayerBan
     public string NameString => Name ?? "[NOT SETTED]";
     public string IpString => Ip ?? "[NOT SETTED]";
     // used for getting from db
-    public PlayerBan(int id, string? steamId, string? ip, string? name, 
+    public PlayerBan(int id, long? steamId, string? ip, string? name, 
     int duration, string reason, sbyte banType, int? serverId, int adminId, 
     int? unbannedBy, string? unbanReason, int createdAt, int endAt, int 
     updatedAt, int? deletedAt)
     {
         Id = id;
-        SteamId = steamId;
+        SteamId = steamId?.ToString();
         Ip = ip;
         Name = name;
         Duration = duration;

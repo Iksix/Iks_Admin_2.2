@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Commands;
 using IksAdmin.Functions;
@@ -107,6 +108,65 @@ public static class CmdAdminManage
         Task.Run(async () =>
         {
             await _api.CreateWarn(warn);
+        });
+    }
+
+    public static void RemoveAdmin(CCSPlayerController? caller, List<string> args, CommandInfo info)
+    {
+        
+    }
+
+    public static void Warns(CCSPlayerController? caller, List<string> args, CommandInfo info)
+    {
+        if (!int.TryParse(args[0], out var adminId))
+        {
+            throw new ArgumentException("Admin id must be a number");
+        }
+        var admin = AdminUtils.ServerAdmin(adminId);
+        if (admin == null)
+        {
+            info.Reply(_localizer["ActionError.TargetNotFound"]);
+            return;
+        }
+
+        Task.Run(async () =>
+        {
+            var warns = await _api.GetAllWarnsForAdmin(admin);
+            Server.NextFrame(() =>
+            {
+                caller.Print(_localizer["Message.Warns"].AReplace(["name"], [admin.Name]));
+                foreach (var warn in warns)
+                {
+                    string warnTemplate = _localizer["Message.WarnsTemplate"].AReplace(
+                        ["id", "reason", "admin", "created", "duration", "end"],
+                        [warn.Id, warn.Reason, AdminUtils.Admin(warn.AdminId)!.Name, 
+                            Utils.GetDateString(warn.CreatedAt), 
+                            $"{(warn.Duration == 0 ? _localizer["Other.Never"] : warn.Duration + _localizer["Other.Minutes"])}", 
+                            Utils.GetDateString(warn.EndAt)]
+                    );
+                    caller.Print(warnTemplate);
+                }
+            });
+        });
+    }
+
+    public static void WarnRemove(CCSPlayerController? caller, List<string> args, CommandInfo info)
+    {
+        if (!int.TryParse(args[0], out var warnId))
+        {
+            throw new ArgumentException("Admin id must be a number");
+        }
+        var warn = _api.Warns.FirstOrDefault(warn => warn.Id == warnId);
+        if (warn == null)
+        {
+            info.Reply(_localizer["ActionError.WarnNotFound"]);
+            return;
+        }
+
+        var admin = caller.Admin()!;
+        Task.Run(async () =>
+        {
+            var result = await _api.DeleteWarn(admin, warn);
         });
     }
 }

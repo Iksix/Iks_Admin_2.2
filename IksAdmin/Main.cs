@@ -80,7 +80,7 @@ public class Main : BasePlugin
             MessageOnTick();
         });
         RegisterListener<Listeners.OnClientAuthorized>(OnAuthorized);
-        AddTimer(1, () => {
+        AddTimer(5, () => {
             foreach (var comm in AdminApi.Comms.ToArray())
             {
                 if (comm.EndAt != 0 && comm.EndAt < AdminUtils.CurrentTimestamp()) { 
@@ -119,6 +119,11 @@ public class Main : BasePlugin
                 if (admin.Warns.Count >= AdminApi.Config.MaxWarns)
                 {
                     player.Print(Localizer["ActionError.DisabledByWarns"]);
+                }
+
+                if (admin.HasPermissions("other.cs_votekick_immunity"))
+                {
+                    player!.CannotBeKicked = true;
                 }
             });
         });
@@ -255,6 +260,7 @@ public class Main : BasePlugin
         AdminApi.RegisterPermission("other.equals_immunity_action", "e"); // Разрешить взаймодействие с админами равными по иммунитету (Включая снятие наказаний если есть флаг blocks_manage.remove_immunity)
         AdminApi.RegisterPermission("other.admin_chat", "b");
         AdminApi.RegisterPermission("other.reload_infractions", "z");
+        AdminApi.RegisterPermission("other.cs_votekick_immunity", "b");
     }
     private void InitializeCommands()
     {
@@ -266,7 +272,7 @@ public class Main : BasePlugin
             "css_reload_infractions <SteamID/IP(WITHOUT PORT)>",
             CmdBase.ReloadInfractions,
             minArgs: 1,
-            commandUsage: CommandUsage.CLIENT_AND_SERVER
+            whoCanExecute: CommandUsage.CLIENT_AND_SERVER
         );
         AdminApi.AddNewCommand(
             "am_warn",
@@ -275,7 +281,25 @@ public class Main : BasePlugin
             "css_am_warn <SteamID> <time> <reason>",
             CmdAdminManage.Warn,
             minArgs: 3,
-            commandUsage: CommandUsage.CLIENT_AND_SERVER
+            whoCanExecute: CommandUsage.CLIENT_AND_SERVER
+        );
+        AdminApi.AddNewCommand(
+            "am_warns",
+            "Выводит все варны админа",
+            "admins_manage.warn_add,admins_manage.warn_delete,admins_manage.warn_edit",
+            "css_am_warns <Admin ID>",
+            CmdAdminManage.Warns,
+            minArgs: 1,
+            whoCanExecute: CommandUsage.CLIENT_AND_SERVER
+        );
+        AdminApi.AddNewCommand(
+            "am_warn_remove",
+            "Выводит все варны админа",
+            "admins_manage.warn_delete",
+            "am_warn_remove <Warn ID>",
+            CmdAdminManage.WarnRemove,
+            minArgs: 1,
+            whoCanExecute: CommandUsage.CLIENT_AND_SERVER
         );
         AdminApi.AddNewCommand(
             "who",
@@ -284,7 +308,7 @@ public class Main : BasePlugin
             "css_who <#uid/#steamId/name/@...>",
             CmdBase.Who,
             minArgs: 1,
-            commandUsage: CommandUsage.CLIENT_AND_SERVER
+            whoCanExecute: CommandUsage.CLIENT_AND_SERVER
         );
         AdminApi.AddNewCommand(
             "admin",
@@ -293,7 +317,7 @@ public class Main : BasePlugin
             "css_admin",
             CmdBase.AdminMenu,
             minArgs: 0,
-            commandUsage: CommandUsage.CLIENT_ONLY
+            whoCanExecute: CommandUsage.CLIENT_ONLY
         );
         AdminApi.AddNewCommand(
             "kick",
@@ -301,8 +325,8 @@ public class Main : BasePlugin
             "players_manage.kick",
             "css_kick <#uid/#steamId/name/@...> <reason>",
             CmdPlayers.Kick,
-            minArgs: 0,
-            commandUsage: CommandUsage.CLIENT_ONLY
+            minArgs: 1,
+            whoCanExecute: CommandUsage.CLIENT_ONLY
         );
         AdminApi.AddNewCommand(
             "am_reload",
@@ -311,7 +335,7 @@ public class Main : BasePlugin
             "css_am_reload",
             CmdBase.Reload,
             minArgs: 0,
-            commandUsage: CommandUsage.CLIENT_AND_SERVER
+            whoCanExecute: CommandUsage.CLIENT_AND_SERVER
         );
         AdminApi.AddNewCommand(
             "am_add",
@@ -350,9 +374,9 @@ public class Main : BasePlugin
             "am_remove",
             "Удалить админа",
             "admins_manage.edit,admins_manage.add",
-            "am_remove <steamId> <server_id/this>",
-            CmdAdminManage.AddFlagOrAdmin,
-            minArgs: 6
+            "am_remove <id>",
+            CmdAdminManage.RemoveAdmin,
+            minArgs: 1
         );
 
         // BLOCKS MANAGE ====
@@ -504,7 +528,25 @@ public class Main : BasePlugin
             CmdSilences.RemoveSilence,
             minArgs: 2 
         );
-
+        // RCommands
+        AdminApi.AddNewCommand(
+            "rban",
+            "",
+            "servers_manage.rcon",
+            "css_rban <steamId(admin)> <steamId(target)> <ip/-> <time> <type(0/1/2)> <reason> <announce(true/false)>",
+            CmdBansCmdRCommands.RBan,
+            minArgs: 7,
+            whoCanExecute: CommandUsage.CLIENT_AND_SERVER
+        );
+        AdminApi.AddNewCommand(
+            "rcomm",
+            "",
+            "servers_manage.rcon",
+            "css_rcomm <steamId(admin)> <steamId(target)> <ip/-> <time> <type(0/1/2)> <reason> <announce(true/false)>",
+            CmdBansCmdRCommands.RComm,
+            minArgs: 7,
+            whoCanExecute: CommandUsage.CLIENT_AND_SERVER
+        );
         AdminApi.ClearCommandInitializer();
     }
     public override void OnAllPluginsLoaded(bool hotReload)
@@ -997,7 +1039,7 @@ public class AdminApi : IIksAdminApi
         string permission,
         string usage,
         Action<CCSPlayerController?, List<string>, CommandInfo> onExecute,
-        CommandUsage commandUsage = CommandUsage.CLIENT_AND_SERVER,
+        CommandUsage whoCanExecute = CommandUsage.CLIENT_AND_SERVER,
         string? tag = null,
         string? notEnoughPermissionsMessage = null,
         int minArgs = 0)
@@ -1014,12 +1056,12 @@ public class AdminApi : IIksAdminApi
                 info.Reply(Localizer["ActionError.DisabledByWarns"]);
                 return;
             }
-            if (commandUsage == CommandUsage.CLIENT_ONLY && p == null)
+            if (whoCanExecute == CommandUsage.CLIENT_ONLY && p == null)
             {
                 info.Reply("It's client only command ✖", tagString);
                 return;
             }
-            if (commandUsage == CommandUsage.SERVER_ONLY && p != null)
+            if (whoCanExecute == CommandUsage.SERVER_ONLY && p != null)
             {
                 info.Reply(Localizer["Error.OnlyServerCommand"], tagString);
                 return;
@@ -1061,7 +1103,7 @@ public class AdminApi : IIksAdminApi
         RegistredCommands[_commandInitializer].Add(new CommandModel { 
             Command = "css_" + command, 
             Definition = definition,
-            CommandUsage = commandUsage,
+            CommandUsage = whoCanExecute,
             Description = description,
             Pemission = permission,
             Usage = usage,
@@ -1443,6 +1485,7 @@ public class AdminApi : IIksAdminApi
     /// </summary>
     public async Task<PlayerSummaries?> GetPlayerSummaries(ulong steamId)
     {
+        if (Main.AdminApi.Config.WebApiKey == "") return null;
         var webInterfaceFactory = new SteamWebInterfaceFactory(Main.AdminApi.Config.WebApiKey);
         var steamInterface = webInterfaceFactory.CreateSteamWebInterface<SteamUser>(new HttpClient());
         var playerSummaryResponse = await steamInterface.GetPlayerSummaryAsync(steamId);

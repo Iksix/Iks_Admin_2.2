@@ -117,7 +117,7 @@ public static class DBWarns
                 endAt = warn.EndAt,
                 updatedAt = AdminUtils.CurrentTimestamp(),
                 deletedBy = warn.DeletedBy,
-                deleted_at = warn.DeletedAt
+                deletedAt = warn.DeletedAt
             });
             return new DBResult(id, 0);
         }

@@ -90,7 +90,7 @@ public interface IIksAdminApi
         string permission,
         string usage,
         Action<CCSPlayerController, List<string>, CommandInfo> onExecute,
-        CommandUsage commandUsage = CommandUsage.CLIENT_AND_SERVER,
+        CommandUsage whoCanExecute = CommandUsage.CLIENT_AND_SERVER,
         string? tag = null,
         string? hasNotPermissionsMessage = null,
         int minArgs = 0

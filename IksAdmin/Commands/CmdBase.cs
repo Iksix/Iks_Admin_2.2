@@ -57,8 +57,8 @@ public static class CmdBase
                 return;
             }
             caller.Print(_localizer["Message.CmdWho"].AReplace(
-                ["name", "steamId", "group", "flags", "immunity"],
-                [target.PlayerName, target.GetSteamId(), targetAdmin.Group?.Name ?? "", targetAdmin.CurrentFlags, targetAdmin.CurrentImmunity]
+                ["id", "name", "steamId", "group", "flags", "immunity"],
+                [targetAdmin.Id ,target.PlayerName, target.GetSteamId(), targetAdmin.Group?.Name ?? "", targetAdmin.CurrentFlags, targetAdmin.CurrentImmunity]
             ));
         }, blockedArgs: ["@bots"]);
         

@@ -28,6 +28,14 @@ public class BansConfig : PluginCFG<BansConfig>, IPluginCFG
         {0, "Навсегда"}        
     };
     
+    public static bool HasReason(string reason)
+    {
+        return Config.Reasons.Any(x => x.Title.ToLower() == reason.ToLower() || x.Text.ToLower() == reason.ToLower());
+    }
+    public static bool HasTime(int time)
+    {
+        return Config.Times.Any(x => x.Key == time);
+    }
 
     public void Set()
     {

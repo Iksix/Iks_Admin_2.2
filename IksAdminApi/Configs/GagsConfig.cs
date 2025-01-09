@@ -28,6 +28,15 @@ public class GagsConfig : PluginCFG<GagsConfig>, IPluginCFG
         {3600 * 24 * 30, "1 месяц"},        
         {0, "Навсегда"}        
     };
+    
+    public static bool HasReason(string reason)
+    {
+        return Config.Reasons.Any(x => x.Title.ToLower() == reason.ToLower() || x.Text.ToLower() == reason.ToLower());
+    }
+    public static bool HasTime(int time)
+    {
+        return Config.Times.Any(x => x.Key == time);
+    }
 
     public void Set()
     {

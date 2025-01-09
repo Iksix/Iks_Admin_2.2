@@ -44,10 +44,10 @@ public class PlayerComm
         return AdminUtils.AdminApi.AllServers.FirstOrDefault(x => x.Id == ServerId);
     }}
     // used for getting from db
-    public PlayerComm(int id, string steamId, string? ip, string? name, int muteType, int duration, string reason, int? serverId, int adminId, int? unbannedBy, string? unbanReason, int createdAt, int endAt, int updatedAt, int? deletedAt)
+    public PlayerComm(int id, long steamId, string? ip, string? name, int muteType, int duration, string reason, int? serverId, int adminId, int? unbannedBy, string? unbanReason, int createdAt, int endAt, int updatedAt, int? deletedAt)
     {
         Id = id;
-        SteamId = steamId;
+        SteamId = steamId.ToString();
         Ip = ip;
         Name = name;
         MuteType = muteType;

@@ -123,6 +123,10 @@ public static class AdminUtils
     {
         return AdminApi.ServerAdmins.FirstOrDefault(x => x.SteamId == player.SteamId);
     }
+    public static Admin? ServerAdmin(int id)
+    {
+        return AdminApi.ServerAdmins.FirstOrDefault(x => x.Id == id);
+    }
     public static Admin? Admin(int id)
     {
         return FindAdminByIdMethod(id);
@@ -201,6 +205,7 @@ public static class AdminUtils
     {
         var ip = player.IpAddress;
         if (ip == null) return null;
+        if (AdminApi.Config.MirrorsIp.Contains(ip.Split(":")[0])) return null;
         return ip.Split(":")[0];
     }
 
