@@ -44,7 +44,7 @@ public class Main : BasePlugin
     // INSTANT PUNISHMENT ON CONNECT
     public static Dictionary<string, PlayerComm> InstantComm = new();
 
-    public static string GenerateMenuId(string id)
+    public static string MenuId(string id)
     {
         return $"iksadmin:menu:{id}";
     }
@@ -1197,7 +1197,7 @@ public class AdminApi : IIksAdminApi
                 case 0:
                     Server.NextFrame(() => {
                         if (announce)
-                            Announces.BanAdded(ban);
+                            MsgAnnounces.BanAdded(ban);
                         CCSPlayerController? player = null;
                         if (ban.BanType == 0)
                             player = PlayersUtils.GetControllerBySteamId(ban.SteamId!);
@@ -1256,7 +1256,7 @@ public class AdminApi : IIksAdminApi
                 ban.UnbanReason = reason;
                 Server.NextFrame(() => {
                     if (announce)
-                        Announces.Unbanned(ban);
+                        MsgAnnounces.Unbanned(ban);
                 });
                 break;
             case -1:
@@ -1298,7 +1298,7 @@ public class AdminApi : IIksAdminApi
                 ban.UnbanReason = reason;
                 Server.NextFrame(() => {
                     if (announce)
-                        Announces.Unbanned(ban);
+                        MsgAnnounces.Unbanned(ban);
                 });
                 break;
             case -1:
@@ -1407,7 +1407,7 @@ public class AdminApi : IIksAdminApi
         });
     }
 
-    public void DoActionWithIdentity(CCSPlayerController? actioneer, string identity, Action<CCSPlayerController> action, string[]? blockedArgs = null)
+    public void DoActionWithIdentity(CCSPlayerController? actioneer, string identity, Action<CCSPlayerController?, IdentityType> action, string[]? blockedArgs = null, bool acceptNullSteamIdPlayer = false)
     {
         if (blockedArgs != null && blockedArgs.Contains(identity))
         {
@@ -1420,44 +1420,53 @@ public class AdminApi : IIksAdminApi
             return;
         }
         List<CCSPlayerController> targets = new();
+        var identityType = IdentityType.Name;
         switch (identity)
         {
             case "@all":
                 targets = Utilities.GetPlayers().Where(x => x.IsValid).ToList();
+                identityType = IdentityType.All;
                 break;
             case "@me":
                 targets = new List<CCSPlayerController>() { actioneer! };
+                identityType = IdentityType.Me;
                 break;
             case "@ct":
                 targets = Utilities.GetPlayers().Where(x => x.IsValid && x.TeamNum == 3).ToList();
+                identityType = IdentityType.Ct;
                 break;
             case "@t":
                 targets = Utilities.GetPlayers().Where(x => x.IsValid && x.TeamNum == 2).ToList();
+                identityType = IdentityType.T;
                 break;
             case "@spec":
                 targets = Utilities.GetPlayers().Where(x => x.IsValid && x.TeamNum == 1).ToList();
+                identityType = IdentityType.Spec;
                 break;
             case "@bots":
                 targets = Utilities.GetPlayers().Where(x => x.IsValid && x.IsBot).ToList();
+                identityType = IdentityType.Bots;
                 break;
             case "@players":
                 targets = Utilities.GetPlayers().Where(x => x.IsValid && !x.IsBot).ToList();
+                identityType = IdentityType.Players;
                 break;
         }
         if (targets.Count > 0)
         {
             foreach (var target1 in targets)
             {
-                action.Invoke(target1);
+                action.Invoke(target1, identityType);
             }
             return;
         }
         if (identity.StartsWith("#"))
         {
             var target = PlayersUtils.GetControllerBySteamId(identity.Remove(0, 1));
-            if (target != null)
+            if ((target != null) || (identity.Length == 18 && acceptNullSteamIdPlayer))
             {
-                action.Invoke(target);
+                identityType = IdentityType.SteamId;
+                action.Invoke(target, identityType);
                 return;
             }
             else {
@@ -1465,7 +1474,8 @@ public class AdminApi : IIksAdminApi
                     target = PlayersUtils.GetControllerByUid(uid);
                 if (target != null)
                 {
-                    action.Invoke(target);
+                    identityType = IdentityType.UserId;
+                    action.Invoke(target, identityType);
                     return;
                 }
             }
@@ -1474,7 +1484,7 @@ public class AdminApi : IIksAdminApi
         var targetName = PlayersUtils.GetControllerByName(identity);
         if (targetName != null)
         {
-            action.Invoke(targetName);
+            action.Invoke(targetName, identityType);
             return;
         }
         
@@ -1690,7 +1700,7 @@ public class AdminApi : IIksAdminApi
                 Server.NextFrame(() => {
                     UnSilencePlayerInGame(silence);
                     if (announce)
-                        Announces.UnSilenced(silence);
+                        MsgAnnounces.UnSilenced(silence);
                 });
                 break;
             case 2:
@@ -1815,7 +1825,7 @@ public class AdminApi : IIksAdminApi
                     comm.Id = result.ElementId ?? 0;
                     Server.NextFrame(() => {
                         if (announce)
-                            Announces.SilenceAdded(comm);
+                            MsgAnnounces.SilenceAdded(comm);
                         Server.NextFrame(() => {
                             SilencePlayerInGame(comm);
                         });
@@ -1907,7 +1917,7 @@ public class AdminApi : IIksAdminApi
                     comm.Id = result.ElementId ?? 0;
                     Server.NextFrame(() => {
                         if (announce)
-                            Announces.GagAdded(comm);
+                            MsgAnnounces.GagAdded(comm);
                         Server.NextFrame(() => {
                             GagPlayerInGame(comm);
                         });
@@ -1962,7 +1972,7 @@ public class AdminApi : IIksAdminApi
                 Server.NextFrame(() => {
                     UnGagPlayerInGame(gag);
                     if (announce)
-                        Announces.UnGagged(gag);
+                        MsgAnnounces.UnGagged(gag);
                 });
                 break;
             case 2:
@@ -2046,7 +2056,7 @@ public class AdminApi : IIksAdminApi
                     comm.Id = result.ElementId ?? 0;
                     Server.NextFrame(() => {
                         if (announce)
-                            Announces.MuteAdded(comm);
+                            MsgAnnounces.MuteAdded(comm);
                         Server.NextFrame(() => {
                             MutePlayerInGame(comm);
                         });
@@ -2101,7 +2111,7 @@ public class AdminApi : IIksAdminApi
                 Server.NextFrame(() => {
                     UnmutePlayerInGame(mute);
                     if (announce)
-                        Announces.UnMuted(mute);
+                        MsgAnnounces.UnMuted(mute);
                 });
                 break;
             case 2:
@@ -2194,7 +2204,7 @@ public class AdminApi : IIksAdminApi
         Server.NextFrame(() =>
         {
             if (announce)
-                Announces.Warn(warn);
+                MsgAnnounces.Warn(warn);
         });
         return result;
     }

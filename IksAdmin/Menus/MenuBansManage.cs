@@ -14,7 +14,7 @@ public static class MenuBansManage
 
     public static void OpenBansMenu(CCSPlayerController caller, IDynamicMenu? backMenu = null)
     {
-        var menu = _api.CreateMenu(Main.GenerateMenuId("bm.ban"), _localizer["MenuTitle.BansManage"], backMenu: backMenu);
+        var menu = _api.CreateMenu(Main.MenuId("bm.ban"), _localizer["MenuTitle.BansManage"], backMenu: backMenu);
         menu.AddMenuOption("add", _localizer["MenuOption.AddBan"], (_, _) => {
             OpenAddBanMenu(caller, menu);
         });
@@ -34,7 +34,7 @@ public static class MenuBansManage
 
     private static void OpenRemoveBansMenu(CCSPlayerController caller, List<PlayerBan> bans, IDynamicMenu backMenu)
     {
-        var menu = _api.CreateMenu(Main.GenerateMenuId("bm_unban"), _localizer["MenuTitle.Unban"], backMenu: backMenu);
+        var menu = _api.CreateMenu(Main.MenuId("bm_unban"), _localizer["MenuTitle.Unban"], backMenu: backMenu);
         var admin = caller.Admin()!;
         
         foreach (var ban in bans)
@@ -65,7 +65,7 @@ public static class MenuBansManage
 
     public static void OpenAddOfflineBanMenu(CCSPlayerController caller, IDynamicMenu backMenu)
     {
-        var menu = _api.CreateMenu(Main.GenerateMenuId("bm_offline_ban_add"), _localizer["MenuTitle.AddOfflineBan"], backMenu: backMenu);
+        var menu = _api.CreateMenu(Main.MenuId("bm_offline_ban_add"), _localizer["MenuTitle.AddOfflineBan"], backMenu: backMenu);
         var players = _api.DisconnectedPlayers;
         foreach (var player in players)
         {
@@ -79,7 +79,7 @@ public static class MenuBansManage
     }
     public static void OpenAddBanMenu(CCSPlayerController caller, IDynamicMenu backMenu)
     {
-        var menu = _api.CreateMenu(Main.GenerateMenuId("bm_ban_add"), _localizer["MenuTitle.AddBan"], backMenu: backMenu);
+        var menu = _api.CreateMenu(Main.MenuId("bm_ban_add"), _localizer["MenuTitle.AddBan"], backMenu: backMenu);
         var players = PlayersUtils.GetOnlinePlayers();
         foreach (var player in players)
         {
@@ -94,7 +94,7 @@ public static class MenuBansManage
 
     private static void OpenSelectReasonMenu(CCSPlayerController caller, PlayerInfo target)
     {
-        var menu = _api.CreateMenu(Main.GenerateMenuId("bm_ban_reason"), _localizer["MenuTitle.Other.SelectReason"]);
+        var menu = _api.CreateMenu(Main.MenuId("bm_ban_reason"), _localizer["MenuTitle.Other.SelectReason"]);
         var config = BansConfig.Config;
         var reasons = config.Reasons;
         var admin = caller.Admin()!;
@@ -135,7 +135,7 @@ public static class MenuBansManage
 
     private static void OpenTimeSelectMenu(CCSPlayerController caller, PlayerInfo target, string reason, IDynamicMenu? backMenu = null)
     {
-        var menu = _api.CreateMenu(Main.GenerateMenuId("bm_ban_time"), _localizer["MenuTitle.Other.SelectTime"], backMenu: backMenu);
+        var menu = _api.CreateMenu(Main.MenuId("bm_ban_time"), _localizer["MenuTitle.Other.SelectTime"], backMenu: backMenu);
         var config = BansConfig.Config;
         var times = config.Times;
         var admin = caller.Admin()!;
@@ -181,7 +181,7 @@ public static class MenuBansManage
 
     private static void OpenBanTypeSelectMenu(CCSPlayerController caller, PlayerBan ban)
     {
-        var menu = _api.CreateMenu(Main.GenerateMenuId("bm_ban_type"), _localizer["MenuTitle.BanType"]);
+        var menu = _api.CreateMenu(Main.MenuId("bm_ban_type"), _localizer["MenuTitle.BanType"]);
         var admin = caller.Admin();
         menu.AddMenuOption(Main.GenerateOptionId("bm_ban_steam_id"), _localizer["MenuOption.BanSteamId"], (_, _) => {
             _api.CloseMenu(caller);

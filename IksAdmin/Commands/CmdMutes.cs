@@ -18,7 +18,7 @@ public class CmdMutes
         if (!int.TryParse(time, out int timeInt)) throw new ArgumentException("Time is not a number");
         var admin = caller.Admin()!;
         var reason = string.Join(" ", args.Skip(2));
-        Main.AdminApi.DoActionWithIdentity(caller, identity, target => 
+        Main.AdminApi.DoActionWithIdentity(caller, identity, (target, _) => 
         {
             var mute = new PlayerComm(
                 new PlayerInfo(target),
@@ -75,7 +75,7 @@ public class CmdMutes
         var identity = args[0];
         var reason = string.Join(" ", args.Skip(1));
         var admin = caller.Admin()!;
-        Main.AdminApi.DoActionWithIdentity(caller, identity, target => 
+        Main.AdminApi.DoActionWithIdentity(caller, identity, (target, _) => 
         {
             var steamId = target.AuthorizedSteamID!.SteamId64.ToString();
             Task.Run(async () => {

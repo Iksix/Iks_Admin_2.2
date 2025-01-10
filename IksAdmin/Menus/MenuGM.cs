@@ -15,7 +15,7 @@ public static class MenuGM
     public static void OpenGroupsManageMenu(CCSPlayerController caller, IDynamicMenu backMenu)
     {
         var menu = _api.CreateMenu(
-            Main.GenerateMenuId("gm"),
+            Main.MenuId("gm"),
             _localizer["MenuTitle.GM"],
             titleColor: MenuColors.Gold,
             backMenu: backMenu
@@ -59,7 +59,7 @@ public static class MenuGM
     private static void OpenGroupEditMenu(CCSPlayerController caller, Group group, IDynamicMenu backMenu)
     {
         var menu = _api.CreateMenu(
-            Main.GenerateMenuId("gm_edit"),
+            Main.MenuId("gm_edit"),
             _localizer["MenuTitle.GM.Editing"],
             titleColor: MenuColors.Gold,
             backMenu: backMenu
@@ -118,7 +118,7 @@ public static class MenuGM
     private static void OpenGroupAddMenu(CCSPlayerController caller, IDynamicMenu backMenu)
     {
         var menu = _api.CreateMenu(
-            Main.GenerateMenuId("gm_add"),
+            Main.MenuId("gm_add"),
             _localizer["MenuTitle.GM.Add"],
             titleColor: MenuColors.Gold,
             backMenu: backMenu

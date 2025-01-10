@@ -14,7 +14,7 @@ public static class MenuCommsManage
 
     public static void OpenCommsMenu(CCSPlayerController caller, IDynamicMenu? backMenu = null)
     {
-        var menu = _api.CreateMenu(Main.GenerateMenuId("cm.comm"), _localizer["MenuTitle.CM"], backMenu: backMenu);
+        var menu = _api.CreateMenu(Main.MenuId("cm.comm"), _localizer["MenuTitle.CM"], backMenu: backMenu);
         menu.AddMenuOption("add", _localizer["MenuOption.CM.Add"], (_, _) => {
             OpenAddCommMenu(caller, menu);
         });
@@ -34,7 +34,7 @@ public static class MenuCommsManage
 
     private static void OpenRemoveCommsMenu(CCSPlayerController caller, List<PlayerComm> comms, IDynamicMenu backMenu)
     {
-        var menu = _api.CreateMenu(Main.GenerateMenuId("cm_uncomm"), _localizer["MenuTitle.CM.UnComm"], backMenu: backMenu);
+        var menu = _api.CreateMenu(Main.MenuId("cm_uncomm"), _localizer["MenuTitle.CM.UnComm"], backMenu: backMenu);
         var admin = caller.Admin()!;
         
         foreach (var comm in comms)
@@ -103,7 +103,7 @@ public static class MenuCommsManage
     }
     public static void OpenAddCommMenu(CCSPlayerController caller, IDynamicMenu backMenu)
     {
-        var menu = _api.CreateMenu(Main.GenerateMenuId("cm_comm_select"), _localizer["MenuTitle.CM.SelectType"], backMenu: backMenu);
+        var menu = _api.CreateMenu(Main.MenuId("cm_comm_select"), _localizer["MenuTitle.CM.SelectType"], backMenu: backMenu);
         
         menu.AddMenuOption("mute", _localizer["MenuOption.CM.Mute"], (_, _) =>
         {
@@ -121,7 +121,7 @@ public static class MenuCommsManage
 
     private static void SelectPlayerForMute(CCSPlayerController caller, IDynamicMenu backMenu)
     {
-        var menu = _api.CreateMenu(Main.GenerateMenuId("cm_mute_sp"), _localizer["MenuTitle.Other.SelectPlayer"], backMenu: backMenu);
+        var menu = _api.CreateMenu(Main.MenuId("cm_mute_sp"), _localizer["MenuTitle.Other.SelectPlayer"], backMenu: backMenu);
         var players = PlayersUtils.GetOnlinePlayers();
         foreach (var p in players)
         {
@@ -144,7 +144,7 @@ public static class MenuCommsManage
     }
     private static void SelectPlayerForGag(CCSPlayerController caller, IDynamicMenu backMenu)
     {
-        var menu = _api.CreateMenu(Main.GenerateMenuId("cm_gag_sp"), _localizer["MenuTitle.Other.SelectPlayer"], backMenu: backMenu);
+        var menu = _api.CreateMenu(Main.MenuId("cm_gag_sp"), _localizer["MenuTitle.Other.SelectPlayer"], backMenu: backMenu);
         var players = PlayersUtils.GetOnlinePlayers();
         foreach (var p in players)
         {
@@ -167,7 +167,7 @@ public static class MenuCommsManage
     }
     private static void SelectPlayerForSilence(CCSPlayerController caller, IDynamicMenu backMenu)
     {
-        var menu = _api.CreateMenu(Main.GenerateMenuId("cm_gag_sp"), _localizer["MenuTitle.Other.SelectPlayer"], backMenu: backMenu);
+        var menu = _api.CreateMenu(Main.MenuId("cm_gag_sp"), _localizer["MenuTitle.Other.SelectPlayer"], backMenu: backMenu);
         var players = PlayersUtils.GetOnlinePlayers();
         foreach (var p in players)
         {
@@ -195,7 +195,7 @@ public static class MenuCommsManage
 
     private static void OpenSelectMuteReasonMenu(CCSPlayerController caller, PlayerInfo target)
     {
-        var menu = _api.CreateMenu(Main.GenerateMenuId("cm_mute_reason"), _localizer["MenuTitle.Other.SelectReason"]);
+        var menu = _api.CreateMenu(Main.MenuId("cm_mute_reason"), _localizer["MenuTitle.Other.SelectReason"]);
         var config = MutesConfig.Config;
         var reasons = config.Reasons;
         menu.AddMenuOption("own_reason" ,_localizer["MenuOption.Other.OwnReason"], (_, _) => {
@@ -231,7 +231,7 @@ public static class MenuCommsManage
     
     private static void OpenSelectGagReasonMenu(CCSPlayerController caller, PlayerInfo target)
     {
-        var menu = _api.CreateMenu(Main.GenerateMenuId("cm_gag_reason"), _localizer["MenuTitle.Other.SelectReason"]);
+        var menu = _api.CreateMenu(Main.MenuId("cm_gag_reason"), _localizer["MenuTitle.Other.SelectReason"]);
         var config = GagsConfig.Config;
         var reasons = config.Reasons;
         menu.AddMenuOption("own_reason" ,_localizer["MenuOption.Other.OwnReason"], (_, _) => {
@@ -266,7 +266,7 @@ public static class MenuCommsManage
     }
     private static void OpenSelectSilenceReasonMenu(CCSPlayerController caller, PlayerInfo target)
     {
-        var menu = _api.CreateMenu(Main.GenerateMenuId("cm_silence_reason"), _localizer["MenuTitle.Other.SelectReason"]);
+        var menu = _api.CreateMenu(Main.MenuId("cm_silence_reason"), _localizer["MenuTitle.Other.SelectReason"]);
         var config = SilenceConfig.Config;
         var reasons = config.Reasons;
         menu.AddMenuOption("own_reason" ,_localizer["MenuOption.Other.OwnReason"], (_, _) => {
@@ -301,7 +301,7 @@ public static class MenuCommsManage
     }
     private static void OpenMuteTimeSelectMenu(CCSPlayerController caller, PlayerInfo target, string reason, IDynamicMenu? backMenu = null)
     {
-        var menu = _api.CreateMenu(Main.GenerateMenuId("cm_mute_time"), _localizer["MenuTitle.Other.SelectTime"], backMenu: backMenu);
+        var menu = _api.CreateMenu(Main.MenuId("cm_mute_time"), _localizer["MenuTitle.Other.SelectTime"], backMenu: backMenu);
         var config = MutesConfig.Config;
         var times = config.Times;
         var admin = caller.Admin()!;
@@ -348,7 +348,7 @@ public static class MenuCommsManage
     }
     private static void OpenGagTimeSelectMenu(CCSPlayerController caller, PlayerInfo target, string reason, IDynamicMenu? backMenu = null)
     {
-        var menu = _api.CreateMenu(Main.GenerateMenuId("cm_gag_time"), _localizer["MenuTitle.Other.SelectTime"], backMenu: backMenu);
+        var menu = _api.CreateMenu(Main.MenuId("cm_gag_time"), _localizer["MenuTitle.Other.SelectTime"], backMenu: backMenu);
         var config = GagsConfig.Config;
         var times = config.Times;
         var admin = caller.Admin()!;
@@ -395,7 +395,7 @@ public static class MenuCommsManage
     }
     private static void OpenSilenceTimeSelectMenu(CCSPlayerController caller, PlayerInfo target, string reason, IDynamicMenu? backMenu = null)
     {
-        var menu = _api.CreateMenu(Main.GenerateMenuId("cm_silence_time"), _localizer["MenuTitle.Other.SelectTime"], backMenu: backMenu);
+        var menu = _api.CreateMenu(Main.MenuId("cm_silence_time"), _localizer["MenuTitle.Other.SelectTime"], backMenu: backMenu);
         var config = SilenceConfig.Config;
         var times = config.Times;
         var admin = caller.Admin()!;

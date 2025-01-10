@@ -15,7 +15,7 @@ public static class CmdPlayers
         var identity = args[0];
         var reason = args[1];
         AdminApi.DoActionWithIdentity(caller, identity,
-            target =>
+            (target, _) =>
             {
                 if (target.IsBot || AdminApi.CanDoActionWithPlayer(caller.GetSteamId(), target.GetSteamId()))
                 {

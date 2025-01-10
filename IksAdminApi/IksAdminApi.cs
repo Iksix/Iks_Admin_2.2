@@ -70,7 +70,13 @@ public interface IIksAdminApi
     public Task ReloadDataFromDb(bool sendRcon = true);
     public Task ReloadDataFromDBOnAllServers();
     public Task<PlayerSummaries?> GetPlayerSummaries(ulong steamId);
-    public void DoActionWithIdentity(CCSPlayerController? actioneer, string identity, Action<CCSPlayerController> action, string[]? blockedArgs = null);
+    /// <summary>
+    /// Automatically selects all players according to their identity: Name, #SteamID, @all...
+    /// </summary>
+    /// <param name="action"></param>
+    /// <param name="blockedArgs">blocks some identity</param>
+    /// <param name="acceptNullSteamIdPlayer">Will action be called if the identifier type is Steam Id and the player is null</param>
+    public void DoActionWithIdentity(CCSPlayerController? actioneer, string identity, Action<CCSPlayerController?, IdentityType> action, string[]? blockedArgs = null, bool acceptNullSteamIdPlayer = false);
     public void DisconnectPlayer(CCSPlayerController player, string reason, bool instantly = false,
         string? customMessageTemplate = null, Admin? admin = null, string? customByAdminTemplate = null,
         NetworkDisconnectionReason? disconnectionReason = null);

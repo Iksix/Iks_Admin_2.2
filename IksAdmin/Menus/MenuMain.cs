@@ -7,18 +7,18 @@ namespace IksAdmin.Menus;
 
 public static class MenuMain
 {
-    static IIksAdminApi AdminApi = Main.AdminApi;
-    static IStringLocalizer Localizer = AdminApi.Localizer;
+    private static IIksAdminApi _api = Main.AdminApi;
+    private static IStringLocalizer _localizer = _api.Localizer;
    
     public static void OpenAdminMenu(CCSPlayerController caller, IDynamicMenu? backMenu = null) {
-        var menu = AdminApi.CreateMenu(
-            id: Main.GenerateMenuId("main"),
-            title: Localizer["MenuTitle.AdminMain"],
+        var menu = _api.CreateMenu(
+            id: Main.MenuId("main"),
+            title: _localizer["MenuTitle.AdminMain"],
             backMenu: backMenu
         );
         menu.AddMenuOption(
             id: "sm",
-            title: Localizer["MenuOption.SM"],
+            title: _localizer["MenuOption.SM"],
             (p, _) => {
                 MenuAM.OpenServersManageMenu(caller, menu);
             },
@@ -28,7 +28,7 @@ public static class MenuMain
         );
         menu.AddMenuOption(
             id: "bm",
-            title: Localizer["MenuOption.BM"],
+            title: _localizer["MenuOption.BM"],
             (p, _) => {
                 OpenBlocksManageMenu(caller, menu);
             },
@@ -39,21 +39,21 @@ public static class MenuMain
 
     public static void OpenBlocksManageMenu(CCSPlayerController caller, IDynamicMenu? backMenu = null)
     {
-        var menu = AdminApi.CreateMenu(
-            id: Main.GenerateMenuId("bm"),
-            title: Localizer["MenuTitle.BM"],
+        var menu = _api.CreateMenu(
+            id: Main.MenuId("bm"),
+            title: _localizer["MenuTitle.BM"],
             backMenu: backMenu
         );
         menu.AddMenuOption(
             id: Main.GenerateOptionId("bans"),
-            title: Localizer["MenuOption.BansManage"],
+            title: _localizer["MenuOption.BansManage"],
             (p, _) => {
                 MenuBansManage.OpenBansMenu(caller, menu);
             }
         );
         menu.AddMenuOption(
             id: "cm",
-            title: Localizer["MenuOption.CM"],
+            title: _localizer["MenuOption.CM"],
             (p, _) => {
                 MenuCommsManage.OpenCommsMenu(caller, menu);
             },

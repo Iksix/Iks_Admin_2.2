@@ -128,26 +128,7 @@ public static class CmdAdminManage
             info.Reply(_localizer["ActionError.TargetNotFound"]);
             return;
         }
-
-        Task.Run(async () =>
-        {
-            var warns = await _api.GetAllWarnsForAdmin(admin);
-            Server.NextFrame(() =>
-            {
-                caller.Print(_localizer["Message.Warns"].AReplace(["name"], [admin.Name]));
-                foreach (var warn in warns)
-                {
-                    string warnTemplate = _localizer["Message.WarnsTemplate"].AReplace(
-                        ["id", "reason", "admin", "created", "duration", "end"],
-                        [warn.Id, warn.Reason, AdminUtils.Admin(warn.AdminId)!.Name, 
-                            Utils.GetDateString(warn.CreatedAt), 
-                            $"{(warn.Duration == 0 ? _localizer["Other.Never"] : warn.Duration + _localizer["Other.Minutes"])}", 
-                            Utils.GetDateString(warn.EndAt)]
-                    );
-                    caller.Print(warnTemplate);
-                }
-            });
-        });
+        MsgOther.PrintWarns(caller, admin);
     }
 
     public static void WarnRemove(CCSPlayerController? caller, List<string> args, CommandInfo info)

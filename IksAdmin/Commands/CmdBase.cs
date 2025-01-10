@@ -44,23 +44,24 @@ public static class CmdBase
     public static void Who(CCSPlayerController? caller, List<string> args, CommandInfo info)
     {
         var identity = args[0];
-        _api.DoActionWithIdentity(caller, identity, target =>
+        _api.DoActionWithIdentity(caller, identity, (target, type) =>
         {
-            if (target.IsBot) return;
-            var targetAdmin = target.Admin();
+            if (target != null && target.IsBot) return;
+            var steamId = identity.Remove(0, 1);
+            var targetAdmin = AdminUtils.Admin(target?.GetSteamId() ?? steamId);
             if (targetAdmin == null)
             {
                 caller.Print(_localizer["Message.CmdWho_NotAdmin"].AReplace(
                     ["name", "steamId"],
-                    [target.PlayerName, target.GetSteamId()]
+                    [target?.PlayerName ?? steamId, target.GetSteamId()]
                 ));
                 return;
             }
             caller.Print(_localizer["Message.CmdWho"].AReplace(
                 ["id", "name", "steamId", "group", "flags", "immunity"],
-                [targetAdmin.Id ,target.PlayerName, target.GetSteamId(), targetAdmin.Group?.Name ?? "", targetAdmin.CurrentFlags, targetAdmin.CurrentImmunity]
+                [targetAdmin.Id, target?.PlayerName ?? targetAdmin.Name, target.GetSteamId(), targetAdmin.Group?.Name ?? "", targetAdmin.CurrentFlags, targetAdmin.CurrentImmunity]
             ));
-        }, blockedArgs: ["@bots"]);
+        }, blockedArgs: ["@bots"], acceptNullSteamIdPlayer: true);
         
     }
 }

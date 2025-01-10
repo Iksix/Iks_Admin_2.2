@@ -3,7 +3,7 @@ using Microsoft.Extensions.Localization;
 
 namespace IksAdmin;
 
-public static class Announces
+public static class MsgAnnounces
 {
     private static AdminApi _api = Main.AdminApi;
     private static IStringLocalizer _localizer = _api.Localizer;

@@ -64,7 +64,7 @@ public static class MenuUtils
 
         menu.Open(caller);
     }
-    public static void SelectItem<T>(CCSPlayerController caller, string idPrefix, List<T> objects, Action<T?, IDynamicMenu> action, IDynamicMenu? backMenu = null, bool nullOption = true, string? customTitle = null)
+    public static void SelectItemDefault<T>(CCSPlayerController caller, string idPrefix, List<T> objects, Action<T?, IDynamicMenu> action, IDynamicMenu? backMenu = null, bool nullOption = true, string? customTitle = null)
     {
         var menu = _api.CreateMenu(
             GenerateMenuId(idPrefix + "_select_item"),

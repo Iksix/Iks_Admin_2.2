@@ -134,8 +134,8 @@
     "Message.WhenMuteEnd" : "{green}Мут снят! Вы снова можете говорить!",
     "Message.WhenSilenceEnd" : "{green}Silence снят! Вы снова можете говорить!",
     "Message.PrintOwnReason" : "Введите свою причину в чат: {red}!причина",
-    "Message.Warns" : "Варны админа {red}{name}{white}:\n{warnsTemplate}",
-    "Message.WarnsTemplate" : "ID: {red}{id}\nПричина: {red}{reason}\nВыдано: {red}{created}\nСрок: {red}{duration}\nЗакончится: {red}{end}\nКем: {red}{admin}",
+    "Message.Warns" : "Варны админа {red}{name}{white}:{warnsTemplate}",
+    "Message.WarnsTemplate" : "\nID: {red}{id}\nПричина: {red}{reason}\nВыдано: {red}{created}\nСрок: {red}{duration}\nЗакончится: {red}{end}\nКем: {red}{admin}\n================",
     "Message.CmdWho" : "Информация об игроке {red}{name}{white}:\nID: {red}{id}\nSteamID: {red}{steamId}\nАдмин группа: {red}{group}\nФлаги: {red}{flags}\nИммунитет: {red}{immunity}",
     "Message.CmdWho_NotAdmin" : "Информация об игроке {red}{name}{white}:\nSteamID: {red}{steamId}\n{red}Не имеет админ привилегии ✖",
     

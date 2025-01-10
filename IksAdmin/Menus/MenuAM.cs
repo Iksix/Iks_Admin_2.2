@@ -18,7 +18,7 @@ public static class MenuAM
     public static void OpenServersManageMenu(CCSPlayerController caller, IDynamicMenu backMenu)
     {
         var menu = _api.CreateMenu(
-            Main.GenerateMenuId("ac"),
+            Main.MenuId("ac"),
             _localizer["MenuTitle.SM"],
             titleColor: MenuColors.Gold,
             backMenu: backMenu
@@ -52,7 +52,7 @@ public static class MenuAM
     public static void OpenAdminManageMenuSection(CCSPlayerController caller, IDynamicMenu backMenu)
     {
         var menu = _api.CreateMenu(
-            Main.GenerateMenuId("am"),
+            Main.MenuId("am"),
             _localizer["MenuTitle." + "AM"],
             titleColor: MenuColors.Gold,
             backMenu: backMenu
@@ -107,7 +107,7 @@ public static class MenuAM
     private static void OpenAdminEditMenu(CCSPlayerController caller, Admin? admin, IDynamicMenu backMenu)
     {
         var menu = _api.CreateMenu(
-            Main.GenerateMenuId("am_edit"),
+            Main.MenuId("am_edit"),
             _localizer["MenuTitle." + "AM_edit"].AReplace(["name"], [admin!.Name]),
             titleColor: MenuColors.Gold,
             backMenu: backMenu
@@ -207,7 +207,7 @@ public static class MenuAM
     private static void OpenServerIdEditMenu(CCSPlayerController caller, Admin admin, IDynamicMenu backMenu)
     {
         var menu = _api.CreateMenu(
-            Main.GenerateMenuId("am_edit_server_id"),
+            Main.MenuId("am_edit_server_id"),
             _localizer["MenuTitle." + "AM_edit_server_id"],
             titleColor: MenuColors.Gold
         );
@@ -244,7 +244,7 @@ public static class MenuAM
     public static void OpenAdminAddMenu(CCSPlayerController caller, PlayerInfo target, IDynamicMenu backMenu)
     {
         var menu = _api.CreateMenu(
-            Main.GenerateMenuId("am_add"),
+            Main.MenuId("am_add"),
             _localizer["MenuTitle." + "AM_add"],
             titleColor: MenuColors.Gold,
             backMenu: backMenu

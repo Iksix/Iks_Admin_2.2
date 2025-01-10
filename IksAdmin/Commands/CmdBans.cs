@@ -14,7 +14,7 @@ public static class CmdBans
         var time = args[1];
         if (!int.TryParse(time, out int timeInt)) throw new ArgumentException("Time is not a number");
         var reason = string.Join(" ", args.Skip(2));
-        Main.AdminApi.DoActionWithIdentity(caller, identity, target => 
+        Main.AdminApi.DoActionWithIdentity(caller, identity, (target, _) => 
         {
             var ban = new PlayerBan(
                 new PlayerInfo(target),
@@ -90,7 +90,7 @@ public static class CmdBans
         var time = args[1];
         if (!int.TryParse(time, out int timeInt)) throw new ArgumentException("Time is not a number");
         var reason = string.Join(" ", args.Skip(2));
-        Main.AdminApi.DoActionWithIdentity(caller, identity, target => 
+        Main.AdminApi.DoActionWithIdentity(caller, identity, (target, _) => 
         {
             var ban = new PlayerBan(
                 new PlayerInfo(target),
