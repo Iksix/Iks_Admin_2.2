@@ -184,6 +184,9 @@ public interface IIksAdminApi
     #region PlayersManage
     public void Kick(Admin admin, CCSPlayerController player, string reason, bool announce = true);
     public void Slay(Admin admin, CCSPlayerController target, bool announce = true);
+    public void ChangeTeam(Admin admin, CCSPlayerController player, int team, bool announce = true);
+    public void SwitchTeam(Admin admin, CCSPlayerController player, int team, bool announce = true);
+    public void Respawn(Admin admin, CCSPlayerController player, bool announce = true);
     #endregion
     // Groups
     public Task<DBResult> CreateGroup(Group group);

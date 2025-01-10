@@ -1,4 +1,5 @@
-﻿using CounterStrikeSharp.API.Core;
+﻿using CounterStrikeSharp.API;
+using CounterStrikeSharp.API.Core;
 using IksAdminApi;
 using Microsoft.Extensions.Localization;
 
@@ -28,26 +29,29 @@ public static class MenuWarns
                     {
                         var warn = new Warn(caller.Admin()!.Id, a!.Id, 0, reason);
                         caller.Print(_localizer["Message.PrintOwnTime"]);
-                        _api.HookNextPlayerMessage(caller, time =>
-                        {
-                            if (int.TryParse(time, out var timeInt))
+                        Server.NextFrame(() => {
+                            _api.HookNextPlayerMessage(caller, time =>
                             {
-                                warn.Duration = timeInt;
-                                warn.SetEndAt();
-                                Task.Run(async () =>
+                                if (int.TryParse(time, out var timeInt))
                                 {
-                                    await _api.CreateWarn(warn);
-                                });
-                            }
-                            else
-                            {
-                                caller.Print(_localizer["Error.MustBeANumber"]);
-                            }
-                            m.Open(caller);
+                                    warn.Duration = timeInt*60;
+                                    warn.SetEndAt();
+                                    Task.Run(async () =>
+                                    {
+                                        await _api.CreateWarn(warn);
+                                    });
+                                }
+                                else
+                                {
+                                    caller.Print(_localizer["Error.MustBeANumber"]);
+                                }
+                                m.Open(caller);
+                            });
                         });
+                        
                     });
                 },
-                backMenu: menu
+                backMenu: menu, nullOption: false
             );
         });
         menu.AddMenuOption("list",  _localizer["MenuOption.Warns.List"], (_, _) =>
@@ -58,7 +62,7 @@ public static class MenuWarns
                 {
                     SelectWarnMenu(caller, a!, m);
                 },
-                backMenu: menu
+                backMenu: menu, nullOption: false
             );
         });
         menu.Open(caller);

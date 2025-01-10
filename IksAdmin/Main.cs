@@ -2344,7 +2344,7 @@ public class AdminApi : IIksAdminApi
         player = eventData.Get<CCSPlayerController>("player");
         announce = eventData.Get<bool>("announce");
 
-        player.CommitSuicide(false, false);
+        player.Respawn();
         if (announce)
             MsgAnnounces.Respawn(admin, player);
 
