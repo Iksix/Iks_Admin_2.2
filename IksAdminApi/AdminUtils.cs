@@ -232,8 +232,9 @@ public static class AdminUtils
         return steamId.ToLower() == "console";
     }
 
-    public static void PrintToServer(string message, string tag = "")
+    public static void PrintToServer(string message, string? tag = null)
     {
+        tag = tag ?? CoreApi.Localizer["Tag"];
         if (message.Trim() == "") return;
         foreach (var str in message.Split("\n"))
         {

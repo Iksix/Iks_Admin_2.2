@@ -12,7 +12,7 @@ public static class MenuWarns
     public static void OpenMain(CCSPlayerController caller, IDynamicMenu? backMenu = null)
     {
         var menu = _api.CreateMenu(
-            id: Main.MenuId("main"),
+            id: Main.MenuId("warns.main"),
             title: _localizer["MenuTitle.Warns.Main"],
             backMenu: backMenu
         );
@@ -52,15 +52,47 @@ public static class MenuWarns
         });
         menu.AddMenuOption("list",  _localizer["MenuOption.Warns.List"], (_, _) =>
         {
-            MenuUtils.SelectItem<Admin?>(caller, "warn_list", "Name", 
+            MenuUtils.SelectItem<Admin?>(caller, "warn_list_admin", "Name", 
                 _api.ServerAdmins!.Where(x => x.Warns.Count > 0).ToList()!,
                 (a, m) =>
                 {
-                    MsgOther.PrintWarns(caller, a!);
+                    SelectWarnMenu(caller, a!, m);
                 },
                 backMenu: menu
             );
         });
         menu.Open(caller);
-    } 
+    }
+
+    private static void SelectWarnMenu(CCSPlayerController caller, Admin admin, IDynamicMenu backMenu)
+    {
+        var menu = _api.CreateMenu(
+            id: Main.MenuId("warns.list"),
+            title: _localizer["MenuTitle.Warns.List"],
+            backMenu: backMenu
+        );
+        var warns = admin.Warns;
+
+        foreach (var warn in warns)
+        {
+            menu.AddMenuOption(warn.Id.ToString(), $"[{warn.Id}] {warn.Reason}", (_, _) => {
+                _api.RemoveNextPlayerMessageHook(caller);
+                caller.Print(MsgOther.SWarnTemplate(warn));
+                if (caller.HasPermissions("admins_manage.warn_delete"))
+                {
+                    caller.Print(_localizer["Message.Warns.DeleteWarn"]);
+                    _api.HookNextPlayerMessage(caller, (s) => {
+                        if (s == "delete")
+                        {
+                            Task.Run(async () => {
+                                await _api.DeleteWarn(admin, warn);
+                            });
+                        }
+                    });
+                }
+            });
+        }
+
+        menu.Open(caller);
+    }
 }

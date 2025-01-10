@@ -23,7 +23,8 @@ public static class MenuCommsManage
         });
         menu.AddMenuOption("remove_offline", _localizer["MenuOption.CM.RemoveOffline"], (_, _) => {
             Task.Run(async () => {
-                var comms = await _api.GetLastComms(_api.Config.LastPunishmentTime);
+                List<PlayerComm> comms = await _api.GetLastComms(_api.Config.LastPunishmentTime);
+                comms.Reverse();
                 Server.NextFrame(() => {
                     OpenRemoveCommsMenu(caller, comms, menu);
                 });
@@ -90,7 +91,7 @@ public static class MenuCommsManage
                                 await SilenceFunctions.UnSilence(admin, comm.SteamId!, r);
                                 break;
                         }
-                        comms.Remove(comm);
+                        comm.UnbannedBy = admin.Id;
                         Server.NextFrame(() =>
                         {
                             OpenRemoveCommsMenu(caller, comms, backMenu);
@@ -206,6 +207,7 @@ public static class MenuCommsManage
         }, viewFlags: AdminUtils.GetCurrentPermissionFlags("comms_manage.own_mute_reason"));
         foreach (var reason in reasons)
         {
+            if (reason.HideFromMenu) continue;
             if (reason.Duration != null)
             {
                 if (caller.Admin()!.MaxMuteTime != 0)
@@ -242,6 +244,7 @@ public static class MenuCommsManage
         }, viewFlags: AdminUtils.GetCurrentPermissionFlags("comms_manage.own_gag_reason"));
         foreach (var reason in reasons)
         {
+            if (reason.HideFromMenu) continue;
             if (reason.Duration != null)
             {
                 if (caller.Admin()!.MaxGagTime != 0)
@@ -277,6 +280,7 @@ public static class MenuCommsManage
         }, viewFlags: AdminUtils.GetCurrentPermissionFlags("comms_manage.own_silence_reason"));
         foreach (var reason in reasons)
         {
+            if (reason.HideFromMenu) continue;
             if (reason.Duration != null)
             {
                 if (caller.Admin()!.MaxGagTime != 0 || caller.Admin()!.MaxMuteTime != 0)

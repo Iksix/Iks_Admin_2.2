@@ -85,6 +85,15 @@
     "MenuOption.CM.Silence" : "Всё",
     "MenuOption.CM.Remove" : "Удалить блокировку",
     "MenuOption.CM.RemoveOffline" : "Удалить блокировку (оффлайн)",
+
+    // players_manage
+    "MenuTitle.PM.Main" : "Управление игроками",
+    "MenuOption.PM" : "Управление игроками",
+    "Message.PM.Kick.SetReason" : "Введите причину кика игрока {red}{name}{white}: {red}!причина",
+    "MenuOption.PM.Kick" : "Кикнуть",
+    "MenuOption.PM.Team" : "Сменить команду",
+    "MenuOption.PM.Slay" : "Убить",
+    "MenuOption.PM.Respawn" : "Возродить",
     
     // blocks_manage
     "MenuTitle.BM" : "Управление блокировками",
@@ -135,6 +144,7 @@
     "Message.WhenSilenceEnd" : "{green}Silence снят! Вы снова можете говорить!",
     "Message.PrintOwnReason" : "Введите свою причину в чат: {red}!причина",
     "Message.Warns" : "Варны админа {red}{name}{white}:{warnsTemplate}",
+    "Message.Warns.DeleteWarn" : "Напишите {red}!delete{white} для снятия варна",
     "Message.WarnsTemplate" : "\nID: {red}{id}\nПричина: {red}{reason}\nВыдано: {red}{created}\nСрок: {red}{duration}\nЗакончится: {red}{end}\nКем: {red}{admin}\n================",
     "Message.CmdWho" : "Информация об игроке {red}{name}{white}:\nID: {red}{id}\nSteamID: {red}{steamId}\nАдмин группа: {red}{group}\nФлаги: {red}{flags}\nИммунитет: {red}{immunity}",
     "Message.CmdWho_NotAdmin" : "Информация об игроке {red}{name}{white}:\nSteamID: {red}{steamId}\n{red}Не имеет админ привилегии ✖",

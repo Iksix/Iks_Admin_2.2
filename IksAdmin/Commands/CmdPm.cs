@@ -6,7 +6,7 @@ using IksAdminApi;
 
 namespace IksAdmin.Commands;
 
-public static class CmdPlayers
+public static class CmdPm
 {
     public static AdminApi _api = Main.AdminApi;
 
@@ -23,7 +23,7 @@ public static class CmdPlayers
                     _api.Kick(caller.Admin()!, target, reason);
                 }
             },
-            blockedArgs: AdminUtils.BlockedIdentifiers("css_kick")
+            blockedArgs: KicksConfig.Config.BlockedIdentifiers
         );
     }
     public static void Slay(CCSPlayerController? caller, List<string> args, CommandInfo info)

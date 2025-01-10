@@ -2,7 +2,7 @@ namespace IksAdminApi;
 
 public class CommReason : Reason
 {
-    public CommReason(string title, string? text = null, int minTime = 0, int maxTime = 0, int? duration = null, bool banOnAllServers = false)
+    public CommReason(string title, string? text = null, int minTime = 0, int maxTime = 0, int? duration = null, bool banOnAllServers = false, bool hideFromMenu = false )
     {
         Title = title;
         if (text == null)
@@ -12,5 +12,6 @@ public class CommReason : Reason
         MaxTime = maxTime;
         Duration = duration;
         BanOnAllServers = banOnAllServers;
+        HideFromMenu = hideFromMenu;
     }
 }

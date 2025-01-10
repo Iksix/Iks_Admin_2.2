@@ -52,6 +52,7 @@ public static class MenuBansManage
                             await _api.Unban(admin, ban.SteamId!, r);
                         else await _api.UnbanIp(admin, ban.Ip!, r);
                         var b = await DBBans.GetLastBans(_api.Config.LastPunishmentTime);
+                        b.Reverse();
                         Server.NextFrame(() =>
                         {
                             OpenRemoveBansMenu(caller, b, menu);
@@ -108,6 +109,7 @@ public static class MenuBansManage
 
         foreach (var reason in reasons)
         {
+            if (reason.HideFromMenu) continue;
             if (reason.Duration != null)
             {
                 if (caller.Admin()!.MaxBanTime != 0)

@@ -17,6 +17,22 @@ public static class MenuMain
             backMenu: backMenu
         );
         menu.AddMenuOption(
+            id: "pm",
+            title: _localizer["MenuOption.PM"],
+            (p, _) => {
+                MenuPM.OpenMain(caller, menu);
+            },
+            viewFlags: AdminUtils.GetAllPermissionGroupFlags("players_manage")
+        );
+        menu.AddMenuOption(
+            id: "bm",
+            title: _localizer["MenuOption.BM"],
+            (p, _) => {
+                OpenBlocksManageMenu(caller, menu);
+            },
+            viewFlags: AdminUtils.GetAllPermissionGroupFlags("blocks_manage") + AdminUtils.GetAllPermissionGroupFlags("comms_manage")
+        );
+        menu.AddMenuOption(
             id: "sm",
             title: _localizer["MenuOption.SM"],
             (p, _) => {
@@ -25,14 +41,6 @@ public static class MenuMain
             viewFlags: AdminUtils.GetAllPermissionGroupFlags("admins_manage") 
                        + AdminUtils.GetAllPermissionGroupFlags("groups_manage") 
                        + AdminUtils.GetAllPermissionGroupFlags("servers_manage")
-        );
-        menu.AddMenuOption(
-            id: "bm",
-            title: _localizer["MenuOption.BM"],
-            (p, _) => {
-                OpenBlocksManageMenu(caller, menu);
-            },
-            viewFlags: AdminUtils.GetAllPermissionGroupFlags("blocks_manage")
         );
         menu.Open(caller);
     }

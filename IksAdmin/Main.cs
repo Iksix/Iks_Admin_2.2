@@ -251,6 +251,7 @@ public class Main : BasePlugin
         AdminApi.RegisterPermission("blocks_manage.remove_console", "c"); // Снять наказание выданное консолью
         // Players manage ===
         AdminApi.RegisterPermission("players_manage.kick", "k");
+        AdminApi.RegisterPermission("players_manage.kick_own_reason", "k");
         AdminApi.RegisterPermission("players_manage.changeteam", "k");
         AdminApi.RegisterPermission("players_manage.switchteam", "k");
         AdminApi.RegisterPermission("players_manage.slay", "k");
@@ -547,7 +548,7 @@ public class Main : BasePlugin
             "Кикнуть игрока",
             "players_manage.kick",
             "css_kick <#uid/#steamId/name/@...> <reason>",
-            CmdPlayers.Kick,
+            CmdPm.Kick,
             minArgs: 2,
             whoCanExecute: CommandUsage.CLIENT_ONLY
         );
@@ -556,7 +557,7 @@ public class Main : BasePlugin
             "Возродить игрока",
             "players_manage.respawn",
             "css_respawn <#uid/#steamId/name/@...>",
-            CmdPlayers.Respawn,
+            CmdPm.Respawn,
             minArgs: 1,
             whoCanExecute: CommandUsage.CLIENT_ONLY
         );
@@ -565,7 +566,7 @@ public class Main : BasePlugin
             "Убить игрока",
             "players_manage.slay",
             "css_slay <#uid/#steamId/name/@...>",
-            CmdPlayers.Slay,
+            CmdPm.Slay,
             minArgs: 1,
             whoCanExecute: CommandUsage.CLIENT_ONLY
         );
@@ -574,7 +575,7 @@ public class Main : BasePlugin
             "Сменить команду игрока(с убийством)",
             "players_manage.changeteam",
             "css_changeteam <#uid/#steamId/name/@...> <ct/t/spec>",
-            CmdPlayers.ChangeTeam,
+            CmdPm.ChangeTeam,
             minArgs: 2,
             whoCanExecute: CommandUsage.CLIENT_ONLY
         );
@@ -583,7 +584,7 @@ public class Main : BasePlugin
             "Сменить команду игрока(без убийства)",
             "players_manage.switchteam",
             "css_switchteam <#uid/#steamId/name/@...> <ct/t/spec>",
-            CmdPlayers.SwitchTeam,
+            CmdPm.SwitchTeam,
             minArgs: 2,
             whoCanExecute: CommandUsage.CLIENT_ONLY
         );
@@ -765,11 +766,7 @@ public class AdminApi : IIksAdminApi
     public List<Warn> Warns {get; set;} = new();
 
     // CONFIGS ===
-    public BansConfig BansConfig {get; set;} = new ();
-    public MutesConfig MutesConfig {get; set;} = new ();
-    public SilenceConfig SilenceConfig {get; set;} = new ();
-    public GagsConfig GagsConfig {get; set;} = new ();
-    public IksAdminApi.CoreConfig AdminConfig {get; set;} = new ();
+    private IksAdminApi.CoreConfig _adminConfig {get; set;} = new ();
 
     public List<PlayerInfo> DisconnectedPlayers {get; set;} = new();
     public List<AdminToServer> AdminsToServer {get; set;} = new();
@@ -796,11 +793,12 @@ public class AdminApi : IIksAdminApi
 
     public void SetConfigs()
     {
-        AdminConfig.Set();
-        BansConfig.Set();
-        MutesConfig.Set();
-        GagsConfig.Set();
-        SilenceConfig.Set();
+        new KicksConfig().Set();
+        _adminConfig.Set();
+        new BansConfig().Set();
+        new MutesConfig().Set();
+        new GagsConfig().Set();
+        new SilenceConfig().Set();
     }
 
     public async Task ReloadDataFromDb(bool sendRcon = true)
@@ -1296,7 +1294,7 @@ public class AdminApi : IIksAdminApi
         {
             return new DBResult(null, -2, "stopped by event PRE");
         }
-        
+        ban.UpdatedAt = AdminUtils.CurrentTimestamp();
         var result = await DBBans.Unban(admin, ban, reason);
         switch (result.QueryStatus)
         {
@@ -1707,6 +1705,7 @@ public class AdminApi : IIksAdminApi
     public async Task<DBResult> UnComm(Admin admin, PlayerComm comm, bool announce = true)
     {
         DBResult result = new DBResult(null, -1, "ERROR!");
+        comm.UpdatedAt = AdminUtils.CurrentTimestamp();
         switch (comm.MuteType)
         {
             case 0:
