@@ -60,15 +60,36 @@ public static class CmdPlayers
     {
         // css_changeteam <#uid/#steamId/name/@...> <ct/t/spec>
         var identity = args[0];
+        var teamNum = args[1].ToLower() switch {
+            "ct" => 3,
+            "t" => 2,
+            "spec" => 1,
+            _ => throw new ArgumentException("invalid team")
+        };
         _api.DoActionWithIdentity(caller, identity,
             (target, _) =>
             {
-                if (target!.PawnIsAlive)
-                {
-                    _api.Respawn(caller.Admin()!, target);
-                }
+                _api.ChangeTeam(caller.Admin()!, target, teamNum);
             },
             blockedArgs: AdminUtils.BlockedIdentifiers("css_changeteam")
+        );
+    }
+    public static void SwitchTeam(CCSPlayerController? caller, List<string> args, CommandInfo info)
+    {
+        // css_switchteam <#uid/#steamId/name/@...> <ct/t/spec>
+        var identity = args[0];
+        var teamNum = args[1].ToLower() switch {
+            "ct" => 3,
+            "t" => 2,
+            "spec" => 1,
+            _ => throw new ArgumentException("invalid team")
+        };
+        _api.DoActionWithIdentity(caller, identity,
+            (target, _) =>
+            {
+                _api.SwitchTeam(caller.Admin()!, target!, teamNum);
+            },
+            blockedArgs: AdminUtils.BlockedIdentifiers("css_switchteam")
         );
     }
 }

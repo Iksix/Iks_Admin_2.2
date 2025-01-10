@@ -251,7 +251,10 @@ public class Main : BasePlugin
         AdminApi.RegisterPermission("blocks_manage.remove_console", "c"); // Снять наказание выданное консолью
         // Players manage ===
         AdminApi.RegisterPermission("players_manage.kick", "k");
-        AdminApi.RegisterPermission("players_manage.change_team", "k");
+        AdminApi.RegisterPermission("players_manage.changeteam", "k");
+        AdminApi.RegisterPermission("players_manage.switchteam", "k");
+        AdminApi.RegisterPermission("players_manage.slay", "k");
+        AdminApi.RegisterPermission("players_manage.respawn", "k");
         AdminApi.RegisterPermission("players_manage.who", "b");
         // SERVERS MANAGE === 
         AdminApi.RegisterPermission("servers_manage.reload_data", "z");
@@ -307,15 +310,6 @@ public class Main : BasePlugin
             "admins_manage.warn_delete",
             "am_warn_remove <Warn ID>",
             CmdAdminManage.WarnRemove,
-            minArgs: 1,
-            whoCanExecute: CommandUsage.CLIENT_AND_SERVER
-        );
-        AdminApi.AddNewCommand(
-            "who",
-            "Просмотреть информацию об игроке",
-            "players_manage.who",
-            "css_who <#uid/#steamId/name/@...>",
-            CmdBase.Who,
             minArgs: 1,
             whoCanExecute: CommandUsage.CLIENT_AND_SERVER
         );
@@ -554,8 +548,53 @@ public class Main : BasePlugin
             "players_manage.kick",
             "css_kick <#uid/#steamId/name/@...> <reason>",
             CmdPlayers.Kick,
+            minArgs: 2,
+            whoCanExecute: CommandUsage.CLIENT_ONLY
+        );
+        AdminApi.AddNewCommand(
+            "respawn",
+            "Возродить игрока",
+            "players_manage.respawn",
+            "css_respawn <#uid/#steamId/name/@...>",
+            CmdPlayers.Respawn,
             minArgs: 1,
             whoCanExecute: CommandUsage.CLIENT_ONLY
+        );
+        AdminApi.AddNewCommand(
+            "slay",
+            "Убить игрока",
+            "players_manage.slay",
+            "css_slay <#uid/#steamId/name/@...>",
+            CmdPlayers.Slay,
+            minArgs: 1,
+            whoCanExecute: CommandUsage.CLIENT_ONLY
+        );
+        AdminApi.AddNewCommand(
+            "changeteam",
+            "Сменить команду игрока(с убийством)",
+            "players_manage.changeteam",
+            "css_changeteam <#uid/#steamId/name/@...> <ct/t/spec>",
+            CmdPlayers.ChangeTeam,
+            minArgs: 2,
+            whoCanExecute: CommandUsage.CLIENT_ONLY
+        );
+        AdminApi.AddNewCommand(
+            "switchteam",
+            "Сменить команду игрока(без убийства)",
+            "players_manage.switchteam",
+            "css_switchteam <#uid/#steamId/name/@...> <ct/t/spec>",
+            CmdPlayers.SwitchTeam,
+            minArgs: 2,
+            whoCanExecute: CommandUsage.CLIENT_ONLY
+        );
+        AdminApi.AddNewCommand(
+            "who",
+            "Просмотреть информацию об игроке",
+            "players_manage.who",
+            "css_who <#uid/#steamId/name/@...>",
+            CmdBase.Who,
+            minArgs: 1,
+            whoCanExecute: CommandUsage.CLIENT_AND_SERVER
         );
         AdminApi.ClearCommandInitializer();
     }
@@ -2315,7 +2354,7 @@ public class AdminApi : IIksAdminApi
     public void ChangeTeam(Admin admin, CCSPlayerController player, int team, bool announce = true)
     {
         AdminUtils.LogDebug($"Change team for player {player.PlayerName}...");
-        var eventData = new EventData("cteam_player_pre");
+        var eventData = new EventData("c_team_player_pre");
         eventData.Insert("admin", admin);
         eventData.Insert("player", player);
         eventData.Insert("announce", announce);
@@ -2334,6 +2373,30 @@ public class AdminApi : IIksAdminApi
         if (announce)
             MsgAnnounces.ChangeTeam(admin, player, team);
 
-        eventData.Invoke("cteam_player_post");
+        eventData.Invoke("c_team_player_post");
+    }
+    public void SwitchTeam(Admin admin, CCSPlayerController player, int team, bool announce = true)
+    {
+        AdminUtils.LogDebug($"Switch team for player {player.PlayerName}...");
+        var eventData = new EventData("s_team_player_pre");
+        eventData.Insert("admin", admin);
+        eventData.Insert("player", player);
+        eventData.Insert("announce", announce);
+        eventData.Insert("team", team);
+        if (eventData.Invoke() != HookResult.Continue)
+        {
+            AdminUtils.LogDebug("Stopped by event PRE");
+            return;
+        }
+        admin = eventData.Get<Admin>("admin");
+        player = eventData.Get<CCSPlayerController>("player");
+        announce = eventData.Get<bool>("announce");
+        team = eventData.Get<int>("team");
+
+        player.SwitchTeam((CsTeam)team);
+        if (announce)
+            MsgAnnounces.SwitchTeam(admin, player, team);
+
+        eventData.Invoke("s_team_player_post");
     }
 }

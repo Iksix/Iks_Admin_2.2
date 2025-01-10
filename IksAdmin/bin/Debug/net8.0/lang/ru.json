@@ -152,6 +152,8 @@
     "Announce.Kick": "Админ {red}{admin}{white} кикнул игрока {red}{name}\nПричина: {red}{reason}",
     "Announce.Slay": "Админ {red}{admin}{white} убил игрока {red}{name}",
     "Announce.Respawn": "Админ {red}{admin}{white} возродил игрока {red}{name}",
+    "Announce.ChangeTeam": "Админ {red}{admin}{white} переместил игрока {red}{name}{white} в команду {team}",
+    "Announce.SwitchTeam": "Админ {red}{admin}{white} сменил команду игрока {red}{name}{white} на {team}",
     
     "Limitations.TimeLimit" : "{red}Вы можете выдать это наказание только в промежутке от {min}мин. - {max}мин. ",
     "Limitations.MaxByDayLimit" : "{red}Вы превысили свой суточный лимит наказаний!\nСледующее наказание будет доступно: {date} ",
@@ -166,8 +168,8 @@
     "Other.Days" : " дн.",
     "Other.Never" : "Никогда",
 
-    "Other.Team.CT" : "CT", // админ iks переместил игрока litler в команду CT
-    "Other.Team.T" : "T", // админ iks переместил игрока litler в команду T
-    "Other.Team.Spec" : "SPEC" // админ iks переместил игрока litler в команду SPEC
+    "Other.Team.CT" : "{darkblue}CT", // админ iks переместил игрока litler в команду CT
+    "Other.Team.T" : "{gold}T", // админ iks переместил игрока litler в команду T
+    "Other.Team.Spec" : "{purple}SPEC" // админ iks переместил игрока litler в команду SPEC
     
 }
