@@ -14,6 +14,6 @@ public class AdminToServer
         return AdminUtils.Admin(AdminId);
     }}
     ServerModel? Server {get {
-        return AdminUtils.AdminApi.AllServers.FirstOrDefault(x => x.Id == ServerId);
+        return AdminUtils.CoreApi.AllServers.FirstOrDefault(x => x.Id == ServerId);
     }}
 }

@@ -14,7 +14,7 @@ public interface IIksAdminApi
     public List<PlayerComm> Comms {get; set;}
     public List<Warn> Warns {get; set;}
 
-    public AdminConfig Config { get; set; }
+    public CoreConfig Config { get; set; }
     public IStringLocalizer Localizer { get; set; }
     public BasePlugin Plugin { get; set; } 
     public string ModuleDirectory { get; set; }
@@ -181,9 +181,10 @@ public interface IIksAdminApi
     /// Срабатывает после ReloadInfractions при входе игрока
     /// </summary>
     public event Action<string, string> OnFullConnect;
-
-    public void Kick(Admin admin, CCSPlayerController player, string reason);
-    
+    #region PlayersManage
+    public void Kick(Admin admin, CCSPlayerController player, string reason, bool announce = true);
+    public void Slay(Admin admin, CCSPlayerController target, bool announce = true);
+    #endregion
     // Groups
     public Task<DBResult> CreateGroup(Group group);
     public Task<DBResult> UpdateGroup(Group group);

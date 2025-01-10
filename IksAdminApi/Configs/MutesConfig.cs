@@ -40,7 +40,7 @@ public class MutesConfig : PluginCFG<MutesConfig>, IPluginCFG
     
     public void Set()
     {
-        Config = ReadOrCreate<MutesConfig>("configs/mutes_cfg", Config);
+        Config = ReadOrCreate<MutesConfig>("configs/mutes", Config);
         AdminUtils.LogDebug("Mutes config loaded ✔");
         AdminUtils.LogDebug("Reasons count " + Config.Reasons.Count);
     }

@@ -23,7 +23,7 @@ public static class DBServers
             }
             await conn.QueryAsync(@"
                 insert into iks_servers(id, ip, name, rcon, created_at, updated_at)
-                values(@serverId, @ip, @name, @rcon, current_timestamp(), current_timestamp())
+                values(@serverId, @ip, @name, @rcon, unix_timestamp(), unix_timestamp())
             ", new {
                 serverId = server.Id,
                 ip = server.Ip,
@@ -51,7 +51,7 @@ public static class DBServers
                 ip = @ip,
                 name = @name,
                 rcon = @rcon,
-                updated_at = current_timestamp(),
+                updated_at = unix_timestamp(),
                 deleted_at = null
                 where id = @id
             ", 

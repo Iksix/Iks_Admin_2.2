@@ -1,3 +1,5 @@
+using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Utils;
 using IksAdminApi;
 using Microsoft.Extensions.Localization;
 
@@ -93,6 +95,56 @@ public static class MsgAnnounces
                 .Replace("{now}", AdminUtils.Admin(warn.TargetId)!.Warns.Count.ToString())
                 .Replace("{max}", _api.Config.MaxWarns.ToString())
                 .Replace("{duration}", (AdminUtils.GetDurationString(warn.Duration)).ToString()), tag: _localizer["Tag"]
+        );
+    }
+
+    public static void Kick(Admin admin, CCSPlayerController player, string reason)
+    {
+        AdminUtils.PrintToServer(_localizer["Announce.Kick"].Value
+                .Replace("{admin}", admin!.Name)
+                .Replace("{name}", player.PlayerName)
+                .Replace("{reason}", reason)
+        );
+    }
+
+    public static void Slay(Admin admin, CCSPlayerController player)
+    {
+        AdminUtils.PrintToServer(_localizer["Announce.Slay"].Value
+                .Replace("{admin}", admin!.Name)
+                .Replace("{name}", player.PlayerName)
+        );
+    }
+
+    public static void Respawn(Admin admin, CCSPlayerController player)
+    {
+        AdminUtils.PrintToServer(_localizer["Announce.Respawn"].Value
+                .Replace("{admin}", admin!.Name)
+                .Replace("{name}", player.PlayerName)
+        );
+    }
+    private static string TeamString(int team) 
+    {
+        return team switch {
+            1 => _localizer["Other.Team.Spec"],
+            2 => _localizer["Other.Team.T"],
+            3 => _localizer["Other.Team.CT"],
+            _ => "NONE"
+        };
+    }
+    public static void ChangeTeam(Admin admin, CCSPlayerController player, int team)
+    {
+        AdminUtils.PrintToServer(_localizer["Announce.ChangeTeam"].Value
+                .Replace("{admin}", admin!.Name)
+                .Replace("{name}", player.PlayerName)
+                .Replace("{team}", TeamString(team))
+        );
+    }
+    public static void SwitchTeam(Admin admin, CCSPlayerController player, int team)
+    {
+        AdminUtils.PrintToServer(_localizer["Announce.SwitchTeam"].Value
+                .Replace("{admin}", admin!.Name)
+                .Replace("{name}", player.PlayerName)
+                .Replace("{team}", TeamString(team))
         );
     }
 }

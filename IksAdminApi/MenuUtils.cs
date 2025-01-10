@@ -5,7 +5,7 @@ namespace IksAdminApi;
 
 public static class MenuUtils
 {
-    static IIksAdminApi _api = AdminUtils.AdminApi;
+    static IIksAdminApi _api = AdminUtils.CoreApi;
     static IStringLocalizer _localizer = _api.Localizer;
     public static string GenerateMenuId(string id)
     {

@@ -10,12 +10,12 @@ public class EventData
 
     public HookResult Invoke()
     {
-        return AdminUtils.AdminApi.InvokeDynamicEvent(this);
+        return AdminUtils.CoreApi.InvokeDynamicEvent(this);
     }
     public HookResult Invoke(string eventKey)
     {
         EventKey = eventKey;
-        return AdminUtils.AdminApi.InvokeDynamicEvent(this);
+        return AdminUtils.CoreApi.InvokeDynamicEvent(this);
     }
 
     public EventData(string eventKey)

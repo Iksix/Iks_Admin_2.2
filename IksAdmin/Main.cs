@@ -57,7 +57,7 @@ public class Main : BasePlugin
         AdminUtils.CoreInstance = this;
         AdminApi = new AdminApi(this, Localizer, ModuleDirectory, DB.ConnectionString);
         AdminModule.Api = AdminApi;
-        AdminUtils.AdminApi = AdminApi;
+        AdminUtils.CoreApi = AdminApi;
         AdminApi.OnModuleLoaded += OnModuleLoaded;
         AdminApi.OnModuleUnload += OnModuleUnload;
         Capabilities.RegisterPluginCapability(_pluginCapability, () => AdminApi);
@@ -293,6 +293,15 @@ public class Main : BasePlugin
             whoCanExecute: CommandUsage.CLIENT_AND_SERVER
         );
         AdminApi.AddNewCommand(
+            "am_list",
+            "Выводит всех админов",
+            "admins_manage.add",
+            "css_am_list [all]",
+            CmdAdminManage.List,
+            minArgs: 0,
+            whoCanExecute: CommandUsage.CLIENT_AND_SERVER
+        );
+        AdminApi.AddNewCommand(
             "am_warn_remove",
             "Выводит все варны админа",
             "admins_manage.warn_delete",
@@ -317,15 +326,6 @@ public class Main : BasePlugin
             "css_admin",
             CmdBase.AdminMenu,
             minArgs: 0,
-            whoCanExecute: CommandUsage.CLIENT_ONLY
-        );
-        AdminApi.AddNewCommand(
-            "kick",
-            "Кикнуть игрока",
-            "players_manage.kick",
-            "css_kick <#uid/#steamId/name/@...> <reason>",
-            CmdPlayers.Kick,
-            minArgs: 1,
             whoCanExecute: CommandUsage.CLIENT_ONLY
         );
         AdminApi.AddNewCommand(
@@ -547,6 +547,16 @@ public class Main : BasePlugin
             minArgs: 7,
             whoCanExecute: CommandUsage.CLIENT_AND_SERVER
         );
+        // PlayersManage
+        AdminApi.AddNewCommand(
+            "kick",
+            "Кикнуть игрока",
+            "players_manage.kick",
+            "css_kick <#uid/#steamId/name/@...> <reason>",
+            CmdPlayers.Kick,
+            minArgs: 1,
+            whoCanExecute: CommandUsage.CLIENT_ONLY
+        );
         AdminApi.ClearCommandInitializer();
     }
     public override void OnAllPluginsLoaded(bool hotReload)
@@ -621,7 +631,7 @@ public class Main : BasePlugin
 
 public class AdminApi : IIksAdminApi
 {
-    public AdminConfig Config { get; set; } 
+    public IksAdminApi.CoreConfig Config { get; set; } 
     public BasePlugin Plugin { get; set; } 
     public IStringLocalizer Localizer { get; set; }
     public Dictionary<string, SortMenu[]> SortMenus { get; set; } = new();
@@ -720,7 +730,7 @@ public class AdminApi : IIksAdminApi
     public MutesConfig MutesConfig {get; set;} = new ();
     public SilenceConfig SilenceConfig {get; set;} = new ();
     public GagsConfig GagsConfig {get; set;} = new ();
-    public AdminConfig AdminConfig {get; set;} = new ();
+    public IksAdminApi.CoreConfig AdminConfig {get; set;} = new ();
 
     public List<PlayerInfo> DisconnectedPlayers {get; set;} = new();
     public List<AdminToServer> AdminsToServer {get; set;} = new();
@@ -729,7 +739,7 @@ public class AdminApi : IIksAdminApi
     {
         Plugin = plugin;
         SetConfigs();
-        Config = AdminConfig.Config;
+        Config = IksAdminApi.CoreConfig.Config;
         var builder = new MySqlConnectionStringBuilder();
         builder.Password = Config.Password;
         builder.Server = Config.Host;
@@ -1157,7 +1167,7 @@ public class AdminApi : IIksAdminApi
                 var maxByDayInt = maxByDay == null ? int.MaxValue : int.Parse(maxByDay);
                 if (ban.Duration > maxTimeInt || minTimeInt > ban.Duration)
                 {
-                    Helper.PrintToSteamId(admin.SteamId, AdminUtils.AdminApi.Localizer["Limitations.TimeLimit"].Value
+                    Helper.PrintToSteamId(admin.SteamId, AdminUtils.CoreApi.Localizer["Limitations.TimeLimit"].Value
                         .Replace("{min}", minTimeInt.ToString())
                         .Replace("{max}", maxTimeInt.ToString())
                     );
@@ -1168,7 +1178,7 @@ public class AdminApi : IIksAdminApi
                     var lastPunishments = await DBBans.GetLastAdminBans(admin, 60*60*24);
                     if (lastPunishments.Count > maxByDayInt)
                     {
-                        Helper.PrintToSteamId(admin.SteamId, AdminUtils.AdminApi.Localizer["Limitations.MaxByDayLimit"].Value
+                        Helper.PrintToSteamId(admin.SteamId, AdminUtils.CoreApi.Localizer["Limitations.MaxByDayLimit"].Value
                             .Replace("{date}", Utils.GetDateString(lastPunishments[0].CreatedAt + 60*60*24))
                         );
                         return new DBResult(null, 3, "limitations limit reached");
@@ -1789,7 +1799,7 @@ public class AdminApi : IIksAdminApi
                 var maxByDayInt = maxByDay == null ? int.MaxValue : int.Parse(maxByDay);
                 if (comm.Duration/60 > maxTimeInt || minTimeInt > comm.Duration/60)
                 {
-                    Helper.PrintToSteamId(admin.SteamId, AdminUtils.AdminApi.Localizer["Limitations.TimeLimit"].Value
+                    Helper.PrintToSteamId(admin.SteamId, AdminUtils.CoreApi.Localizer["Limitations.TimeLimit"].Value
                         .Replace("{min}", minTimeInt.ToString())
                         .Replace("{max}", maxTimeInt.ToString())
                     );
@@ -1800,7 +1810,7 @@ public class AdminApi : IIksAdminApi
                     var lastPunishments = (await DBComms.GetLastAdminComms(admin, 60 * 60 * 24)).Where(x => x.MuteType == 1).ToList();
                     if (lastPunishments.Count > maxByDayInt)
                     {
-                        Helper.PrintToSteamId(admin.SteamId, AdminUtils.AdminApi.Localizer["Limitations.MaxByDayLimit"].Value
+                        Helper.PrintToSteamId(admin.SteamId, AdminUtils.CoreApi.Localizer["Limitations.MaxByDayLimit"].Value
                             .Replace("{date}", Utils.GetDateString(lastPunishments[0].CreatedAt + 60*60*24))
                         );
                         return new DBResult(null, 3, "limitations limit reached");;
@@ -1882,7 +1892,7 @@ public class AdminApi : IIksAdminApi
                 var maxByDayInt = maxByDay == null ? int.MaxValue : int.Parse(maxByDay);
                 if (comm.Duration/60 > maxTimeInt || minTimeInt > comm.Duration/60)
                 {
-                    Helper.PrintToSteamId(admin.SteamId, AdminUtils.AdminApi.Localizer["Limitations.TimeLimit"].Value
+                    Helper.PrintToSteamId(admin.SteamId, AdminUtils.CoreApi.Localizer["Limitations.TimeLimit"].Value
                         .Replace("{min}", minTimeInt.ToString())
                         .Replace("{max}", maxTimeInt.ToString())
                     );
@@ -1893,7 +1903,7 @@ public class AdminApi : IIksAdminApi
                     var lastPunishments = (await DBComms.GetLastAdminComms(admin, 60 * 60 * 24)).Where(x => x.MuteType == 1).ToList();
                     if (lastPunishments.Count > maxByDayInt)
                     {
-                        Helper.PrintToSteamId(admin.SteamId, AdminUtils.AdminApi.Localizer["Limitations.MaxByDayLimit"].Value
+                        Helper.PrintToSteamId(admin.SteamId, AdminUtils.CoreApi.Localizer["Limitations.MaxByDayLimit"].Value
                             .Replace("{date}", Utils.GetDateString(lastPunishments[0].CreatedAt + 60*60*24))
                         );
                         return new DBResult(null, 3, "limitations limit reached");
@@ -2020,7 +2030,7 @@ public class AdminApi : IIksAdminApi
                 var maxByDayInt = maxByDay == null ? int.MaxValue : int.Parse(maxByDay);
                 if (comm.Duration/60 > maxTimeInt || minTimeInt > comm.Duration/60)
                 {
-                    Helper.PrintToSteamId(admin.SteamId, AdminUtils.AdminApi.Localizer["Limitations.TimeLimit"].Value
+                    Helper.PrintToSteamId(admin.SteamId, AdminUtils.CoreApi.Localizer["Limitations.TimeLimit"].Value
                         .Replace("{min}", minTimeInt.ToString())
                         .Replace("{max}", maxTimeInt.ToString())
                     );
@@ -2031,7 +2041,7 @@ public class AdminApi : IIksAdminApi
                     var lastPunishments = (await DBComms.GetLastAdminComms(admin, 60 * 60 * 24)).Where(x => x.MuteType == 0).ToList();
                     if (lastPunishments.Count > maxByDayInt)
                     {
-                        Helper.PrintToSteamId(admin.SteamId, AdminUtils.AdminApi.Localizer["Limitations.MaxByDayLimit"].Value
+                        Helper.PrintToSteamId(admin.SteamId, AdminUtils.CoreApi.Localizer["Limitations.MaxByDayLimit"].Value
                             .Replace("{date}", Utils.GetDateString(lastPunishments[0].CreatedAt + 60*60*24))
                         );
                         return new DBResult(null, 3, "limitations limit reached");
@@ -2131,29 +2141,7 @@ public class AdminApi : IIksAdminApi
         return result;
     }
     
-    public void Kick(Admin admin, CCSPlayerController player, string reason)
-    {
-        AdminUtils.LogDebug($"Kicking player {player.PlayerName}...");
-        var eventData = new EventData("kick_player_pre");
-        eventData.Insert("admin", admin);
-        eventData.Insert("player", player);
-        eventData.Insert("reason", reason);
-
-        var onKickEventPre = OnDynamicEvent?.Invoke(eventData) ?? HookResult.Continue;
-        if (onKickEventPre != HookResult.Continue)
-        {
-            AdminUtils.LogDebug("Stopped by event PRE");
-            return;
-        }
-
-        admin = eventData.Get<Admin>("admin");
-        player = eventData.Get<CCSPlayerController>("player");
-        reason = eventData.Get<string>("reason");
-        
-        DisconnectPlayer(player, reason, admin: admin);
-        eventData.EventKey = "kick_player_post";
-        _ = OnDynamicEvent?.Invoke(eventData) ?? HookResult.Continue;
-    }
+    
 
     public async Task<DBResult> CreateGroup(Group group)
     {
@@ -2252,5 +2240,100 @@ public class AdminApi : IIksAdminApi
     public async Task<List<Warn>> GetAllWarnsForAdmin(Admin admin)
     {
         return await DBWarns.GetAllActiveForAdmin(admin.Id);
+    }
+
+    public void Slay(Admin admin, CCSPlayerController player, bool announce = true)
+    {
+        AdminUtils.LogDebug($"Slaying player {player.PlayerName}...");
+        var eventData = new EventData("slay_player_pre");
+        eventData.Insert("admin", admin);
+        eventData.Insert("player", player);
+        eventData.Insert("announce", announce);
+        if (eventData.Invoke() != HookResult.Continue)
+        {
+            AdminUtils.LogDebug("Stopped by event PRE");
+            return;
+        }
+        admin = eventData.Get<Admin>("admin");
+        player = eventData.Get<CCSPlayerController>("player");
+        announce = eventData.Get<bool>("announce");
+
+        player.CommitSuicide(false, false);
+        if (announce)
+            MsgAnnounces.Slay(admin, player);
+
+        eventData.Invoke("slay_player_post");
+    }
+    public void Kick(Admin admin, CCSPlayerController player, string reason, bool announce = true)
+    {
+        AdminUtils.LogDebug($"Kicking player {player.PlayerName}...");
+        var eventData = new EventData("kick_player_pre");
+        eventData.Insert("admin", admin);
+        eventData.Insert("player", player);
+        eventData.Insert("reason", reason);
+        eventData.Insert("announce", announce);
+
+        if (eventData.Invoke() != HookResult.Continue)
+        {
+            AdminUtils.LogDebug("Stopped by event PRE");
+            return;
+        }
+        admin = eventData.Get<Admin>("admin");
+        player = eventData.Get<CCSPlayerController>("player");
+        reason = eventData.Get<string>("reason");
+        announce = eventData.Get<bool>("announce");
+
+        DisconnectPlayer(player, reason, admin: admin);
+        if (announce)
+            MsgAnnounces.Kick(admin, player, reason);
+
+        eventData.Invoke("kick_player_post");
+    }
+
+    public void Respawn(Admin admin, CCSPlayerController player, bool announce = true)
+    {
+        AdminUtils.LogDebug($"Respawning player {player.PlayerName}...");
+        var eventData = new EventData("respawn_player_pre");
+        eventData.Insert("admin", admin);
+        eventData.Insert("player", player);
+        eventData.Insert("announce", announce);
+        if (eventData.Invoke() != HookResult.Continue)
+        {
+            AdminUtils.LogDebug("Stopped by event PRE");
+            return;
+        }
+        admin = eventData.Get<Admin>("admin");
+        player = eventData.Get<CCSPlayerController>("player");
+        announce = eventData.Get<bool>("announce");
+
+        player.CommitSuicide(false, false);
+        if (announce)
+            MsgAnnounces.Respawn(admin, player);
+
+        eventData.Invoke("respawn_player_post");
+    }
+    public void ChangeTeam(Admin admin, CCSPlayerController player, int team, bool announce = true)
+    {
+        AdminUtils.LogDebug($"Change team for player {player.PlayerName}...");
+        var eventData = new EventData("cteam_player_pre");
+        eventData.Insert("admin", admin);
+        eventData.Insert("player", player);
+        eventData.Insert("announce", announce);
+        eventData.Insert("team", team);
+        if (eventData.Invoke() != HookResult.Continue)
+        {
+            AdminUtils.LogDebug("Stopped by event PRE");
+            return;
+        }
+        admin = eventData.Get<Admin>("admin");
+        player = eventData.Get<CCSPlayerController>("player");
+        announce = eventData.Get<bool>("announce");
+        team = eventData.Get<int>("team");
+
+        player.ChangeTeam((CsTeam)team);
+        if (announce)
+            MsgAnnounces.ChangeTeam(admin, player, team);
+
+        eventData.Invoke("cteam_player_post");
     }
 }

@@ -7,7 +7,7 @@ public class Group {
     public int Immunity {get; set;}
     public string? Comment {get; set;}
     public GroupLimitation[] Limitations {get {
-        return AdminUtils.AdminApi.GroupLimitations.Where(x => x.GroupId == Id).ToArray();
+        return AdminUtils.CoreApi.GroupLimitations.Where(x => x.GroupId == Id).ToArray();
     }}
 
     /// <summary>

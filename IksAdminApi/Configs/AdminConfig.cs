@@ -1,7 +1,7 @@
 namespace IksAdminApi;
-public class AdminConfig : PluginCFG<AdminConfig>, IPluginCFG
+public class CoreConfig : PluginCFG<CoreConfig>, IPluginCFG
 {
-    public static AdminConfig Config = new AdminConfig();
+    public static CoreConfig Config = new CoreConfig();
     public int ServerId { get; set; } = 1;
     public string ServerIp {get; set;} = "0.0.0.0:27015"; // Указываете IP сервера
     public string ServerName {get; set;} = "Server name"; // Название сервера, если пусто то АВТО
@@ -13,6 +13,10 @@ public class AdminConfig : PluginCFG<AdminConfig>, IPluginCFG
     public string Password { get; set; } = "Password";
     public string Port { get; set; } = "3306";
     // ===
+    public Dictionary<string, string[]> BlockedIdentifiers {get; set;} = new () {
+        {"css_slay", [""]},
+        {"css_kick", ["@all", "@players", "@bots", "@ct", "@t"]},
+    };
     public int MaxWarns { get; set; } = 3; // Максимальное кол-во варнов для блокировки админки у игрока
     public bool DeleteWhenMaxWarns { get; set; } = false; // Удалять ли админа при максимальном кол-ве варнов
     public string WebApiKey {get; set;} = ""; // Указываете API ключ для получения имени в оффлайн бане

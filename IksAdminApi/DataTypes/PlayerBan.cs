@@ -35,7 +35,7 @@ public class PlayerBan
     }}
     public ServerModel? Server {get {
         if (ServerId == null) return null;
-        return AdminUtils.AdminApi.AllServers.FirstOrDefault(x => x.Id == ServerId);
+        return AdminUtils.CoreApi.AllServers.FirstOrDefault(x => x.Id == ServerId);
     }}
     public string NameString => Name ?? "[NOT SETTED]";
     public string IpString => Ip ?? "[NOT SETTED]";

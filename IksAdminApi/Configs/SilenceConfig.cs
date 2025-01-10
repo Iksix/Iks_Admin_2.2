@@ -39,7 +39,7 @@ public class SilenceConfig : PluginCFG<SilenceConfig>, IPluginCFG
     }
     public void Set()
     {
-        Config = ReadOrCreate<SilenceConfig>("configs/silence_cfg", Config);
+        Config = ReadOrCreate<SilenceConfig>("configs/silence", Config);
         AdminUtils.LogDebug("Silence config loaded ✔");
         AdminUtils.LogDebug("Reasons count " + Config.Reasons.Count);
     }

@@ -37,10 +37,10 @@ public class Admin
         return Disabled == 1 || IsDisabledByWarns;
     }}
     public bool IsDisabledByWarns {get {
-        return Warns.Count >= AdminUtils.AdminApi.Config.MaxWarns;
+        return Warns.Count >= AdminUtils.CoreApi.Config.MaxWarns;
     }}
     public int[] Servers { get  {
-        var a = AdminUtils.AdminApi.AdminsToServer.Where(x => x.AdminId == Id).ToArray();
+        var a = AdminUtils.CoreApi.AdminsToServer.Where(x => x.AdminId == Id).ToArray();
         List<int> serverIds = new();
         foreach (var b in a)
         {
@@ -52,7 +52,7 @@ public class Admin
     public bool IsConsole { get => Id == 1;}
 
     public List<Warn> Warns {get {
-        return AdminUtils.AdminApi.Warns.Where(x => x.TargetId == Id).ToList();
+        return AdminUtils.CoreApi.Warns.Where(x => x.TargetId == Id).ToList();
     }}
 
     // Limitations ===

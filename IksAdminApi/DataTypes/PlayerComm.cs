@@ -41,7 +41,7 @@ public class PlayerComm
     }}
     public ServerModel? Server {get {
         if (ServerId == null) return null;
-        return AdminUtils.AdminApi.AllServers.FirstOrDefault(x => x.Id == ServerId);
+        return AdminUtils.CoreApi.AllServers.FirstOrDefault(x => x.Id == ServerId);
     }}
     // used for getting from db
     public PlayerComm(int id, long steamId, string? ip, string? name, int muteType, int duration, string reason, int? serverId, int adminId, int? unbannedBy, string? unbanReason, int createdAt, int endAt, int updatedAt, int? deletedAt)

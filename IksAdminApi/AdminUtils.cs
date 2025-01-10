@@ -15,16 +15,20 @@ public static class AdminUtils
     public static AdminFinderByController FindAdminByControllerMethod = null!;
     public delegate Admin? AdminFinderById(int id);
     public static AdminFinderById FindAdminByIdMethod = null!;
-    public static IIksAdminApi AdminApi = null!;
+    public static IIksAdminApi CoreApi = null!;
     public delegate Dictionary<string, Dictionary<string, string>> RightsGetter();
     public static RightsGetter GetPremissions = null!;
-    public delegate AdminConfig ConfigGetter();
+    public delegate CoreConfig ConfigGetter();
     public static ConfigGetter GetConfigMethod = null!;
     public delegate Group? GetGroupFromIdMethod(int id);
     public static GetGroupFromIdMethod GetGroupFromIdFunc = null!;
+    public static string[] BlockedIdentifiers(string key) 
+    {
+        return CoreApi.Config.BlockedIdentifiers.FirstOrDefault(x => x.Key == key).Value;
+    }
     public static void LogDebug(string message)
     {
-        if (AdminApi != null && AdminApi.Config != null && !AdminApi.Config.DebugMode)
+        if (CoreApi != null && CoreApi.Config != null && !CoreApi.Config.DebugMode)
         {
             return;
         }
@@ -50,7 +54,7 @@ public static class AdminUtils
 
     public static List<PlayerComm> GetComms(this CCSPlayerController player)
     {
-        return AdminApi.Comms.Where(x => x.SteamId == player.AuthorizedSteamID!.SteamId64.ToString()).ToList();
+        return CoreApi.Comms.Where(x => x.SteamId == player.AuthorizedSteamID!.SteamId64.ToString()).ToList();
     }
     public static string GetDurationString( int seconds )
     {
@@ -115,17 +119,17 @@ public static class AdminUtils
     }
     public static Admin? Admin(this CCSPlayerController? player)
     {
-        if (player == null) return AdminApi.ConsoleAdmin;
+        if (player == null) return CoreApi.ConsoleAdmin;
         return FindAdminByControllerMethod(player);
     }
     
     public static Admin? ServerAdmin(this PlayerInfo player)
     {
-        return AdminApi.ServerAdmins.FirstOrDefault(x => x.SteamId == player.SteamId);
+        return CoreApi.ServerAdmins.FirstOrDefault(x => x.SteamId == player.SteamId);
     }
     public static Admin? ServerAdmin(int id)
     {
-        return AdminApi.ServerAdmins.FirstOrDefault(x => x.Id == id);
+        return CoreApi.ServerAdmins.FirstOrDefault(x => x.Id == id);
     }
     public static Admin? Admin(int id)
     {
@@ -134,20 +138,20 @@ public static class AdminUtils
     public static Admin? Admin(string steamId)
     {
         if (steamId.ToLower() == "console")
-            return AdminApi.ConsoleAdmin;
-        return AdminApi.AllAdmins.FirstOrDefault(x => x.SteamId == steamId);
+            return CoreApi.ConsoleAdmin;
+        return CoreApi.AllAdmins.FirstOrDefault(x => x.SteamId == steamId);
     }
     public static Admin? ServerAdmin(string steamId)
     {
         if (steamId.ToLower() == "console")
-            return AdminApi.ConsoleAdmin;
-        return AdminApi.ServerAdmins.FirstOrDefault(x => x.SteamId == steamId);
+            return CoreApi.ConsoleAdmin;
+        return CoreApi.ServerAdmins.FirstOrDefault(x => x.SteamId == steamId);
     }
     public static bool IsAdmin(this CCSPlayerController player)
     {
         return FindAdminByControllerMethod(player) != null;
     }
-    public static AdminConfig Config()
+    public static CoreConfig Config()
     {
         return GetConfigMethod();
     }
@@ -168,7 +172,7 @@ public static class AdminUtils
         }
         return input;
     }
-    public static void Print(this CCSPlayerController? player, string message, string? tag = null)
+    public static void Print(this CCSPlayerController? player, string message, string? tag = null, bool toConsole = false)
     {
         if (message.Trim() == "") return;
         var eventData = new EventData("print_to_player");
@@ -189,12 +193,15 @@ public static class AdminUtils
         {
             if (player == null)
             {
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine(message);
+                Console.ResetColor();
                 return;
             }
             foreach (var str in message.Split("\n"))
             {
-                player.PrintToChat($" {tag ?? AdminApi.Localizer["Tag"]} {str}");
+                if (toConsole) player.PrintToConsole($" {tag ?? CoreApi.Localizer["Tag"]} {str}");
+                else player.PrintToChat($" {tag ?? CoreApi.Localizer["Tag"]} {str}");
             }
 
             eventData.Invoke("print_to_player_post");
@@ -205,7 +212,7 @@ public static class AdminUtils
     {
         var ip = player.IpAddress;
         if (ip == null) return null;
-        if (AdminApi.Config.MirrorsIp.Contains(ip.Split(":")[0])) return null;
+        if (CoreApi.Config.MirrorsIp.Contains(ip.Split(":")[0])) return null;
         return ip.Split(":")[0];
     }
 
@@ -238,7 +245,7 @@ public static class AdminUtils
         if (message.Trim() == "") return;
         foreach (var str in message.Split("\n"))
         {
-            info.ReplyToCommand($" {tag ?? AdminApi.Localizer["Tag"]} {str}");
+            info.ReplyToCommand($" {tag ?? CoreApi.Localizer["Tag"]} {str}");
         }
     }
     /// <returns>Возвращает строку из текущих флагов по праву(ex: "admin_manage.add") (учитывая замену в кфг)</returns>
@@ -324,7 +331,7 @@ public static class AdminUtils
     }
     public static bool HasPermissions(this Admin? admin, string key)
     {
-        if (admin!.Warns.Count >= AdminApi.Config.MaxWarns)
+        if (admin!.Warns.Count >= CoreApi.Config.MaxWarns)
         {
             return false;
         }

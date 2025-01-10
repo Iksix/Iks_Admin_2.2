@@ -27,7 +27,7 @@ public static class UtilsFunctions
         return Main.AdminApi.RegistredPermissions;
     }
 
-    public static AdminConfig GetConfigMethod()
+    public static IksAdminApi.CoreConfig GetConfigMethod()
     {
         return Main.AdminApi.Config;
     }

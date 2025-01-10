@@ -30,7 +30,7 @@ public static class PlayersUtils
     }
     public static void CloseMenu(this CCSPlayerController player)
     {
-        AdminUtils.AdminApi.CloseMenu(player);
+        AdminUtils.CoreApi.CloseMenu(player);
     }
     public static CCSPlayerController? GetControllerBySteamId(string steamId)
     {

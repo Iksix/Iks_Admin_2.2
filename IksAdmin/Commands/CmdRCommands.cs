@@ -13,7 +13,7 @@ public static class CmdBansCmdRCommands
         var adminId = args[0];
         var admin = AdminUtils.Admin(adminId);
         var steamId = args[1];
-        if (!AdminUtils.AdminApi.CanDoActionWithPlayer(adminId, steamId))
+        if (!AdminUtils.CoreApi.CanDoActionWithPlayer(adminId, steamId))
         {
             info.Reply("Player do not have access to use this command for this target.");
             return;
@@ -59,13 +59,13 @@ public static class CmdBansCmdRCommands
         Task.Run(async () => {
             if (name == "")
             {
-                var summ = await AdminUtils.AdminApi.GetPlayerSummaries(ulong.Parse(steamId));
+                var summ = await AdminUtils.CoreApi.GetPlayerSummaries(ulong.Parse(steamId));
                 if (summ != null)
                 {
                     name = summ.PersonaName;
                 }
             }
-            await AdminUtils.AdminApi.AddBan(ban, announce);
+            await AdminUtils.CoreApi.AddBan(ban, announce);
         });
     }
     public static void RComm(CCSPlayerController? caller, List<string> args, CommandInfo info)
@@ -74,7 +74,7 @@ public static class CmdBansCmdRCommands
         var adminId = args[0];
         var admin = AdminUtils.Admin(adminId);
         var steamId = args[1];
-        if (!AdminUtils.AdminApi.CanDoActionWithPlayer(adminId, steamId))
+        if (!AdminUtils.CoreApi.CanDoActionWithPlayer(adminId, steamId))
         {
             info.Reply("Player do not have access to use this command for this target.");
             return;
@@ -142,13 +142,13 @@ public static class CmdBansCmdRCommands
         Task.Run(async () => {
             if (name == "")
             {
-                var summ = await AdminUtils.AdminApi.GetPlayerSummaries(ulong.Parse(steamId));
+                var summ = await AdminUtils.CoreApi.GetPlayerSummaries(ulong.Parse(steamId));
                 if (summ != null)
                 {
                     name = summ.PersonaName;
                 }
             }
-            await AdminUtils.AdminApi.AddComm(comm, announce);
+            await AdminUtils.CoreApi.AddComm(comm, announce);
         });
     }
 }

@@ -149,6 +149,9 @@
     "Announce.SilenceAdded" : "Админ {red}{admin}{white} выдал {red}silence{white} игроку {red}{name}\nПричина: {red}{reason}\nСрок: {red}{duration}",
     "Announce.UnSilenced": "Админ {red}{admin}{white} снял {red}silence{white} с игрока {red}{name}\nПричина: {red}{reason}\nСрок: {red}{duration}",
     "Announce.Warn": "Админ {red}{admin}{white} выдал {red}предупреждение{white} админу {red}{name}\nПричина: {red}{reason}\nСрок: {red}{duration}\nКол-во предупреждений: {red}{now}{white}/{red}{max}",
+    "Announce.Kick": "Админ {red}{admin}{white} кикнул игрока {red}{name}\nПричина: {red}{reason}",
+    "Announce.Slay": "Админ {red}{admin}{white} убил игрока {red}{name}",
+    "Announce.Respawn": "Админ {red}{admin}{white} возродил игрока {red}{name}",
     
     "Limitations.TimeLimit" : "{red}Вы можете выдать это наказание только в промежутке от {min}мин. - {max}мин. ",
     "Limitations.MaxByDayLimit" : "{red}Вы превысили свой суточный лимит наказаний!\nСледующее наказание будет доступно: {date} ",
@@ -161,6 +164,10 @@
     "Other.Minutes" : " мин.",
     "Other.Hours" : " час.",
     "Other.Days" : " дн.",
-    "Other.Never" : "Никогда"
+    "Other.Never" : "Никогда",
+
+    "Other.Team.CT" : "CT", // админ iks переместил игрока litler в команду CT
+    "Other.Team.T" : "T", // админ iks переместил игрока litler в команду T
+    "Other.Team.Spec" : "SPEC" // админ iks переместил игрока litler в команду SPEC
     
 }

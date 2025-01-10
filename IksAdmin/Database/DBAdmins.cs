@@ -140,10 +140,10 @@ public static class DBAdmins
             await conn.QueryAsync(@"
             delete from iks_admin_to_server where admin_id = @adminId
             ", new {adminId});
-            foreach (var adm in AdminUtils.AdminApi.AdminsToServer.ToList())
+            foreach (var adm in AdminUtils.CoreApi.AdminsToServer.ToList())
             {
                 if (adm.AdminId == adminId)
-                    AdminUtils.AdminApi.AdminsToServer.Remove(adm);
+                    AdminUtils.CoreApi.AdminsToServer.Remove(adm);
             }
         }
         catch (MySqlException e)
@@ -332,7 +332,7 @@ public static class DBAdmins
             await conn.OpenAsync();
             await conn.QueryAsync(@"
                 update iks_admins set 
-                deleted_at = current_timestamp()
+                deleted_at = unix_timestamp()
                 where id = @id
             ", new {
                 id

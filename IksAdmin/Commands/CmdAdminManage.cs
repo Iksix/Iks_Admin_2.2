@@ -150,4 +150,29 @@ public static class CmdAdminManage
             var result = await _api.DeleteWarn(admin, warn);
         });
     }
+
+    public static void List(CCSPlayerController? caller, List<string> args, CommandInfo info)
+    {
+        List<Admin> admins;
+        if (caller != null)
+        {
+            caller.Print("Check info in console...");
+        }
+        if (args.Count > 0 && args[0] == "all")
+        {
+            admins = _api.AllAdmins;
+            caller.Print("All admins:");
+        }
+        else
+        {
+            admins = _api.ServerAdmins;
+            caller.Print("Server admins:");
+        }
+        caller.Print("id | name | steamId | flags | immunity | group | serverIds | discord | vk | isDisabled");
+        foreach (var admin in admins)
+        {
+            caller.Print($"{admin.Id} | {admin.Name} | {admin.SteamId} | {admin.CurrentFlags} | {admin.CurrentImmunity} | {admin.Group?.Name ?? "NONE"} | {string.Join(";", admin.Servers)} | {admin.Discord ?? "NONE"} | {admin.Vk ?? "NONE"} | {admin.IsDisabled}",
+                toConsole: true);
+        }
+    }
 }
