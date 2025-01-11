@@ -1,0 +1,27 @@
+{
+  "ServerId": 1,
+  "ServerIp": "37.9.13.107:28015",
+  "ServerName": "TEST #1",
+  "RconPassword": "1234",
+  "Host": "45.93.200.106",
+  "Database": "iks_admin2",
+  "User": "iks_admin2_usr",
+  "Password": "123456",
+  "Port": "3306",
+  "WebApiKey": "967BC7BF7F7A96710852FC2CF1703C91",
+  "AdvancedKick": true,
+  "AdvancedKickTime": 5,
+  "DebugMode": true,
+  "MenuType": 2,
+  "PermissionReplacement": {
+    "admins_manage_add": "z"
+  },
+  "IgnoreCommandsRegistering": [
+    "example_command"
+  ],
+  "MirrorsIp": [
+    "0.0.0.0"
+  ],
+  "LastPunishmentTime": 172800,
+  "ConfigVersion": 1
+}
