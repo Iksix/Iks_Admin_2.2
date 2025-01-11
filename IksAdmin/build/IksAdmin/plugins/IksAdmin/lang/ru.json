@@ -88,6 +88,13 @@
 
     // players_manage
     "MenuTitle.PM.Main" : "Управление игроками",
+    "MenuTitle.PM.SelectTeam" : "Выберите команду:",
+    "MenuTitle.PM.SelectTeamMode" : "Выберите:",
+    "MenuOption.PM.Now" : "Сейчас",
+    "MenuOption.PM.OnRoundEnd" : "В конце раунда",
+    "MenuTitle.PM.SelectChangeTeamTime" : "Выберите когда:",
+    "MenuOption.PM.ChangeTeam" : "С убийством",
+    "MenuOption.PM.SwitchTeam" : "Без убийства",
     "MenuOption.PM" : "Управление игроками",
     "Message.PM.Kick.SetReason" : "Введите причину кика игрока {red}{name}{white}: {red}!причина",
     "MenuOption.PM.Kick" : "Кикнуть",
@@ -148,6 +155,7 @@
     "Message.WarnsTemplate" : "\nID: {red}{id}\nПричина: {red}{reason}\nВыдано: {red}{created}\nСрок: {red}{duration}\nЗакончится: {red}{end}\nКем: {red}{admin}\n================",
     "Message.CmdWho" : "Информация об игроке {red}{name}{white}:\nID: {red}{id}\nSteamID: {red}{steamId}\nАдмин группа: {red}{group}\nФлаги: {red}{flags}\nИммунитет: {red}{immunity}",
     "Message.CmdWho_NotAdmin" : "Информация об игроке {red}{name}{white}:\nSteamID: {red}{steamId}\n{red}Не имеет админ привилегии ✖",
+    "Message.OnRoundEndChangeTeam" : "{green}Команда игрока будет изменена в конце раунда ✔",
     
     "Announce.BanAdded" : "Админ {red}{admin}{white} заблокировал игрока {red}{name}\nПричина: {red}{reason}\nСрок: {red}{duration}",
     "Announce.BanAddedIp" : "Админ {red}{admin}{white} заблокировал игрока {red}{name}{white} по айпи\nПричина: {red}{reason}\nСрок: {red}{duration}",
@@ -178,8 +186,8 @@
     "Other.Days" : " дн.",
     "Other.Never" : "Никогда",
 
-    "Other.Team.CT" : "{darkblue}CT", // админ iks переместил игрока litler в команду CT
-    "Other.Team.T" : "{gold}T", // админ iks переместил игрока litler в команду T
-    "Other.Team.Spec" : "{purple}SPEC" // админ iks переместил игрока litler в команду SPEC
+    "Other.Team.CT" : "CT", // админ iks переместил игрока litler в команду CT
+    "Other.Team.T" : "T", // админ iks переместил игрока litler в команду T
+    "Other.Team.Spec" : "SPEC" // админ iks переместил игрока litler в команду SPEC
     
 }

@@ -46,9 +46,9 @@ public static class CmdPm
         // css_respawn <#uid/#steamId/name/@...> [alive also(true/false*)]
         var identity = args[0];
         _api.DoActionWithIdentity(caller, identity,
-            (target, _) =>
+            (target, type) =>
             {
-                if (!target!.PawnIsAlive || (args.Count > 1 && args[1] == "true"))
+                if (!target!.PawnIsAlive || (args.Count > 1 && args[1] == "true") || (type is IdentityType.Name or IdentityType.UserId or IdentityType.SteamId))
                 {
                     _api.Respawn(caller.Admin()!, target);
                 }

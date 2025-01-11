@@ -24,12 +24,13 @@ using SteamWebAPI2.Utilities;
 using SteamWebAPI2.Interfaces;
 using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Timers;
+using IksAdmin.Menus;
 namespace IksAdmin;
 
 public class Main : BasePlugin
 {
     public override string ModuleName => "IksAdmin";
-    public override string ModuleVersion => "2.2";
+    public override string ModuleVersion => "3.0";
     public override string ModuleAuthor => "iks [Discord: iks__]";
 
     public static IMenuApi MenuApi = null!;
@@ -617,6 +618,17 @@ public class Main : BasePlugin
     }
 
     [GameEventHandler]
+    public HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info)
+    {
+        foreach (var action in MenuPM.OnRoundEndChangeTeam.ToList())
+        {
+            action.Value.Invoke();
+            MenuPM.OnRoundEndChangeTeam.Remove(action.Key);
+        }
+        return HookResult.Continue;
+    }
+
+    [GameEventHandler]
     public HookResult OnPlayerConnectFull(EventPlayerConnectFull @event, GameEventInfo info)
     {
         var player = @event.Userid;
@@ -636,12 +648,13 @@ public class Main : BasePlugin
         return HookResult.Continue;
     }
     
-    [GameEventHandler]
+    [GameEventHandler(HookMode.Pre)]
     public HookResult OnPlayerDisconnect(EventPlayerDisconnect @event, GameEventInfo info)
     {
         var player = @event.Userid;
         BlockTeamChange.Remove(player!);
         PlayersUtils.ClearHtmlMessage(player!);
+        MenuPM.OnRoundEndChangeTeam.Remove(player!.Slot);
         if (player == null || player.IsBot || player.AuthorizedSteamID == null) return HookResult.Continue;
         AdminApi.DisconnectedPlayers.Insert(0, new PlayerInfo(player));
         KickOnFullConnect.Remove(player.GetSteamId());
@@ -1095,6 +1108,11 @@ public class AdminApi : IIksAdminApi
         {
             AdminUtils.LogDebug($"Adding new command [{command}] was skipped from config");
             return;
+        }
+        if (Config.CommandReplacement.TryGetValue("css_"+command, out var newCommand)) 
+        {
+            AdminUtils.LogDebug($"Replace {command} to {newCommand}");
+            command = newCommand.Remove(0, 4);
         }
         var tagString = tag == null ? Localizer["Tag"] : tag;
         CommandCallback callback = (p, info) => {

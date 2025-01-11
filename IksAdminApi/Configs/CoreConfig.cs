@@ -13,9 +13,12 @@ public class CoreConfig : PluginCFG<CoreConfig>, IPluginCFG
     public string Password { get; set; } = "Password";
     public string Port { get; set; } = "3306";
     // ===
-    public Dictionary<string, string[]> BlockedIdentifiers {get; set;} = new () {
+    public Dictionary<string, string[]> BlockedIdentifiers {get; set;} = new () { // Блок идентификаторов для команд с поддержкой @
         {"css_slay", [""]},
         {"css_kick", ["@all", "@players", "@bots", "@ct", "@t"]},
+    };
+    public Dictionary<string, string> CommandReplacement {get; set;} = new () { // Изменяет команды
+        //{"css_respawn", "css_arespawn"} // -> Меняет css_respawn на css_arespawn к примеру
     };
     public int MaxWarns { get; set; } = 3; // Максимальное кол-во варнов для блокировки админки у игрока
     public bool DeleteWhenMaxWarns { get; set; } = false; // Удалять ли админа при максимальном кол-ве варнов
