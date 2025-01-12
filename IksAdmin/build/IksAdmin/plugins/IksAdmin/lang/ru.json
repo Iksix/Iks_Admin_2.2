@@ -134,6 +134,8 @@
     "ActionError.WarnNotFound" : "{red}Варн не найден ✖",
     "ActionError.PunishmentNotFound" : "{red}Наказание не найдено ✖",
     "ActionError.NotEnoughPermissionsForAction" : "{red}У вас недостаточно прав для взаимодействия с этим игроком ✖",
+    "ActionError.ServerNotFound" : "{red}Сервер не найден ✖",
+    "ActionError.NotEnoughPermissionsForRcon" : "{red}У вас нет прав отправлять ркон команду на этот сервер ✖",
     
     "ActionSuccess.BanSuccess" : "{green}Цель успешно забанена!",
     "ActionSuccess.GagSuccess" : "{green}Игрок успешно гагнут!",
@@ -143,6 +145,7 @@
     "ActionSuccess.UnBanSuccess" : "{green}Цель успешно разбанена!",
     "ActionSuccess.UnSilenceSuccess" : "{green}С игрока успешно снят silence!",
     "ActionSuccess.SilenceSuccess" : "{green}Игроку успешно выдан silence!",
+    "ActionSuccess.RconSuccess" : "{green}Ркон команда отправлена! Смотрите ответ в консоли!",
 
     "Message.WhenGag" : "{red}У вас есть активный гаг!\nЗавершится: {red}{date} ",
     "Message.WhenSilence" : "{red}У вас есть активный silence!\nЗавершится: {red}{date} ",
@@ -156,6 +159,7 @@
     "Message.CmdWho" : "Информация об игроке {red}{name}{white}:\nID: {red}{id}\nSteamID: {red}{steamId}\nАдмин группа: {red}{group}\nФлаги: {red}{flags}\nИммунитет: {red}{immunity}",
     "Message.CmdWho_NotAdmin" : "Информация об игроке {red}{name}{white}:\nSteamID: {red}{steamId}\n{red}Не имеет админ привилегии ✖",
     "Message.OnRoundEndChangeTeam" : "{green}Команда игрока будет изменена в конце раунда ✔",
+    "Message.SM.Server" : "===========\nСервер: {red}{name}\nID: {red}{id}\nIP: {red}{ip}\n===========",
     
     "Announce.BanAdded" : "Админ {red}{admin}{white} заблокировал игрока {red}{name}\nПричина: {red}{reason}\nСрок: {red}{duration}",
     "Announce.BanAddedIp" : "Админ {red}{admin}{white} заблокировал игрока {red}{name}{white} по айпи\nПричина: {red}{reason}\nСрок: {red}{duration}",

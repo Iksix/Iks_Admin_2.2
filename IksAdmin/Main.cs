@@ -261,6 +261,7 @@ public class Main : BasePlugin
         // SERVERS MANAGE === 
         AdminApi.RegisterPermission("servers_manage.reload_data", "z");
         AdminApi.RegisterPermission("servers_manage.rcon", "z");
+        AdminApi.RegisterPermission("servers_manage.list", "z");
         // Other ===
         AdminApi.RegisterPermission("other.equals_immunity_action", "e"); // Разрешить взаймодействие с админами равными по иммунитету (Включая снятие наказаний если есть флаг blocks_manage.remove_immunity)
         AdminApi.RegisterPermission("other.admin_chat", "b");
@@ -270,6 +271,28 @@ public class Main : BasePlugin
     private void InitializeCommands()
     {
         AdminApi.SetCommandInititalizer(ModuleName);
+        #region ServersManage
+
+        AdminApi.AddNewCommand(
+            "am_servers",
+            "Выводит список серверов",
+            "servers_manage.list",
+            "css_am_servers",
+            CmdSm.Servers,
+            minArgs: 0,
+            whoCanExecute: CommandUsage.CLIENT_AND_SERVER
+        );
+        AdminApi.AddNewCommand(
+            "rcon",
+            "Отправить ркон команду",
+            "servers_manage.rcon",
+            "css_rcon <ServerID> <CMD>",
+            CmdSm.Rcon,
+            minArgs: 2,
+            whoCanExecute: CommandUsage.CLIENT_AND_SERVER
+        );
+
+        #endregion
         AdminApi.AddNewCommand(
             "reload_infractions",
             "Перезагрузить данные игрока",
@@ -1071,7 +1094,7 @@ public class AdminApi : IIksAdminApi
         }
     }
 
-    public async Task SendRconToServer(ServerModel server, string command)
+    public async Task<string> SendRconToServer(ServerModel server, string command)
     {
         var ip = server.Ip.Split(":")[0];
         var port = server.Ip.Split(":")[1];
@@ -1081,6 +1104,7 @@ public class AdminApi : IIksAdminApi
         var result = await rcon.SendCommandAsync(command);
         AdminUtils.LogDebug($"Success ✔");
         AdminUtils.LogDebug($"Response from {server.Name} [{server.Ip}]: {result}");
+        return result;
     }
 
     public ServerModel? GetServerById(int id)

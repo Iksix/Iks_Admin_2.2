@@ -31,7 +31,7 @@ public interface IIksAdminApi
     public string DbConnectionString {get; set;}
     public Dictionary<CCSPlayerController, Action<string>> NextPlayerMessage {get;}
     public Task SendRconToAllServers(string command, bool ignoreSelf = false);
-    public Task SendRconToServer(ServerModel server, string command);
+    public Task<string> SendRconToServer(ServerModel server, string command);
     public ServerModel? GetServerById(int serverId);
     public ServerModel? GetServerByIp(string ip);
     public Dictionary<string, List<CommandModel>> RegistredCommands {get; set;}
