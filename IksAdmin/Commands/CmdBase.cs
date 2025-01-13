@@ -1,3 +1,4 @@
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Commands;
 using IksAdmin.Functions;
@@ -25,7 +26,9 @@ public static class CmdBase
             if (args.Count > 0 && args[0] == "all")
                 await _api.ReloadDataFromDb();
             else await _api.ReloadDataFromDb(false);
-            caller.Print( "DB data reloaded \u2714");
+            Server.NextFrame(() => {
+                caller.Print( "DB data reloaded \u2714");
+            });
         });
     }
 

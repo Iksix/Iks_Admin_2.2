@@ -19,7 +19,7 @@ public static class MenuSM
                 Task.Run(async () => {
                     var result = await _api.SendRconToServer(s!, cmd);
                     Server.NextFrame(() => {
-                        caller.Print("ActionSuccess.RconSuccess");
+                        caller.Print(_localizer["ActionSuccess.RconSuccess"]);
                         caller.Print(result, toConsole: true);
                     }); 
                 });

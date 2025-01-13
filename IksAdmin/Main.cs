@@ -25,6 +25,7 @@ using SteamWebAPI2.Interfaces;
 using CounterStrikeSharp.API.Modules.Entities;
 using CounterStrikeSharp.API.Modules.Timers;
 using IksAdmin.Menus;
+using System.Runtime.CompilerServices;
 namespace IksAdmin;
 
 public class Main : BasePlugin
@@ -86,6 +87,18 @@ public class Main : BasePlugin
             {
                 if (comm.EndAt != 0 && comm.EndAt < AdminUtils.CurrentTimestamp()) { 
                     AdminApi.RemoveCommFromPlayer(comm);
+                }
+            }
+            foreach (var warn in AdminApi.Warns.ToArray())
+            {
+                if (warn.EndAt != 0 && warn.EndAt < AdminUtils.CurrentTimestamp()) { 
+                    var admin = warn.TargetAdmin;
+                    if (admin != null && admin.Controller != null) {
+                        admin.Controller.Print(
+                            Localizer["Message.WarnEnded"].AReplace(["id", "reason", "admin"], [warn.Id, warn.Reason, warn.Admin?.Name ?? "NOT FINDED"])
+                        );
+                    }
+                    AdminApi.Warns.Remove(warn);
                 }
             }
         }, TimerFlags.REPEAT);
@@ -313,7 +326,7 @@ public class Main : BasePlugin
         AdminApi.AddNewCommand(
             "am_warns",
             "Выводит все варны админа",
-            "admins_manage.warn_add,admins_manage.warn_delete,admins_manage.warn_edit",
+            "admins_manage.warn_add,admins_manage.warn_delete,admins_manage.warn_list",
             "css_am_warns <Admin ID>",
             CmdAdminManage.Warns,
             minArgs: 1,
@@ -716,7 +729,7 @@ public class AdminApi : IIksAdminApi
     {
         get
         {
-            return AllAdmins.Where(x => x.Servers.Contains(ThisServer.Id)).ToList();
+            return AllAdmins.Where(x => x.Servers.Contains(ThisServer.Id) && x.DeletedAt == null).ToList();
         }
     }
 
@@ -848,7 +861,7 @@ public class AdminApi : IIksAdminApi
                 Config.ServerName,
                 Config.RconPassword
             );
-        var adminsBeforeReload = ServerAdmins.ToArray();
+        var oldAdmins = ServerAdmins.ToArray();
         try
         {
             AdminUtils.LogDebug("Init Database");
@@ -861,13 +874,22 @@ public class AdminApi : IIksAdminApi
             await RefreshAdmins();
             Warns = await DBWarns.GetAllActive();
             Server.NextFrame(() => {
-                var noAdmins = adminsBeforeReload.Where(x => !ServerAdmins.Contains(x));
-                foreach (var player in noAdmins)
+                List<int> adminsSlots = new();
+                foreach (var admin in oldAdmins)
                 {
-                    var controller = player.Controller;
-                    if (controller != null)
+                    if (admin.Controller == null) return;
+                    adminsSlots.Add(admin.Controller.Slot);
+                }
+                foreach (var slot in adminsSlots)
+                {
+                    var adminWithSameSlot = ServerAdmins.FirstOrDefault(x => x.Controller != null && x.Controller.Slot == slot);
+                    if (adminWithSameSlot == null || adminWithSameSlot.IsDisabled)
                     {
-                        CloseMenu(controller);
+                        var player = Utilities.GetPlayerFromSlot(slot);
+                        if (player != null)
+                        {
+                            CloseMenu(player);
+                        }
                     }
                 }
             });
@@ -1142,6 +1164,11 @@ public class AdminApi : IIksAdminApi
             if (p != null && p.Admin() != null && p.Admin()!.IsDisabledByWarns)
             {
                 info.Reply(Localizer["ActionError.DisabledByWarns"]);
+                return;
+            }
+            if (p != null && p.Admin() != null && p.Admin()!.IsDisabledByEnd)
+            {
+                info.Reply(Localizer["ActionError.DisabledByEnd"]);
                 return;
             }
             if (whoCanExecute == CommandUsage.CLIENT_ONLY && p == null)
@@ -2288,8 +2315,9 @@ public class AdminApi : IIksAdminApi
         var exWarn = Warns.FirstOrDefault(x => x.Id == warn.Id);
         if (exWarn != null)
             exWarn = warn;
+        var result = await warn.UpdateInBase();
         await ReloadDataFromDBOnAllServers();
-        return await warn.UpdateInBase();
+        return result;
     }
 
     public async Task<DBResult> DeleteWarn(Admin admin, Warn warn, bool announce = true)
@@ -2303,8 +2331,14 @@ public class AdminApi : IIksAdminApi
             return new DBResult(null, -2, "Stopped by event WARN");
         }
         warn = eData.Get<Warn>("warn");
+        var result = await warn.UpdateInBase();
         await ReloadDataFromDBOnAllServers();
-        return await warn.UpdateInBase();
+        Server.NextFrame(() =>
+        {
+            if (announce)
+                MsgAnnounces.WarnDelete(warn);
+        });
+        return result;
     }
 
     public async Task<List<Warn>> GetAllWarns()

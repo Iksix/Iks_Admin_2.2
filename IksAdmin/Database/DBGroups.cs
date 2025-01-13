@@ -86,9 +86,9 @@ public static class DBGroups
             await conn.OpenAsync();
             var id = await conn.QuerySingleAsync<int>(@"
                 insert into iks_groups
-                ( name, flags, immunity, comment, created_at, updated_at)
+                ( name, flags, immunity, comment)
                 values
-                (@name, @flags, @immunity, @comment, unix_timestamp(), unix_timestamp());
+                (@name, @flags, @immunity, @comment);
                 select last_insert_id();
             ", new {
                 name = group.Name,
