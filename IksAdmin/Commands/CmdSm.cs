@@ -55,6 +55,5 @@ public static class CmdSm
                 caller.Print(result, toConsole: true);
             }); 
         });
-        
     }
 }

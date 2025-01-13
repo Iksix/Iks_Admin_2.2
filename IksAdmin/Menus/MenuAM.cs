@@ -54,7 +54,10 @@ public static class MenuAM
                 caller.Print(_localizer["Message.SM.DataReloaded"]);
             });
         }, viewFlags: AdminUtils.GetCurrentPermissionFlags("servers_manage.reload_data"));
-        
+        menu.AddMenuOption("rcon", _localizer["MenuOption.SM.Rcon"], (_, _) =>
+        {
+            MenuSM.OpenRconMenu(caller, menu);
+        }, viewFlags: AdminUtils.GetCurrentPermissionFlags("servers_manage.rcon"));
         menu.Open(caller);
     }
 

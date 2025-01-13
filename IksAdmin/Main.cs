@@ -214,8 +214,7 @@ public class Main : BasePlugin
         // Admin manage ===
         AdminApi.RegisterPermission("admins_manage.warn_add", "z");
         AdminApi.RegisterPermission("admins_manage.warn_delete", "z");
-        AdminApi.RegisterPermission("admins_manage.warn_edit", "z");
-        AdminApi.RegisterPermission("admins_manage.warn_refresh", "z");
+        AdminApi.RegisterPermission("admins_manage.warn_list", "z");
         // Groups manage ===
         AdminApi.RegisterPermission("groups_manage.add", "z");
         AdminApi.RegisterPermission("groups_manage.delete", "z");
