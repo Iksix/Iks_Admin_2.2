@@ -26,7 +26,7 @@ public class Main : AdminModule
         Console.WriteLine($"Block Kick: {BlockKick}");
     }
 
-    public override void OnAllPluginsLoaded(bool hotReload)
+    public override void Ready()
     {
         Api.OnDynamicEvent += OnDynamicEvent;
     }

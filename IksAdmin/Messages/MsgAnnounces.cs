@@ -86,18 +86,7 @@ public static class MsgAnnounces
         );
     }
 
-    public static void Warn(Warn warn)
-    {
-        AdminUtils.PrintToServer(_localizer["Announce.Warn"].Value
-                .Replace("{admin}", AdminUtils.Admin(warn.AdminId)!.Name)
-                .Replace("{name}", AdminUtils.Admin(warn.TargetId)!.Name)
-                .Replace("{reason}", warn.Reason)
-                .Replace("{now}", AdminUtils.Admin(warn.TargetId)!.Warns.Count.ToString())
-                .Replace("{max}", _api.Config.MaxWarns.ToString())
-                .Replace("{duration}", (AdminUtils.GetDurationString(warn.Duration)).ToString()), tag: _localizer["Tag"]
-        );
-    }
-
+   
     public static void Kick(Admin admin, CCSPlayerController player, string reason)
     {
         AdminUtils.PrintToServer(_localizer["Announce.Kick"].Value
@@ -145,6 +134,29 @@ public static class MsgAnnounces
                 .Replace("{admin}", admin!.Name)
                 .Replace("{name}", player.PlayerName)
                 .Replace("{team}", TeamString(team))
+        );
+    }
+    public static void Warn(Warn warn)
+    {
+        AdminUtils.PrintToServer(_localizer["Announce.Warn"].Value
+                .Replace("{admin}", AdminUtils.Admin(warn.AdminId)!.Name)
+                .Replace("{name}", AdminUtils.Admin(warn.TargetId)!.Name)
+                .Replace("{reason}", warn.Reason)
+                .Replace("{now}", AdminUtils.Admin(warn.TargetId)!.Warns.Count.ToString())
+                .Replace("{max}", _api.Config.MaxWarns.ToString())
+                .Replace("{duration}", (AdminUtils.GetDurationString(warn.Duration)).ToString()), tag: _localizer["Tag"]
+        );
+    }
+
+    public static void WarnDelete(Warn warn)
+    {
+        AdminUtils.PrintToServer(_localizer["Announce.WarnDelete"].Value
+                .Replace("{admin}", AdminUtils.Admin(warn.AdminId)!.Name)
+                .Replace("{name}", AdminUtils.Admin(warn.TargetId)!.Name)
+                .Replace("{reason}", warn.Reason)
+                .Replace("{now}", AdminUtils.Admin(warn.TargetId)!.Warns.Count.ToString())
+                .Replace("{max}", _api.Config.MaxWarns.ToString())
+                .Replace("{id}", warn.Id.ToString()), tag: _localizer["Tag"]
         );
     }
 }

@@ -51,10 +51,9 @@ public static class CmdSm
         Task.Run(async () => {
             var result = await _api.SendRconToServer(server, cmd);
             Server.NextFrame(() => {
-                caller.Print("ActionSuccess.RconSuccess");
+                caller.Print(_localizer["ActionSuccess.RconSuccess"]);
                 caller.Print(result, toConsole: true);
             }); 
         });
-        
     }
 }

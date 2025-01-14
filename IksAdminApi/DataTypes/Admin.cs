@@ -34,10 +34,13 @@ public class Admin
         return AdminUtils.GetGroup(GroupId);
     }}
     public bool IsDisabled {get {
-        return Disabled == 1 || IsDisabledByWarns;
+        return Disabled == 1 || IsDisabledByWarns || IsDisabledByEnd;
     }}
     public bool IsDisabledByWarns {get {
         return Warns.Count >= AdminUtils.CoreApi.Config.MaxWarns;
+    }}
+    public bool IsDisabledByEnd {get {
+        return EndAt != null && EndAt < AdminUtils.CurrentTimestamp();
     }}
     public int[] Servers { get  {
         var a = AdminUtils.CoreApi.AdminsToServer.Where(x => x.AdminId == Id).ToArray();

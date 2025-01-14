@@ -20,7 +20,7 @@
     "Message.CH.FlagsSet" : "Напишите флаги в чат: {red}!abc...",
     "Message.CH.ImmunitySet" : "Напишите иммунитет в чат: {red}!10",
     "Message.CH.ConfirmDeleting" : "Подтвердите удаление введя: {red}!delete",
-    "Message.PrintOwnTime" : "Введите своё время в минутах: !10",
+    "Message.PrintOwnTime" : "Введите своё время в минутах: {red}!10",
     // Global messages
     "Message.GL.DeleteCanceled" : "Удаление отменено",
     "Message.GL.ReasonSet" : "Введите причину: {red}!причина",
@@ -119,6 +119,12 @@
     "MenuTitle.Unban" : "Снять бан",
     "MenuOption.Unban" : "Снять бан",
 
+    // Warns
+    "MenuTitle.Warns.Main" : "Управление варнами",
+    "MenuOption.Warns" : "Управление варнами",
+    "MenuOption.Warns.Add" : "Выдать варн",
+    "MenuOption.Warns.List" : "Список варнов",
+
     "Error.OnlyServerCommand" : "{red}Команду может выполнить только сервер ✖",
     "Error.MustBeANumber" : "{red}Параметр должен быть числом!!! ✖",
     "Error.NotEnoughPermissions" : "{red}Недостаточно прав для использования команды ✖",
@@ -129,6 +135,7 @@
     "ActionError.Other" : "{red}Возникла неизвестная ошибка обратитесь к владельцу сервера ✖", // Значит что ошибка выводится в консоль, чекаем там
     "ActionError.NotEnoughPermissionsForUnban" : "{red}У вас не достаточно прав для снятия этого наказания ✖",
     "ActionError.DisabledByWarns" : "{red}Ваша админ привилегия отключена из за большого количества предупреждений ✖",
+    "ActionError.DisabledByEnd" : "{red}Срок действия вашей админ привилегии истёк ✖",
     "ActionError.AlreadyBanned" : "{red}Этот игрок/айпи уже наказан ✖",
     "ActionError.TargetNotFound" : "{red}Цель не найдена ✖",
     "ActionError.WarnNotFound" : "{red}Варн не найден ✖",
@@ -160,6 +167,7 @@
     "Message.CmdWho_NotAdmin" : "Информация об игроке {red}{name}{white}:\nSteamID: {red}{steamId}\n{red}Не имеет админ привилегии ✖",
     "Message.OnRoundEndChangeTeam" : "{green}Команда игрока будет изменена в конце раунда ✔",
     "Message.SM.Server" : "===========\nСервер: {red}{name}\nID: {red}{id}\nIP: {red}{ip}\n===========",
+    "Message.WarnEnded" : "Варн истёк!\nID: {red}{id}\nПричина: {red}{reason}\nВыдано админом: {red}{admin}",
     
     "Announce.BanAdded" : "Админ {red}{admin}{white} заблокировал игрока {red}{name}\nПричина: {red}{reason}\nСрок: {red}{duration}",
     "Announce.BanAddedIp" : "Админ {red}{admin}{white} заблокировал игрока {red}{name}{white} по айпи\nПричина: {red}{reason}\nСрок: {red}{duration}",
@@ -171,6 +179,7 @@
     "Announce.SilenceAdded" : "Админ {red}{admin}{white} выдал {red}silence{white} игроку {red}{name}\nПричина: {red}{reason}\nСрок: {red}{duration}",
     "Announce.UnSilenced": "Админ {red}{admin}{white} снял {red}silence{white} с игрока {red}{name}\nПричина: {red}{reason}\nСрок: {red}{duration}",
     "Announce.Warn": "Админ {red}{admin}{white} выдал {red}предупреждение{white} админу {red}{name}\nПричина: {red}{reason}\nСрок: {red}{duration}\nКол-во предупреждений: {red}{now}{white}/{red}{max}",
+    "Announce.WarnDelete": "Админ {red}{admin}{white} снял {red}предупреждение{white} с админа {red}{name}\nID: {red}{id}\nПричина: {red}{reason}\nКол-во предупреждений: {red}{now}{white}/{red}{max}",
     "Announce.Kick": "Админ {red}{admin}{white} кикнул игрока {red}{name}\nПричина: {red}{reason}",
     "Announce.Slay": "Админ {red}{admin}{white} убил игрока {red}{name}",
     "Announce.Respawn": "Админ {red}{admin}{white} возродил игрока {red}{name}",

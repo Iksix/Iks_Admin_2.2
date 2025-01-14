@@ -32,9 +32,8 @@ public static class MenuAM
             MenuWarns.OpenMain(caller, menu);
         }, 
         viewFlags:  AdminUtils.GetCurrentPermissionFlags("admins_manage.warn_add") +
-                    AdminUtils.GetCurrentPermissionFlags("admins_manage.warn_delete") +
-                    AdminUtils.GetCurrentPermissionFlags("admins_manage.warn_edit") +
-                    AdminUtils.GetCurrentPermissionFlags("admins_manage.warn_refresh"));
+                    AdminUtils.GetCurrentPermissionFlags("admins_manage.warn_list") +
+                    AdminUtils.GetCurrentPermissionFlags("admins_manage.warn_delete"));
 
         menu.AddMenuOption("gm", _localizer["MenuOption.GM"], (_, _) => {
             if (MenuGM.AddGroupBuffer.ContainsKey(caller.Admin()!))
@@ -54,7 +53,10 @@ public static class MenuAM
                 caller.Print(_localizer["Message.SM.DataReloaded"]);
             });
         }, viewFlags: AdminUtils.GetCurrentPermissionFlags("servers_manage.reload_data"));
-        
+        menu.AddMenuOption("rcon", _localizer["MenuOption.SM.Rcon"], (_, _) =>
+        {
+            MenuSM.OpenRconMenu(caller, menu);
+        }, viewFlags: AdminUtils.GetCurrentPermissionFlags("servers_manage.rcon"));
         menu.Open(caller);
     }
 

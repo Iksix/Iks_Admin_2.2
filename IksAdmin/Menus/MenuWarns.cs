@@ -53,7 +53,7 @@ public static class MenuWarns
                 },
                 backMenu: menu, nullOption: false
             );
-        });
+        }, viewFlags: _api.GetCurrentPermissionFlags("admins_manage.warn_add"));
         menu.AddMenuOption("list",  _localizer["MenuOption.Warns.List"], (_, _) =>
         {
             MenuUtils.SelectItem<Admin?>(caller, "warn_list_admin", "Name", 
@@ -64,7 +64,10 @@ public static class MenuWarns
                 },
                 backMenu: menu, nullOption: false
             );
-        });
+        }, viewFlags: 
+        _api.GetCurrentPermissionFlags("admins_manage.warn_delete") +
+        _api.GetCurrentPermissionFlags("admins_manage.warn_list")
+        );
         menu.Open(caller);
     }
 

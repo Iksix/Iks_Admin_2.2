@@ -332,13 +332,6 @@ public static class AdminUtils
     }
     public static bool HasPermissions(this Admin? admin, string key)
     {
-        if (admin!.Warns.Count >= CoreApi.Config.MaxWarns)
-        {
-            return false;
-        }
-        if (admin != null)
-            LogDebug($"Checking permission: {admin.Name} | {key}" );
-        else LogDebug($"Checking permission: {key}" );
         var flags = GetCurrentPermissionFlags(key);
         if (flags == "*")
         {
@@ -349,6 +342,12 @@ public static class AdminUtils
             LogDebug($"Admin is null | No Access ✖");
             return false;
         }
+        if (admin!.Warns.Count >= CoreApi.Config.MaxWarns)
+        {
+            return false;
+        }
+        LogDebug($"Checking permission: {admin.Name} | {key}" );
+        LogDebug("AdminDisabled: " + admin!.IsDisabled);
         if (admin.IsDisabled) {
             LogDebug($"Admin is disabled | No Access ✖");
             return false;
